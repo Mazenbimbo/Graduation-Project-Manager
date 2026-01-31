@@ -1,0 +1,50 @@
+{% extends 'base.html'%}
+
+{% block title%}Friends{% endblock %}
+
+{% block head %} <link rel="stylesheet" href="/static/css/friends.css"> {% endblock %}
+{% block body %}
+<div class="container">
+    <h2>Friends</h2>
+    {% for user in users %}
+        <div class="friend-cont">
+            <div class="friend-img" style="display: inline;"><img src="{{user.image}}" style="width: 40px;height: 40px;border-radius: 100px;"></div>
+                <div class="friend-data" style="display: inline;">
+                    <strong>{{user.name|title}}</strong>
+                    {% if in_team == True %}
+                        {% if user.in_team == False%}
+                            <form action="/req_to_add/{{user.pid}}" method="POST" style="display: inline;">
+                                <input type="submit" value="Add to Team" class="tag">
+                            </form>
+                        {% else %}
+                            <span class="tag">In Team</span>
+                        {% endif %}
+                    {% endif %}
+                    <div class="tag-container">
+                    <span class="tag">{{user.specialties}}</span>
+                    <span class="tag">{{user.specialty_level}}</span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<!-- <table>
+    <tr>
+        <th>Name</th>
+        <th>Specialty</th>
+        <th>Specialty Level</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{user.fname|title}}</td>
+        <td>{{user.specialty|upper}}</td>
+        <td>{{user.specialty_level}}</td>
+        <td><a href="/add_to_team">Add to team</a></td>
+        {% if is_admin == True %}
+        <td><form action="/delete/user/{{user.pid}}" method="POST"><input type="submit" value="delete"></form></td>
+        {% endif%}
+    </tr>
+    {% endfor %}
+
+</table> -->
+{% endblock %}

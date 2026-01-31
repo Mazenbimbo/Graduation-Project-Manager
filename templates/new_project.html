@@ -1,0 +1,27 @@
+{% extends 'base.html'%}
+{% block title %}Add New Project{% endblock %}
+{% block body %}
+<h1>Add New Project</h1>
+<form action="{{url_for('new_project')}}" method="POST">
+	<label for="name" style="font-weight: bold;">Project Name</label><br>
+	<input type="text" name="name"><br><br>
+	<label for="description" style="font-weight: bold;">Project Description</label><br>
+	<textarea name="description" rows="10" cols="70"></textarea><br><br>
+
+	<h3>Included Fields</h3>
+	<input type="checkbox" name="AI">
+	<label for="AI" style="font-weight: bold;">AI</label>
+	<input type="checkbox" name="AI">
+	<label for="cyber" style="font-weight: bold;">Cyber Security</label>
+	<input type="checkbox" name="Networking">
+	<label for="Networking" style="font-weight: bold;">Networking</label>
+	<input type="checkbox" name="web">
+	<label for="web" style="font-weight: bold;">Web</label>
+	<input type="checkbox" name="mobile">
+	<label for="mobile" style="font-weight: bold;">Mobile</label>
+	<input type="checkbox" name="embedded">
+	<label for="embedded" style="font-weight: bold;">Embedded</label><br><br>
+
+	<input type="submit" name="submit">
+</form>
+{% endblock%}

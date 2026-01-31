@@ -1,0 +1,17 @@
+{% extends 'base.html'%}
+{% block title%} Home {%endblock%}
+{% block body%}
+<div class="p-5 flex flex-col items-center space-y-6">
+    <div class="m-5">
+        <p class="text-3xl mb-2">Hey, {{name|title}}!</p>
+        <p class="text-gray-400 text-xl">Welcome back!</p>
+    </div>
+    <hr class="w-[60%] h-3"></hr>
+    <h1 class="text-3xl font-bold" >Manage Project</h1>
+    <div class="m-5 grid grid-cols-3 gap-6">
+        <button class="bg-cyan-800 hover:bg-cyan-500 p-5 rounded-2xl"><a class='font-bold' href='{{url_for('friends')}}'>Choose Teammate</a></button>
+        <button class="bg-cyan-800 hover:bg-cyan-500 p-5 rounded-2xl"><a class='font-bold' href='{{url_for('new_project')}}'>Add New Project</a></button>
+        <button class="bg-cyan-800 hover:bg-cyan-500 p-5 rounded-2xl"><a class='font-bold' href='{{url_for('projects')}}'>Projects List</a></button>
+    </div>
+</div>
+{%endblock%}

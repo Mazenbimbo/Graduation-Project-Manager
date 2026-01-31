@@ -1,0 +1,130 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: #12102B;
+    font-family:sans-serif;
+    color : white;
+}
+a{
+    color: rgb(4, 0, 253);
+
+}
+form{
+    margin: 10px;
+}
+.aa{
+    text-decoration: none;
+    font-weight: bold;
+    font-family: monospace;
+    color: white;
+    padding: 2px;
+}
+.btn{
+    background-color: #007e7e;
+    text-decoration: none;
+    margin: 2px;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #49927a;
+    
+}
+.btn:hover{
+    background-color: blue;
+    font-weight: bolder;
+    text-decoration: none;
+}
+.card{
+    background-color: rgb(0, 126, 126);
+    text-decoration: none;
+    margin: 2px;
+    padding: 8px;
+    border-radius: 20px;
+    width: 110px;
+    height: 110px;
+    border: 1px solid rgb(73, 146, 122);
+    
+}
+.card:hover{
+    background-color: blue;
+    font-weight: bolder;
+    text-decoration: none;
+}
+.inpt{
+    width: 300px;
+    height: 30px;
+    margin: 5px;
+    font-size: large;
+    font-family:aliceblue;
+    border-radius: 6px;
+}
+.msg{
+    margin: 5px;
+    padding: 10px;
+    width: 200px;
+    background-color: aliceblue;
+    border: 5px solid red;
+    border-radius: 10px;
+}
+table, tr, td, th{
+    border: 0.5px solid black;
+    border-collapse: collapse;
+    margin: 2px;
+    padding: 5px;
+    border-radius: 7px;
+    background-color: #353c63;
+    text-align: left;
+}
+table{
+    width: 60%;
+    margin: 10px;
+}
+.navbar {
+    padding: 10px;
+    background-color: #353c63;
+}
+.navbar ul {
+    margin: 0;
+    padding: 0;
+    
+}
+.navbar li {
+    list-style: none;
+    display: inline;
+}
+.navbar a {
+    color: white;
+    background-color: #353c63;
+    text-decoration: none;
+    padding: 7px;
+    font-weight: bold;
+}
+.navbar a:hover {
+    background-color: rgb(150, 100, 255);
+    border-bottom: 1px solid yellow;
+}
+/* project details page */
+.container{
+    background-color: #353c63;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    border: 1px solid rgb(175, 236, 236);
+    box-shadow: 5px 5px 5px #2e3458;
+}
+.tag-container{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.tag{
+    padding: 5px;
+    margin: 5px;
+    background-color: #485081;
+    color: white;
+    border-radius: 15px;
+}
+
+
+

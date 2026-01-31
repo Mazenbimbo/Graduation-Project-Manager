@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %} To Do List {% endblock %}
+{% block body %}
+<div class="flex flex-col items-center space-y-3 m-5">
+<h1 class="text-3xl font-extrabold">My Tasks</h1>
+<div class="flex flex-col items-center space-y-5 m-5 p-5 rounded-xl bg-[#353c63] w-[80%] border border-cyan-400">
+
+
+<form action="{{url_for('todo')}}" method="POST" class="flex justify-evenly items-center space-x-1 bg-cyan-800 rounded-xl w-full p-1">
+	<label for="task" class="font-bold">Task Description : </label>
+	<input type="text" name="task" placeholder="Add task here" class="rounded-xl p-2 m-1 w-[30%] text-black" required>
+	<label for="deadline" class="font-bold">Deadline : </label>
+	<input type="date" name="deadline" class="rounded-xl p-2 w-40 text-black" required>
+	<input type="submit" name="add_task" value="Add Task" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-200 font-bold">
+</form>
+<hr class="bg-gray-300 w-[80%]">
+<table class="w-full">
+	<tr class="bg-cyan-600">
+		<th class="rounded-ss-xl m-1">Task</th>
+		<th>Deadline</th>
+		<th>Status</th>
+		<th class="rounded-se-xl m-1">Action</th>
+	</tr>
+	<tr>
+	{% for task in tasks %}
+	<td class="w-[50%]">
+		<div class="font-bold ml-3">{{task.description|title}}</div>
+	</td>
+	<td>
+		<div class="flex justify-center font-bold m-1">{{task.deadline}}</div>
+	</td>
+	<td>
+		<div class="flex justify-center font-bold m-1">{{task.status}}</div>
+	</td>
+	<td>
+		<div class="flex justify-around font-bold p-2">
+		<form action="/change_status/{{task.tid}}" method="POST">
+			<!-- <input type="number" name="tid" value="{{task.tid}}" hidden> -->
+			<input type="submit" value="Mark as done" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">
+		</form>
+		<form action="/delete/task/{{task.tid}}" method="POST">
+			<input type="submit" name="delete" value="delete" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">
+		</form>
+		</div>
+	</td>
+	</tr>
+	{% endfor %}
+</table>
+</div>
+</div>
+{% endblock%}

@@ -1,0 +1,28 @@
+{%extends 'base.html'%}
+{%block title%}Supervisors sign up{%endblock%}
+{%block body%}
+<h1>Sign up</h1>
+<div>
+    <form action="{{url_for('supervisor_signup')}}" method="POST">
+        <input name="name" type="text" placeholder="Full Name" required><br>
+        <input name="phone" type="phone" placeholder="Phone Number" required><br>
+        <input name="specialties" type="text" placeholder="specialties" required><br>
+        <input name="email" type="email" placeholder="Email" required><br>
+        <select name="department" required>
+            <option>Computer Science</option>
+            <option>Information Systems</option>
+            <option>Business</option>
+            <option>Managment</option>
+        </select><br>
+        <select name="role" required>
+            <option>Doctor</option>
+            <option>Assistant</option>
+        </select><br>
+        <input name="password" type="password" placeholder="Password" required><br>
+        <input type="submit" value="submit" class="btn"><br>
+    </form>
+    {% if massage %}
+        {{massage}}
+    {% endif %}
+</div>
+{%endblock%}

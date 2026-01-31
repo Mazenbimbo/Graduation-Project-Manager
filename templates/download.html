@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title%} Download files {% endblock %}
+{% block body %} 
+
+	{% for file in files %}
+		<ul>
+			<li><a href='/download/{{file}}'>{{file}}</a></li>
+		</ul>
+	{%endfor%}
+
+{% endblock %}

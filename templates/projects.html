@@ -1,0 +1,44 @@
+{% extends 'base.html'%}
+{% block title %}Projects{% endblock %}
+{% block body %}
+<h1> {{this_year}}'s Projects</h1>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Fields</th>
+        <th>View Details</th>
+    </tr>
+    {% for project in projects %}
+        {% if this_year == project.year %}
+        <tr>
+            <td>{{project.pid}}</td>
+            <td>{{project.name}}</td>
+            <td>{{project.fields}}</td>
+            <td><a href="/project/{{project.pid}}">project details</a></td>
+            <td>{% if in_team == False%}<a href="/join/{{project.pid}}">Request to join</a>{% endif %}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+<hr>
+<h1> Old Projects</h1>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Fields</th>
+        <th>Link to Project</th>
+    </tr>
+    {% for project in projects %}
+        {% if this_year != project.year %}
+        <tr>
+            <td>{{project.pid}}</td>
+            <td>{{project.name}}</td>
+            <td>{{project.fields}}</td>
+            <td><a href="/project/{{project.pid}}">project details</a></td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+{% endblock %}

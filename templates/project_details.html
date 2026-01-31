@@ -1,0 +1,30 @@
+{% extends 'base.html'%}
+{% block title %}Projects{% endblock %}
+{% block head %} <link rel="stylesheet" href="/static/css/project_details.css"> {% endblock%}
+{% block body %}
+<div class="container">
+    <h2>{{project.name|title}}</h2>
+    <span class="project-data">ID: {{project.pid}}</span>
+    <span class="project-data">Year: {{project.year}}</span>
+    {% if id == project.pid %}
+    <button class="btn"><a class="aa" href="/supervisors">Register with a supervisor</a></button>
+    <button class="btn"><a class="aa" href="/friends">Add a friend to team</a></button>
+    {% endif %}
+    <div class="project-description-container">
+        <h3>Description</h3>
+        <pre class="project-description">{{project.description}}</pre>
+    </div>
+    <div class="tag-container">
+        <span>Fields :</span>
+        {% for field in fields %}
+            <span class="tag">{{field}}</span>
+        {% endfor %}
+    </div>
+    <h3>Team members :</h3><br>
+        {% for member in members %}
+            - {{member|title}}<br>
+        {% endfor %}
+    <h3>Subervisors</h3>
+    <h3>Similar Ideas</h3>
+</div>
+{% endblock %}

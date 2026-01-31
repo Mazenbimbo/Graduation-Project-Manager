@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title%}Supervisors{% endblock %}
+{% block body%}
+    <h1>Supervisors List</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>Role</th>
+            <th>Action</th>
+        </tr>
+        {% for supervisor in supervisors %}
+            <tr>
+                <td>supervisor.did</td>
+                <td>supervisor.name</td>
+                <td>supervisor.specialties</td>
+                <td>supervisor.role</td>
+                <td><button>Request Supervision</button></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

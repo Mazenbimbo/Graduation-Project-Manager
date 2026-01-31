@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %} Upload file {% endblock %}
+{% block body %}
+<div class="flex flex-col items-center m-5 space-y-5">
+<h1 class="text-3xl font-extrabold">Upload your photo</h1>
+<div class="flex flex-col items-center bg-gray-700 w-[30%] h-50 border border-syan-2 rounded-2xl p-5">
+    <form class="flex flex-col items-center" action="{{url_for('upload_file')}}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Edit" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full bg-blue-600 font-bold">
+    </form>
+    {% if massage %}
+    {{massage}}
+    {% endif %}
+</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{% block title %}{%endblock%}</title>
+    {% block head %}{% endblock%}
+</head>
+<body class="bg-[#12102B] text-white">
+<nav class="bg-[#353c63] p-3">
+  <ul class="flex justify-center space-x-5">
+    <li class="text-white font-bold"><button><a href='{{url_for('home')}}'>Home</a></button></li>
+    <li class="text-white font-bold"><button><a href='{{url_for('todo')}}'>Tasks</a></button></li>
+    <li class="text-white font-bold"><button><a href='{{url_for('notifications')}}'>Notifications</a></button></li>
+    <li class="text-white font-bold"><button><a href='{{url_for('my_account')}}'>My Account</a></button></li>
+  </ul>
+</nav>
+    {% block body%}
+    {%endblock%}
+
+    {% if message %}
+        <p class="msg">{{message}}</p>
+    {% endif%}
+</body>
+</html>
