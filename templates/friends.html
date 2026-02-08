@@ -6,13 +6,13 @@
 {% block body %}
 <div class="flex flex-col items-center space-y-3 m-5">
     <h2 class="text-3xl text-white font-bold">Friends</h2>
-    <div class="flex flex-col items-center justify-center space-y-4 m-5 p-5 rounded-xl bg-[#353c63] w-[60%] border border-cyan-400" >
+    <div class="grid grid-cols-3 gap-2 m-5 p-5 rounded-xl bg-[#353c63] w-[99%] border border-cyan-400" >
     {% for user in users %}
-        <div class="flex justify-center space-x-2 border border-cyan-600 rounded-xl p-2 w-full bg-[#12102B]"> <!-- main card -->
-            <div class="flex flex-col justify-center items-center"><!-- image card -->
+        <div class="grid grid-cols-8 border border-cyan-600 rounded-xl p-2 w-[420px] h-[150px] bg-[#12102B]"> <!-- main card -->
+            <div class="flex flex-col justify-start items-center pt-3"><!-- image card -->
                 <img src="{{user.image}}" style="width: 45px;height: 45px;border-radius: 100px;object-fit: cover;">
             </div>
-            <div class="flex flex-col space-y-2 w-[77%] p-2"><!-- name and skills card -->
+            <div class="flex flex-col space-y-2 col-span-4 p-2"><!-- name and skills card -->
                 <div class="flex flex-col"><!-- name -->
                     <strong>{{user.name|title}}</strong>
                     {% if user.in_team == True %}
@@ -20,10 +20,23 @@
                     {% endif %}
                 </div>
                 <div class="flex justify-start space-x-2 p-1"><!-- skills -->
-                    <span class="bg-gray-900 px-3 rounded-2xl border border-cyan-400">{{user.specialties}}</span>
+                    <span class="bg-gray-900 px-3 rounded-2xl border border-cyan-400 font-bold">{{user.specialties}}</span>
                 </div>
             </div>
-            <div class="flex flex-col items-start pt-4"> <!-- button card -->
+            <div class="flex flex-col items-center justify-start pt-3 col-span-3">
+                <div class="flex flex-col items-end justify-start w-[150px]"> <!-- button card -->
+                        {% if in_team == True %}
+                                {% if user.in_team == False%}
+                                    <form action="/req_to_add/{{user.pid}}" method="POST" style="display: inline;">
+                                        <input type="submit" value="Add to Team" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400">
+                                    </form>
+                                {% else %}
+                                    <span class="bg-gray-900 py-1 px-3 rounded-2xl border border-cyan-400">In Team</span>
+                                {% endif %}
+                            {% endif %}
+                    </div>
+            </div>
+            <!-- <div class="flex flex-col items-end justify-start pt-3 w-[150px]"> <!-- button card 
                 {% if in_team == True %}
                         {% if user.in_team == False%}
                             <form action="/req_to_add/{{user.pid}}" method="POST" style="display: inline;">
@@ -33,7 +46,7 @@
                             <span class="bg-gray-900 py-1 px-3 rounded-2xl border border-cyan-400">In Team</span>
                         {% endif %}
                     {% endif %}
-            </div>
+            </div> -->
         </div>
     {% endfor %}
     </div>

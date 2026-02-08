@@ -5,18 +5,18 @@
 <h1 class="text-3xl font-extrabold">Sign up</h1>
 <div class="flex flex-col items-center bg-gray-700 w-[30%] h-50 border border-syan-2 rounded-2xl p-5">
     <form action="{{url_for('sign_up')}}" method="POST">
-        <input name="name" type="text" placeholder="Full Name" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
-        <input name="phone" type="phone" placeholder="Phone Number" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
-        <input name="specialty" type="text" placeholder="specialty" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
-        <input name="email" type="email" placeholder="Email" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
-        <select name="department" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-gray-600" required>
+        <input name="name" type="text" placeholder="Full Name" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
+        <input name="phone" type="phone" placeholder="Phone Number" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
+        <input name="specialty" type="text" placeholder="specialty" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
+        <input name="email" type="email" placeholder="Email" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
+        <select name="department" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-gray-600 text-black" required>
             <option>Computer Science</option>
             <option>Information Systems</option>
             <option>Business</option>
             <option>Managment</option>
         </select>
-        <input name="year" type="year" placeholder="Graduation Year" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
-        <input name="password" type="password" placeholder="Password" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full" required>
+        <input name="year" type="year" placeholder="Graduation Year" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
+        <input name="password" type="password" placeholder="Password" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
         <input type="submit" value="Sign up" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full bg-blue-600 font-bold">
     </form>
     {% if massage %}

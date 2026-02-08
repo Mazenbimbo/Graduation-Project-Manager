@@ -1,27 +1,47 @@
 {% extends 'base.html'%}
 {% block title %}Add New Project{% endblock %}
 {% block body %}
-<h1>Add New Project</h1>
+<div class="flex flex-col items-center space-y-3 m-5">
+    <h2 class="text-3xl text-white font-bold">Add New Project</h2>
+	    <div class="flex justify-center space-x-4 m-5 p-5 rounded-xl bg-[#353c63] w-[70%] border border-cyan-400" >
 <form action="{{url_for('new_project')}}" method="POST">
 	<label for="name" style="font-weight: bold;">Project Name</label><br>
-	<input type="text" name="name"><br><br>
+	<input type="text" name="name" placeholder="Project Name Here" class="rounded-xl p-1 my-2 w-[30%] text-black"><br>
 	<label for="description" style="font-weight: bold;">Project Description</label><br>
-	<textarea name="description" rows="10" cols="70"></textarea><br><br>
+	<textarea name="description" rows="10" cols="70" placeholder="Project Description Here" class="rounded-xl p-1 my-2 w-full text-black"></textarea><br><br>
 
-	<h3>Included Fields</h3>
-	<input type="checkbox" name="AI">
-	<label for="AI" style="font-weight: bold;">AI</label>
-	<input type="checkbox" name="AI">
-	<label for="cyber" style="font-weight: bold;">Cyber Security</label>
-	<input type="checkbox" name="Networking">
-	<label for="Networking" style="font-weight: bold;">Networking</label>
-	<input type="checkbox" name="web">
-	<label for="web" style="font-weight: bold;">Web</label>
-	<input type="checkbox" name="mobile">
-	<label for="mobile" style="font-weight: bold;">Mobile</label>
-	<input type="checkbox" name="embedded">
-	<label for="embedded" style="font-weight: bold;">Embedded</label><br><br>
+	<hr>
 
-	<input type="submit" name="submit">
+	<h3 class="text-xl text-white font-bold mt-2">Included Fields</h3>
+	<div class="flex justify-evenly items-center space-x-1 my-3">
+		<div>
+			<input type="checkbox" name="AI">
+			<label for="AI" style="font-weight: bold;">AI</label>
+		</div>
+		<div>
+			<input type="checkbox" name="Cyber Security">
+			<label for="cyber" style="font-weight: bold;">Cyber Security</label>
+		</div>
+		<div>
+			<input type="checkbox" name="Networking">
+			<label for="Networking" style="font-weight: bold;">Networking</label>
+		</div>
+	<div>
+			<input type="checkbox" name="web">
+			<label for="web" style="font-weight: bold;">Web</label>
+	</div>
+	<div>
+			<input type="checkbox" name="mobile">
+			<label for="mobile" style="font-weight: bold;">Mobile</label>
+	</div>
+	<div>
+			<input type="checkbox" name="embedded">
+			<label for="embedded" style="font-weight: bold;">Embedded</label>
+	</div>
+</div>
+<hr>
+	<input type="submit" name="submit" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 mt-3 rounded-2xl border border-cyan-200 font-bold">
 </form>
+</div>
+</div>
 {% endblock%}
