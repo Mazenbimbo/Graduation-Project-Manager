@@ -19,21 +19,32 @@ def register_routes(app,db):
         # session['logged'] = False
         return redirect('/')
         
-    @app.route("/my_account")
-    def my_account():
+    @app.route("/account/<id>")
+    def account(id):
         if 'logged' in session.keys(): 
-            name = session['name']
-            phone = session['phone']
-            specialties = session['specialties']
-            email = session['email']
-            department = session['department']
-            year = session['year']
-            in_team = session['in_team']
-            project_id = session['project_id']
-            image = '/static/uploads/my_photo.jpg'
-            if 'image' in session.keys() :
-                image = session['image']
-            return render_template('account.html',specialties=specialties, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image)
+            if id == 'me':
+                name = session['name']
+                phone = session['phone']
+                specialties = session['specialties']
+                email = session['email']
+                department = session['department']
+                year = session['year']
+                in_team = session['in_team']
+                project_id = session['project_id']
+                image = session['image'] if 'image' in session.keys() else '/static/uploads/my_photo.jpg'
+                return render_template('account.html',authorized=True,specialties=specialties, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image)
+            else :
+                student = Student.query.get_or_404(id)
+                name = student.name
+                department = student.department
+                year = student.year
+                in_team = student.in_team
+                image = student.image if student.image else '/static/uploads/my_photo.jpg' 
+                specialties = student.specialties
+                project_id = student.project_id
+                phone = student.phone
+                email = student.email
+                return render_template('account.html',authorized=False,specialties=specialties, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image)
         else :
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
@@ -80,7 +91,7 @@ def register_routes(app,db):
                 p.password = password
                 db.session.commit()
 
-                return redirect('/my_account')
+                return redirect('/account')
         else:
             return redirect('/sign-in')
 
@@ -154,7 +165,7 @@ def register_routes(app,db):
                     img.image = f"/static/uploads/{file.filename}"
                     db.session.commit()
                     session['image'] = f"/static/uploads/{file.filename}"
-                    return redirect(url_for('my_account'))
+                    return redirect(url_for('account'))
                 else :
                     return render_template('upload_file.html', message='Extension Is Not Allowed!')
         else:
@@ -416,3 +427,21 @@ def register_routes(app,db):
             })
         else :
             return jsonify({"error":"Not authenticated"})
+    @app.route('/api/login',methods=['POST']) # mobile student login
+    def login_api():
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if Student.query.filter_by(email=email).count() > 0 :
+            student = Student.query.filter_by(email=email).first()
+            if student and student.password == password :
+                return jsonify({
+                    "name":student.name,
+                    "specialties":student.specialties,
+                    "department":student.department,
+                    "grad_year":student.year,
+                    "image":student.image,
+                    "in_team":student.in_team,
+                    "project_id":student.project_id
+                })
+            else : return jsonify({"message":"Invalid credintials!"})
+        else : return jsonify({"message":"Invalid credintials!"})
