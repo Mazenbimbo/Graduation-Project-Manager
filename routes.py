@@ -91,7 +91,7 @@ def register_routes(app,db):
                 p.password = password
                 db.session.commit()
 
-                return redirect('/account')
+                return redirect('/account/me')
         else:
             return redirect('/sign-in')
 
@@ -165,7 +165,7 @@ def register_routes(app,db):
                     img.image = f"/static/uploads/{file.filename}"
                     db.session.commit()
                     session['image'] = f"/static/uploads/{file.filename}"
-                    return redirect(url_for('account'))
+                    return redirect(url_for('account')) # will cause error
                 else :
                     return render_template('upload_file.html', message='Extension Is Not Allowed!')
         else:
@@ -224,7 +224,7 @@ def register_routes(app,db):
     def friends():
         if 'logged' in session.keys() :
             friends = Student.query.all()
-            return render_template('friends.html', users=friends, in_team=session['in_team'])
+            return render_template('friends.html', users=friends, in_team=session['in_team'],my_id=session['pid'])
         else:
             return redirect('/sign-in')
     @app.route('/req_to_add/<int:id>',methods=['POST'])
@@ -427,8 +427,8 @@ def register_routes(app,db):
             })
         else :
             return jsonify({"error":"Not authenticated"})
-    @app.route('/api/login',methods=['POST']) # mobile student login
-    def login_api():
+    @app.route('/api/login',methods=['POST']) # Make input data JSON
+    def api_login():
         email = request.form.get('email')
         password = request.form.get('password')
         if Student.query.filter_by(email=email).count() > 0 :
@@ -443,5 +443,22 @@ def register_routes(app,db):
                     "in_team":student.in_team,
                     "project_id":student.project_id
                 })
-            else : return jsonify({"message":"Invalid credintials!"})
-        else : return jsonify({"message":"Invalid credintials!"})
+            else : return jsonify({"message":"Invalid credintials!!!!!1"})
+        else : return jsonify({"message":"Invalid credintials!!!!!!2"})
+
+    @app.route('/api/signup',methods=['POST']) # Make input data JSON
+    def api_signup():
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            email = request.form.get('email')
+            specialties = request.form.get('specialties')
+            year = request.form.get('year')
+            department = request.form.get('department')
+            password = request.form.get('password')
+            if Student.query.filter_by(email=email).count()> 0 :
+                    return jsonify({"message":"Email already exist!"})
+            else :
+                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year, password=password)
+                db.session.add(student)
+                db.session.commit()
+                return jsonify({"message":"User registered successfully!"})

@@ -14,7 +14,7 @@
             </div>
             <div class="flex flex-col space-y-2 col-span-4 p-2"><!-- name and skills card -->
                 <div class="flex flex-col"><!-- name -->
-                    <strong>{{user.name|title}}</strong>
+                    <strong><a href="{%if user.pid == my_id %}/account/me{%else%}/account/{{user.pid}}{%endif%}">{{user.name|title}}</a></strong>
                     {% if user.in_team == True %}
                     <span class="text-gray-500 text-sm">Project ID: {{user.project_id}}</span>
                     {% endif %}
