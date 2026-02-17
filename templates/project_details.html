@@ -1,15 +1,21 @@
 {% extends 'base.html'%}
 {% block title %}Projects{% endblock %}
-{% block head %} <link rel="stylesheet" href="/static/css/project_details.css"> {% endblock%}
 {% block body %}
-<div class="container">
-    <h2>{{project.name|title}}</h2>
-    <span class="project-data">ID: {{project.pid}}</span>
-    <span class="project-data">Year: {{project.year}}</span>
-    {% if id == project.pid %}
-    <button class="btn"><a class="aa" href="/supervisors">Register with a supervisor</a></button>
-    <button class="btn"><a class="aa" href="/friends">Add a friend to team</a></button>
-    {% endif %}
+<div class="flex flex-col items-center space-y-3 m-5">
+    <div class="flex flex-col items-strat space-x-4 m-5 p-5 rounded-xl bg-[#353c63] w-[70%] border border-cyan-400" >
+    <h2 class="text-3xl font-extrabold">{{project.name|title}}</h2>
+    <div class="flex">
+        <div class="flex flex-col w-[50%] bg-gray-600">
+            <span class="project-data">ID: {{project.pid}}</span>
+            <span class="project-data">Year: {{project.year}}</span>
+        </div>
+        <div class="flex flex-col space-y-1 items-center bg-gray-300 w-[50%]">
+            {% if id == project.pid %}
+            <button class="bg-cyan-800 hover:bg-cyan-500 py-1 px-1 rounded-2xl border border-cyan-400 w-[60%]"><a href="/supervisors">Register with a supervisor</a></button>
+            <button class="bg-cyan-800 hover:bg-cyan-500 py-1 px-1 rounded-2xl border border-cyan-400 w-[60%]"><a href="/friends">Add a friend to team</a></button>
+            {% endif %}
+        </div>
+    </div>
     <div class="project-description-container">
         <h3>Description</h3>
         <pre class="project-description">{{project.description}}</pre>
@@ -26,5 +32,6 @@
         {% endfor %}
     <h3>Subervisors</h3>
     <h3>Similar Ideas</h3>
+    </div>
 </div>
 {% endblock %}
