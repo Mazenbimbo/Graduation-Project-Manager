@@ -323,8 +323,9 @@ def register_routes(app,db):
             members=project.get_members()
             members_name = []
             for member in members :
-                members_name.append(f"{Student.query.get_or_404(member).name} - (Student ID : {member})")
-            return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],members=members_name)
+                members_name.append(f"{Student.query.get_or_404(member).name}")
+            compined = zip(members_name, members)
+            return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],compined=compined)
         else:
             return redirect('/sign-in')
     @app.route('/join/<int:id>',methods=['GET'])
