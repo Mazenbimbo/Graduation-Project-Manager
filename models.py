@@ -48,6 +48,14 @@ class Project(db.Model):
     assistent = db.Column(db.Text(200))
     leader = db.Column(db.Integer,nullable=False)
     team_members = db.Column(db.Text(200))
+    attachments = db.Column(db.Text(200))
+    
+
+    def set_attachments(self,attachments):
+        self.attachments = json.dumps(attachments)
+
+    def get_attachment(self):
+        return json.loads(self.attachments)
 
     def set_members(self,members):
         self.team_members = json.dumps(members)
