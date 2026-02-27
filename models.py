@@ -8,9 +8,7 @@ class Student(db.Model):
     email = db.Column(db.Text)
     phone = db.Column(db.Text)
     specialties = db.Column(db.Text)
-    specialty_level = db.Column(db.Integer)
     password = db.Column(db.Text, nullable = False)
-    admin = db.Column(db.Boolean,default=False) # remove this
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
     in_team = db.Column(db.Boolean,default=False,nullable=False)
     year = db.Column(db.Integer,nullable=False)
@@ -84,6 +82,7 @@ class Supervisor(db.Model):
     role = db.Column(db.Text(10),nullable=False)
     projects = db.Column(db.Text(200),nullable=True)
     password = db.Column(db.Text(200), nullable=False)
+    notifications = db.relationship('Supervisor_notification',backref='supervisor',lazy=True)
 
     def __repr__(self):
         return f"Supervisor ID:{self.did}, name:{self.name}"    
@@ -99,3 +98,14 @@ class Notification(db.Model):
 
     def __repr__(self):
         return f"notification action: {self.action}"
+
+class Supervisor_notification(db.Model):
+    __tablename__ = 'supervisor_notification'
+    nid = db.Column(db.Integer,primary_key=True)
+    action = db.Column(db.String,nullable=False) # actions : supervise - 
+    _from_id = db.Column(db.Integer,nullable=True)
+    _from_name = db.Column(db.String,nullable=True)
+    supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.did'),nullable=False)
+
+    def __repr__(self):
+        return f'from {self._from_id}, action {self.action}'

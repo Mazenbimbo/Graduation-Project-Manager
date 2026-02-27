@@ -138,6 +138,10 @@ def register_routes(app,db):
                     session['logged'] = True
                     session['project_id'] = student.project_id
                     session['in_team'] = student.in_team
+                    if request.form.get('supervisor'):
+                        session['role'] = 2
+                    else : 
+                        session['role'] = 3
                     return redirect('/')
                 else :
                     return render_template('sign_in.html',message ="Wrong email or password!")
@@ -395,6 +399,9 @@ def register_routes(app,db):
             return render_template('supervisors.html',supervisors=supervisors)
         else:
             return redirect('/sign-in')
+    @app.route('/my_teams')
+    def my_teams():
+        return 'my teams'
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():

@@ -25,7 +25,7 @@
 		<span class="font-bold">{{phone}}</span>
 	</div>
 	<div class="w-full bg-[#12102B] p-3 rounded-xl flex flex-col items-start">
-		<span class="text-gray-300 text-md">specialties</span>
+		<span class="text-gray-300 text-md">Specialty</span>
 		<span class="font-bold">{{specialties|upper}}</span>
 	</div>
 	<div class="w-full bg-[#12102B] p-3 rounded-xl flex flex-col items-start">
@@ -33,7 +33,7 @@
 		{% if in_team == False%}
 		<span class="font-bold">Not in team</span>
 		{% else %}
-		<span class="font-bold">{{project_id}}</span>
+		<span class="font-bold">{{project_id}} • <a href="project/{{project_id}}" class="underline">Project Link</a></span>
 		{% endif %}
 	</div>
 </div>
