@@ -9,7 +9,7 @@
         <th class="rounded-ss-xl m-1">ID</th>
         <th>Name</th>
         <th>Fields</th>
-        <th class="rounded-se-xl m-1">View Details</th>
+        <th class="rounded-se-xl m-1">Actions</th>
     </tr>
     {% for project in projects %}
         {% if this_year == project.year %}
@@ -23,8 +23,13 @@
                     {% endfor %}
                 </div>
             </td>
-            <td><div class="flex justify-around font-bold p-2"><a href="/project/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">project details</a></div></td>
-            <td>{% if in_team == False%}<a href="/join/{{project.pid}}">Request to join</a>{% endif %}</td>
+            <td>
+                <div class="flex justify-around font-bold p-2">
+                    <a href="/project/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">project details</a>
+                    {% if in_team == False%}<a href="/join/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">Request to join</a>{% endif %}
+                </div>
+            </td>
+            <td></td>
         </tr>
         {% endif %}
     {% endfor %}
@@ -36,7 +41,7 @@
         <th class="rounded-ss-xl m-1">ID</th>
         <th>Name</th>
         <th>Fields</th>
-        <th class="rounded-se-xl m-1">View Details</th>
+        <th class="rounded-se-xl m-1">Actions</th>
     </tr>
     {% for project in projects %}
         {% if this_year != project.year %}
@@ -50,8 +55,13 @@
                     {% endfor %}
                 </div>
             </td>
-            <td><div class="flex justify-around font-bold p-2"><a href="/project/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">project details</a></div></td>
-            <td>{% if in_team == False%}<a href="/join/{{project.pid}}">Request to join</a>{% endif %}</td>
+            <td>
+                <div class="flex justify-around font-bold p-2">
+                    <a href="/project/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">project details</a>
+                    {% if in_team == False%}<a href="/join/{{project.pid}}" class="bg-cyan-800 hover:bg-cyan-500 px-3 rounded-md border border-cyan-400">Request to join</a>{% endif %}
+                </div>
+            </td>
+            <td></td>
         </tr>
         {% endif %}
     {% endfor %}

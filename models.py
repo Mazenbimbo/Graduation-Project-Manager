@@ -81,6 +81,7 @@ class Supervisor(db.Model):
     department = db.Column(db.Text(10),nullable=True)
     role = db.Column(db.Text(10),nullable=False)
     projects = db.Column(db.Text(200),nullable=True)
+    image = db.Column(db.Text,default='/static/uploads/user.png')
     password = db.Column(db.Text(200), nullable=False)
     notifications = db.relationship('Supervisor_notification',backref='supervisor',lazy=True)
 

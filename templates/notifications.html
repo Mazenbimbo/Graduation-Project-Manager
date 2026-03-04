@@ -11,6 +11,7 @@
         <span>{{notification._from_name|title}} wants to add you to their team!</span>
         <span>
         <form action="/add_to_team/{{notification._from_id}}" method="POST" style="display: inline;">
+            <input type="text" name="nid" value="{{notification.nid}}" hidden> 
             <input type="submit" value="Accept" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400">
         </form>
         </span>

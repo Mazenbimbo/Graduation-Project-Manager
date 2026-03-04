@@ -16,6 +16,7 @@
 {% endif %}
 <hr class="bg-gray-300 w-[80%]">
 <div class="flex flex-col items-center space-y-3 w-[80%]"> <!--info cards-->
+	<!-- {% if authorized or role == 2 %} -->
 	<div class="w-full bg-[#12102B] p-3 rounded-xl flex flex-col items-start">
 		<span class="text-gray-300 text-md">Email</span>
 		<span class="font-bold">{{email}}</span>
@@ -24,6 +25,7 @@
 		<span class="text-gray-300 text-md">Phone Number</span>
 		<span class="font-bold">{{phone}}</span>
 	</div>
+	<!-- {% endif %} --> 
 	<div class="w-full bg-[#12102B] p-3 rounded-xl flex flex-col items-start">
 		<span class="text-gray-300 text-md">Specialty</span>
 		<span class="font-bold">{{specialties|upper}}</span>
@@ -33,7 +35,7 @@
 		{% if in_team == False%}
 		<span class="font-bold">Not in team</span>
 		{% else %}
-		<span class="font-bold">{{project_id}} • <a href="project/{{project_id}}" class="underline">Project Link</a></span>
+		<span class="font-bold">{{project_id}} • <a href="/project/{{project_id}}" class="underline">Project Link</a></span>
 		{% endif %}
 	</div>
 </div>

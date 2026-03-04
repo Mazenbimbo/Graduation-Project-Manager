@@ -22,7 +22,7 @@ def register_routes(app,db):
     @app.route("/account/<id>")
     def account(id):
         if 'logged' in session.keys(): 
-            if id == 'me':
+            if id == 'me' or id == session['pid']:
                 name = session['name']
                 phone = session['phone']
                 specialties = session['specialties']
@@ -132,7 +132,6 @@ def register_routes(app,db):
                     session['email'] = student.email
                     session['year'] = student.year
                     session['department'] = student.department
-                    session['admin'] = student.admin
                     session['image'] = student.image
                     session['password'] = student.password
                     session['logged'] = True
@@ -238,7 +237,7 @@ def register_routes(app,db):
         db.session.commit()
         return redirect('/friends')
     @app.route('/add_to_team/<int:id>',methods=['POST'])
-    def add_to_team(id):
+    def add_to_team(id): # accepting team leader req to join his team
         new_member = Student.query.get_or_404(session['pid'])
         project_id = Student.query.get_or_404(id).project_id
         project = Project.query.get_or_404(project_id)
@@ -248,6 +247,9 @@ def register_routes(app,db):
         new_member.in_team = True
         new_member.project_id = project_id
         session['project_id'] = project_id
+        nid = request.form.get('nid')
+        deleted_notification = Notification.query.get_or_404(nid) 
+        db.session.delete(deleted_notification)
         db.session.commit()
         return redirect(f'/project/{session['project_id']}')
 
