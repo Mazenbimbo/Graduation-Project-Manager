@@ -174,16 +174,6 @@ def register_routes(app,db):
         else:
             return redirect('/sign-in')
 
-    # @app.route('/download_files') # remove this one
-    # def download():
-    #     files_list = os.listdir(app.config['UPLOAD_FOLDER'])
-    #     return render_template('download.html',files=files_list)
-
-    # @app.route('/download/<string:name>') # remove this one 
-    # def downlaod_file(name):
-    #     return send_from_directory(app.config['UPLOAD_FOLDER'],name)
-
-
     @app.route('/todo',methods=['GET','POST'])
     def todo():
         if 'logged' in session.keys() :
@@ -236,22 +226,38 @@ def register_routes(app,db):
         db.session.add(new_notification)
         db.session.commit()
         return redirect('/friends')
-    @app.route('/add_to_team/<int:id>',methods=['POST'])
-    def add_to_team(id): # accepting team leader req to join his team
-        new_member = Student.query.get_or_404(session['pid'])
-        project_id = Student.query.get_or_404(id).project_id
-        project = Project.query.get_or_404(project_id)
-        members = project.get_members()
-        members.append(session['pid'])
-        project.set_members(members)
-        new_member.in_team = True
-        new_member.project_id = project_id
-        session['project_id'] = project_id
-        nid = request.form.get('nid')
+    @app.route('/add_to_team/<int:nid>/<int:id>/<string:action>',methods=['POST'])
+    def add_to_team(nid, id, action): # accepting team leader req to join his team
+        if action == 'accept' : 
+            new_member = Student.query.get_or_404(session['pid'])
+            project_id = Student.query.get_or_404(id).project_id
+            project = Project.query.get_or_404(project_id)
+            members = project.get_members()
+            members.append(session['pid'])
+            project.set_members(members)
+            new_member.in_team = True
+            new_member.project_id = project_id
+            session['project_id'] = project_id
         deleted_notification = Notification.query.get_or_404(nid) 
         db.session.delete(deleted_notification)
         db.session.commit()
         return redirect(f'/project/{session['project_id']}')
+
+
+    @app.route('/join/<int:id>',methods=['GET']) # req to join a team
+    def join(id): # bug : reduntent join request
+        if 'logged' in session.keys():
+            project = Project.query.get(id)
+            notification = Notification(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader)
+            db.session.add(notification)
+            db.session.commit()
+            return redirect('/projects')
+        else:
+            return redirect('/sign-in')
+            
+    @app.route('/accept_join_req',methods=['POST']) # team leader accepted join req
+    def accept_join_req():
+        return ''
 
     @app.route('/delete/user/<int:id>',methods=['POST'])
     def delete_student(id):
@@ -263,15 +269,6 @@ def register_routes(app,db):
         else:
             return redirect('/sign-in')
 
-    # @app.route('/make_admin/<int:id>',methods=['GET']) # remove this (critical)
-    # def make_admin(id):
-    #     if 'logged' in session.keys() :
-    #         p = Student.query.get_or_404(id)
-    #         p.admin = True
-    #         db.session.commit()
-    #         return redirect('/friends')
-    #     else:
-    #             return redirect('/sign-in')
     @app.route('/new_project',methods=['POST','GET'])
     def new_project():
         if 'logged' in session.keys() :
@@ -334,21 +331,7 @@ def register_routes(app,db):
             return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],compined=compined)
         else:
             return redirect('/sign-in')
-    @app.route('/join/<int:id>',methods=['GET'])
-    def join(id): # bug : reduntent join request
-        if 'logged' in session.keys():
-            project = Project.query.get(id)
-            notification = Notification(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader)
-            db.session.add(notification)
-            db.session.commit()
-            return redirect('/projects')
-        else:
-            return redirect('/sign-in')
 
-    # @app.route('/add_to_team')
-    # def add_to_team():
-    #     project = Project.query.get_or_404(session['project_id'])
-    #     project.
     @app.route('/supervisor_signup',methods=['GET','POST'])
     def supervisor_signup(): # test for any empty data and different http methods
         if request.method == 'GET':

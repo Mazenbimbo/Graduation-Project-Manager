@@ -31,7 +31,7 @@
     <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Team members -->
         <h3 class="text-xl font-extrabold mb-1">Team members</h3>
         {% for a,b in compined %}
-            <a href="/account/{{b}}" class="w-full hover:bg-[#353c63] rounded-xl p-2"><span class="text-gray-300">{{a}}</span></a>
+            <a href="/account/{{b}}" class="w-full hover:bg-[#353c63] rounded-xl p-2"><span class="text-gray-300">{{a|title}}</span></a>
         {% endfor %}
     </div>
     <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Subervisors -->
