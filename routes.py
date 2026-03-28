@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify
+from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify,flash
 from markupsafe import escape
 from models import Student,Task,Project,Supervisor,Notification
 from werkzeug.utils import secure_filename
@@ -71,7 +71,8 @@ def register_routes(app,db):
                 p = Student.query.get_or_404(session['pid'])
 
                 if Student.query.filter_by(email=email).count() > 0 and  p.email != email:
-                    return render_template('edit_info.html', message="email already exist!") 
+                    flash("email already exist!","error")
+                    return render_template('edit_info.html') 
 
                 session['name'] = name
                 session['specialties'] = specialties
@@ -108,7 +109,8 @@ def register_routes(app,db):
             department = request.form.get('department')
             password = request.form.get('password')
             if Student.query.filter_by(email=email).count()> 0 :
-                    return render_template('sign_up.html', message="email already exist!")
+                    flash("email already exist!","error")
+                    return render_template('sign_up.html')
             else :
                 student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year, password=password)
                 db.session.add(student)
@@ -143,7 +145,8 @@ def register_routes(app,db):
                         session['role'] = 3
                     return redirect('/')
                 else :
-                    return render_template('sign_in.html',message ="Wrong email or password!")
+                    flash("Wrong email or password!","error")
+                    return render_template('sign_in.html')
         elif request.method == 'GET':
             return render_template('sign_in.html')
 
@@ -151,12 +154,12 @@ def register_routes(app,db):
     def choose_role():
         return render_template('roles.html')
     # ------------ uploading files -----------------
-    ALLOWED_EXTENSIONS = {'png','jpg','jpeg','gif'}
+    ALLOWED_EXTENSIONS = {'png','jpg','jpeg','gif','pdf'} 
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
 
-    @app.route('/upload', methods=['GET','POST'])
-    def upload_file():
+    @app.route('/upload/<string:_type>', methods=['GET','POST']) # implement full protection and consider error handling
+    def upload_file(_type):
         if 'logged' in session.keys() :
             if request.method == 'GET':
                 return render_template('upload_file.html')
@@ -164,16 +167,46 @@ def register_routes(app,db):
                 file = request.files['file']
                 if allowed_file(file.filename):
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(file.filename)))
-                    img = Student.query.get_or_404(session['pid'])
-                    img.image = f"/static/uploads/{file.filename}"
-                    db.session.commit()
-                    session['image'] = f"/static/uploads/{file.filename}"
-                    return redirect(url_for('account')) # will cause error
+                    if _type == "image" : 
+                        img = Student.query.get_or_404(session['pid'])
+                        img.image = f"/static/uploads/{file.filename}"
+                        db.session.commit()
+                        session['image'] = f"/static/uploads/{file.filename}"
+                        return redirect(url_for('account')) # will cause error
+                    elif _type == "attachment": 
+                        my_project = Project.query.get_or_404(session['project_id'])
+                        attachments = my_project.get_attachment()
+                        attachments.append(f"/static/uploads/{file.filename}")
+                        my_project.set_attachments(attachments)
+                        db.session.commit()
+                        return redirect(f'/project/{session["project_id"]}')
                 else :
-                    return render_template('upload_file.html', message='Extension Is Not Allowed!')
+                    flash('Extension Is Not Allowed!','error')
+                    return render_template('upload_file.html')
         else:
             return redirect('/sign-in')
 
+    @app.route('/remove_attachment',methods=['POST'])
+    def remove_attachment():
+        file_path = request.form.get('file_path')
+        full_file_path = app.config['PROJECT_DIR']+file_path
+        if os.path.exists(full_file_path) : 
+            os.remove(full_file_path)
+            my_project = Project.query.get_or_404(session['project_id'])
+            attachments = my_project.get_attachment()
+            if file_path in attachments :
+                attachments.remove(file_path)
+                my_project.set_attachments(attachments)
+                db.session.commit()
+                return redirect(f'/project/{session["project_id"]}')
+            else : 
+                flash(f'{file_path} does not exist!')
+                return redirect(f'/project/{session["project_id"]}')
+        else : 
+            flash(f'{file_path} does not exist!')
+            return redirect(f'/project/{session["project_id"]}')
+
+        
     @app.route('/todo',methods=['GET','POST'])
     def todo():
         if 'logged' in session.keys() :
@@ -233,11 +266,14 @@ def register_routes(app,db):
             project_id = Student.query.get_or_404(id).project_id
             project = Project.query.get_or_404(project_id)
             members = project.get_members()
-            members.append(session['pid'])
-            project.set_members(members)
-            new_member.in_team = True
-            new_member.project_id = project_id
-            session['project_id'] = project_id
+            if len(members) < 6 : 
+                members.append(session['pid'])
+                project.set_members(members)
+                new_member.in_team = True
+                new_member.project_id = project_id
+                session['project_id'] = project_id
+            else :
+                flash('Team is full!','error')
         deleted_notification = Notification.query.get_or_404(nid) 
         db.session.delete(deleted_notification)
         db.session.commit()
@@ -328,7 +364,7 @@ def register_routes(app,db):
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],compined=compined)
+            return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],compined=compined,attachments = project.get_attachment())
         else:
             return redirect('/sign-in')
 
@@ -346,7 +382,8 @@ def register_routes(app,db):
             password = request.form.get('password')
 
             if Supervisor.query.filter_by(email=email).count() > 0 :
-                return render_template('sign_in.html',message='Email already exist!') 
+                flash('Email already exist!','error')
+                return render_template('sign_in.html') 
             else :
                 supervisor = Supervisor(name=name,email=email,phone=phone,specialties=specialties,department=department,role=role,password=password)
                 db.session.add(supervisor)
@@ -374,7 +411,8 @@ def register_routes(app,db):
                     session['role'] = supervisor.role
                     return redirect('/')
                 else :
-                    return render_template('supervisor_signin.html',message ="Wrong email or password!")
+                    flash("Wrong email or password!","error")
+                    return render_template('supervisor_signin.html')
         elif request.method == 'GET':
             return render_template('supervisor_signin.html')
     @app.route('/supervisors') # make the supervisors list only from same department 

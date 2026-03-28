@@ -9,6 +9,7 @@ def create_app():
     app.secret_key = 'SOME KEY'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./data.db'
     app.config['UPLOAD_FOLDER'] = '/home/mazen/gpm/static/uploads/'
+    app.config['PROJECT_DIR'] = '/home/mazen/gpm'
     db.init_app(app)
     from routes import register_routes
     register_routes(app,db)

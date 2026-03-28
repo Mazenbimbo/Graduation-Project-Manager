@@ -34,11 +34,37 @@
             <a href="/account/{{b}}" class="w-full hover:bg-[#353c63] rounded-xl p-2"><span class="text-gray-300">{{a|title}}</span></a>
         {% endfor %}
     </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Subervisors -->
-        <h3 class="text-xl font-extrabold mb-1">Subervisors</h3>
+    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Supervisors -->
+        <h3 class="text-xl font-extrabold mb-1">Supervisors</h3>
     </div>
     <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Attachments -->
         <h3 class="text-xl font-extrabold mb-1">Attachments</h3>
+        <div class="flex space-x-1">
+            <div class="flex flex-col w-[50%]">
+                {% for attachment in attachments %}
+                    {% if attachment != [] %}
+                    <a href="{{attachment}}" class="text-blue-500 underline">{{attachment}}</a>
+                    <form action="/remove_attachment" method="post">
+                        <input type="text" name='file_path' value="{{attachment}}" hidden>
+                        <input type="submit" value="remove" value="Upload" class="rounded-xl p-1 m-1 w-fit bg-blue-600 font-bold">
+                    </form>
+                    <br>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="w-[50%]">
+                <form method="post" action="/upload/attachment" enctype="multipart/form-data">
+                    <input type="file" name="file" class="bg-gray-600 rounded-xl p-1 w-[80%]">
+                    <input type="submit" value="Upload" class="rounded-xl p-1 m-1 w-[30%] bg-blue-600 font-bold">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Discussions -->
+        <h3 class="text-xl font-extrabold mb-1">Discussions</h3>
+        <div class="grid grid-cols-3">
+
+        </div>
     </div>
     <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Similar Ideas -->
         <h3 class="text-xl font-extrabold mb-1">Similar Ideas</h3>

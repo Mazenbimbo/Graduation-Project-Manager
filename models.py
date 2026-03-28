@@ -53,7 +53,7 @@ class Project(db.Model):
         self.attachments = json.dumps(attachments)
 
     def get_attachment(self):
-        return json.loads(self.attachments)
+        return json.loads(self.attachments) if self.attachments else []
 
     def set_members(self,members):
         self.team_members = json.dumps(members)

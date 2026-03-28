@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> (CDN Script) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
     <title>{% block title %}{%endblock%}</title>
     {% block head %}{% endblock%}
 </head>
@@ -28,9 +29,12 @@
 </nav>
     {% block body%}
     {%endblock%}
-
-    {% if message %}
-        <p class="msg">{{message}}</p>
+  {% with messages = get_flashed_messages(with_categories=false) %}
+    {% if messages %}
+      {% for message in messages%}
+        <alert>{{message}}</alert>
+      {% endfor %}
     {% endif%}
+  {% endwith%}
 </body>
 </html>
