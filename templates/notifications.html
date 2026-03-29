@@ -19,8 +19,15 @@
         </span>
     {% elif notification.action == 'join' %}
         <span>{{notification._from_name|title}} wants to join your team!</span>
-        <span><button class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400"><a href="x">Accept</a></button></span>
-        <span><button class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400"><a href="x">Deny</a></button></span>
+
+        <span>
+        <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/accept" method="POST" style="display: inline;">
+            <input type="submit" value="Accept" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400">
+        </form>
+        <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/deny" method="POST" style="display: inline;">
+            <input type="submit" value="Deny" class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400">
+        </form>
+        </span>
     {% elif notification.action == 'supervise' %}
         <span>{{notification._from_name|title}} wants to add you as a supervisor to his team!</span>
         <span><button class="bg-cyan-800 hover:bg-cyan-500 py-1 px-3 rounded-2xl border border-cyan-400"><a href="x">Accept</a></button></span>

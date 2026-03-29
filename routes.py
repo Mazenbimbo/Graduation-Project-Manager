@@ -288,16 +288,37 @@ def register_routes(app,db):
     def join(id): # bug : reduntent join request
         if 'logged' in session.keys():
             project = Project.query.get(id)
-            notification = Notification(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader)
-            db.session.add(notification)
-            db.session.commit()
+            if Notification.query.filter_by(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader).count()<1:
+                notification = Notification(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader)
+                db.session.add(notification)
+                db.session.commit()
+                flash("Request sent!")
+            else :
+                flash("Request already sent")
             return redirect('/projects')
         else:
             return redirect('/sign-in')
             
-    @app.route('/accept_join_req',methods=['POST']) # team leader accepted join req
-    def accept_join_req():
-        return ''
+    @app.route('/resp_join_req/<int:nid>/<int:from_id>/<string:action>',methods=['POST']) # team leader accepted join req
+    def resp_join_req(nid, from_id, action):
+        if action == 'accept':
+            project = Project.query.get_or_404(session['project_id'])
+            members = project.get_members()
+            members.append(from_id)
+            project.set_members(members)
+
+            student = Student.query.get_or_404(from_id)
+            student.in_team = True
+            student.project_id = session['project_id']
+
+            notification = Notification.query.get_or_404(nid)
+            db.session.delete(notification)
+            db.session.commit()
+        else :
+            notification = Notification.query.get_or_404(nid)
+            db.session.delete(notification)
+            db.session.commit()
+        return redirect('/notifications')
 
     @app.route('/delete/user/<int:id>',methods=['POST'])
     def delete_student(id):
