@@ -363,8 +363,22 @@ def register_routes(app,db):
                 project = Project.query.filter_by(description=description).first()
                 project.set_members(members)
                 project_id = project.pid
+
                 student = Student.query.get_or_404(session['pid'])
-                student.project_id = project_id
+                if not student.project_id : 
+                    student.project_id = project_id
+                    session['project_id'] = project_id
+                else :
+                    old_project = Project.query.get_or_404(student.project_id)
+                    members = old_project.get_members()
+                    if len(members) > 1 : 
+                        old_project.leader = members[1]
+                        members.remove(student.pid)
+                        old_project.set_members(members)
+                    else :
+                        db.session.delete(old_project)
+                    student.project_id = project_id
+                    session['project_id'] = project_id
                 student.in_team = True 
                 session['in_team'] = True
                 db.session.commit()
@@ -372,6 +386,26 @@ def register_routes(app,db):
                 return redirect('/projects')
         else:
             return redirect('/sign-in')
+    
+    @app.route('/exit_team',methods=['POST'])
+    def exit_team():
+        old_project = Project.query.get_or_404(session['project_id'])
+        members = old_project.get_members()
+        if len(members) > 1 : 
+            old_project.leader = members[1]
+            members.remove(student.pid)
+            old_project.set_members(members)
+        else :
+            db.session.delete(old_project)
+
+        student = Student.query.get_or_404(session['pid'])
+        student.in_team = False
+        student.project_id = None
+        session['in_team'] = False
+        session['project_id'] = None
+        db.session.commit()
+        return redirect('/projects')
+
     @app.route('/projects')
     def projects():
         if 'logged' in session.keys():
