@@ -147,6 +147,9 @@ def register_routes(app,db):
                 else :
                     flash("Wrong email or password!","error")
                     return render_template('sign_in.html')
+            else :
+                    flash("Wrong email or password!","error")
+                    return render_template('sign_in.html')
         elif request.method == 'GET':
             return render_template('sign_in.html')
 
@@ -217,7 +220,8 @@ def register_routes(app,db):
                 task = request.form.get('task')
                 date = request.form.get('deadline')
                 if not date : 
-                    return "Please add a deadline",404 # decorate this
+                    flash("Please add a deadline","error")
+                    return redirect('/todo')
                 deadline = datetime.strptime(date,"%Y-%m-%d").date() # converts html form date to python date object
                 t = Task(description=task,student_id=session['pid'],deadline=deadline) # add project_id & assigned_to
                 db.session.add(t)
