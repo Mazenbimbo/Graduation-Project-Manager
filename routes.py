@@ -104,7 +104,7 @@ def register_routes(app,db):
             name = request.form.get('name')
             phone = request.form.get('phone')
             email = request.form.get('email')
-            specialties = request.form.get('specialties')
+            specialties = request.form.get('specialty')
             year = request.form.get('year')
             department = request.form.get('department')
             password = request.form.get('password')
@@ -250,18 +250,39 @@ def register_routes(app,db):
         else:
             return redirect('/sign-in')
 
-    @app.route('/friends')
+    @app.route('/friends') # AI Edited
     def friends():
-        if 'logged' in session.keys() :
-            friends = Student.query.all()
-            return render_template('friends.html', users=friends, in_team=session['in_team'],my_id=session['pid'])
-        else:
+        if 'logged' not in session:
             return redirect('/sign-in')
+
+        specialty_filter = request.args.get('specialty', '').strip()
+        not_in_team_only = request.args.get('not_in_team', '0') == '1'
+        
+        query = Student.query
+        
+        if specialty_filter:
+            query = query.filter(Student.specialties == specialty_filter)
+        
+        if not_in_team_only:
+            query = query.filter(Student.in_team == False)
+        
+        friends_list = query.all()
+        
+        # Get all distinct specialties for the dropdown ((( NEED TO UNDERSTAND THIS ONE BETTER)))
+        specialties = db.session.query(Student.specialties).distinct().all()
+        specialties = sorted([s[0] for s in specialties if s[0]])
+        
+        return render_template('friends.html',users=friends_list,in_team=session['in_team'],my_id=session['pid'],specialties=specialties,current_specialty=specialty_filter,not_in_team_checked=not_in_team_only)
+
     @app.route('/req_to_add/<int:id>',methods=['POST'])
     def req_to_add(id):
-        new_notification = Notification(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id)
-        db.session.add(new_notification)
-        db.session.commit()
+        if Notification.query.filter_by(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id).count()< 1:
+            new_notification = Notification(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id)
+            db.session.add(new_notification)
+            db.session.commit()
+            flash("Request sent!","info")
+        else : 
+            flash("Request already sent!","info")
         return redirect('/friends')
     @app.route('/add_to_team/<int:nid>/<int:id>/<string:action>',methods=['POST'])
     def add_to_team(nid, id, action): # accepting team leader req to join his team
@@ -281,7 +302,10 @@ def register_routes(app,db):
         deleted_notification = Notification.query.get_or_404(nid) 
         db.session.delete(deleted_notification)
         db.session.commit()
-        return redirect(f'/project/{session['project_id']}')
+        if action == 'accept' :
+            return redirect(f'/project/{session['project_id']}')
+        else : 
+            return redirect(f'/notifications')
 
 
     @app.route('/join/<int:id>',methods=['GET']) # req to join a team
@@ -292,9 +316,9 @@ def register_routes(app,db):
                 notification = Notification(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader)
                 db.session.add(notification)
                 db.session.commit()
-                flash("Request sent!")
+                flash("Request sent!","info")
             else :
-                flash("Request already sent")
+                flash("Request already sent","info")
             return redirect('/projects')
         else:
             return redirect('/sign-in')
@@ -310,14 +334,10 @@ def register_routes(app,db):
             student = Student.query.get_or_404(from_id)
             student.in_team = True
             student.project_id = session['project_id']
-
-            notification = Notification.query.get_or_404(nid)
-            db.session.delete(notification)
-            db.session.commit()
-        else :
-            notification = Notification.query.get_or_404(nid)
-            db.session.delete(notification)
-            db.session.commit()
+        
+        notification = Notification.query.get_or_404(nid)
+        db.session.delete(notification)
+        db.session.commit()
         return redirect('/notifications')
 
     @app.route('/delete/user/<int:id>',methods=['POST'])
@@ -389,6 +409,7 @@ def register_routes(app,db):
     
     @app.route('/exit_team',methods=['POST'])
     def exit_team():
+        student = Student.query.get_or_404(session['pid'])
         old_project = Project.query.get_or_404(session['project_id'])
         members = old_project.get_members()
         if len(members) > 1 : 
@@ -397,14 +418,43 @@ def register_routes(app,db):
             old_project.set_members(members)
         else :
             db.session.delete(old_project)
-
-        student = Student.query.get_or_404(session['pid'])
         student.in_team = False
         student.project_id = None
         session['in_team'] = False
         session['project_id'] = None
         db.session.commit()
         return redirect('/projects')
+    
+    @app.route('/kick/<int:project_id>/<int:student_id>', methods=['POST'])
+    def kick_member(project_id, student_id):
+        if 'logged' not in session:
+            return redirect('/sign-in')
+        
+        project = Project.query.get_or_404(project_id)
+        student = Student.query.get_or_404(student_id)
+        
+        if session['pid'] != project.leader:
+            flash('Only the team leader can remove members.', 'error')
+            return redirect(url_for('project_detail', id=project_id))
+
+        if student.pid == project.leader:
+            flash('You cannot remove the team leader.', 'error')
+            return redirect(url_for('project_detail', id=project_id))
+        
+        members = project.get_members()
+        if student.pid in members:
+            members.remove(student.pid)
+            project.set_members(members)
+        
+        student.in_team = False
+        student.project_id = None
+
+        session['in_team'] = False
+        session['project_id'] = None
+        
+        db.session.commit()
+        flash(f'{student.name} has been removed from the team.', 'success')
+        return redirect(url_for('project_detail', id=project_id))
 
     @app.route('/projects')
     def projects():

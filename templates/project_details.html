@@ -1,78 +1,163 @@
-{% extends 'base.html'%}
-{% block title %}Projects{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name|title }}{% endblock %}
+
 {% block body %}
-<div class="flex flex-col items-center space-y-3 m-5">
-    <div class="flex flex-col items-strat space-x-4 m-5 p-5 rounded-xl bg-[#353c63] w-[60%] border border-cyan-400" >
-    <h2 class="text-2xl font-extrabold ml-4">{{project.name|title}}</h2>
-    <div class="flex">
-        <div class="flex justify-start items-center space-x-2 w-[30%] text-gray-300">
-            <span>Project ID: {{project.pid}} |</span>
-            <span>Year: {{project.year}}</span>
-        </div>
-        <div class="flex justify-center space-x-2 w-[70%]">
-            {% if id == project.pid %}
-            <button class="bg-cyan-800 hover:bg-cyan-500 py-1 rounded-2xl border border-cyan-400 w-[60%]"><a href="/supervisors">Register with a supervisor</a></button>
-            <button class="bg-cyan-800 hover:bg-cyan-500 py-1 rounded-2xl border border-cyan-400 w-[60%]"><a href="/friends">Add a friend to team</a></button>
-            {% endif %}
-        </div>
-    </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!-- Description -->
-        <h3 class="text-xl font-extrabold mb-1">Description</h3>
-        <p class="text-gray-300">{{project.description}}</p>
-    </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Specialities -->
-        <span class="text-xl font-extrabold mb-1">Specialities</span>
-        <div class="flex space-x-2 m-1">
-        {% for field in fields %}
-            <span class="bg-gray-900 px-3 rounded-2xl border border-cyan-400">{{field}}</span>
-        {% endfor %}
-        </div>
-    </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Team members -->
-        <h3 class="text-xl font-extrabold mb-1">Team members</h3>
-        {% for a,b in compined %}
-            <a href="/account/{{b}}" class="w-full hover:bg-[#353c63] rounded-xl p-2"><span class="text-gray-300">{{a|title}}</span></a>
-        {% endfor %}
-    </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Supervisors -->
-        <h3 class="text-xl font-extrabold mb-1">Supervisors</h3>
-    </div>
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Attachments -->
-        <h3 class="text-xl font-extrabold mb-1">Attachments</h3>
-        <div class="flex space-x-1">
-            <div class="flex flex-col w-[50%]">
-                {% for attachment in attachments %}
-                    {% if attachment != [] %}
-                    <a href="{{attachment}}" class="text-blue-500 underline">{{attachment}}</a>
-                    <form action="/remove_attachment" method="post">
-                        <input type="text" name='file_path' value="{{attachment}}" hidden>
-                        <input type="submit" value="remove" value="Upload" class="rounded-xl p-1 m-1 w-fit bg-blue-600 font-bold">
-                    </form>
-                    <br>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            <div class="w-[50%]">
-                <form method="post" action="/upload/attachment" enctype="multipart/form-data">
-                    <input type="file" name="file" class="bg-gray-600 rounded-xl p-1 w-[80%]">
-                    <input type="submit" value="Upload" class="rounded-xl p-1 m-1 w-[30%] bg-blue-600 font-bold">
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- add access control here to only team members or supervisors-->
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Actions -->
-        <h3 class="text-xl font-extrabold mb-1">Actions</h3>
-        <a href="x" class="w-full hover:bg-[#353c63] rounded-xl p-2"><span class="text-gray-300 font-bold underline">Go to team tasks -></span></a>
-        {% if id == project.pid %}
-        <form action="/exit_team" method="post" class="w-full bg-red-800 hover:bg-red-900 rounded-xl p-2"><input type="submit" value="Exit team" class="text-gray-300 font-bold"></form>
-        {% endif %}
-    </div>
+<div class="max-w-5xl mx-auto px-4 py-8">
     
-    <div class="flex flex-col bg-[#12102B] mt-2 p-2 rounded-2xl"> <!--Similar Ideas -->
-        <h3 class="text-xl font-extrabold mb-1">Similar Ideas</h3>
+    <!-- Project Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-white">{{ project.name|title }}</h1>
+        <div class="flex items-center space-x-4 mt-2 text-gray-300 text-sm">
+            <span class="flex items-center">
+                <svg class="w-4 h-4 mr-1 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                </svg>
+                ID: {{ project.pid }}
+            </span>
+            <span class="flex items-center">
+                <svg class="w-4 h-4 mr-1 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Year: {{ project.year }}
+            </span>
+        </div>
     </div>
 
+    <!-- Action Buttons (for team members) -->
+    {% if session.pid == project.leader or session.pid in project.get_members() %}
+    <div class="flex flex-wrap gap-3 mb-6">
+        {% if session.pid == project.leader %}
+        <a href="{{ url_for('supervisors') }}" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+            Register Supervisor
+        </a>
+        <a href="{{ url_for('friends') }}" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+            Add Friend to Team
+        </a>
+        {% endif %}
+        <a href="#" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+            Go to Team Tasks →
+        </a>
+        <form action="/exit_team" method="post" class="inline">
+            <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                Exit Team
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column: Info Cards -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Description Card -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-3">Description</h2>
+                <p class="text-gray-300 leading-relaxed">{{ project.description }}</p>
+            </div>
+            
+            <!-- Specialties Card -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-3">Specialties</h2>
+                <div class="flex flex-wrap gap-2">
+                    {% for field in fields %}
+                        <span class="bg-gray-800 text-cyan-300 px-4 py-1.5 rounded-full text-sm border border-cyan-500/30">
+                            {{ field }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Attachments Card -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-3">Attachments</h2>
+                <div class="space-y-3">
+                    {% for attachment in attachments %}
+                        {% if attachment %}
+                        <div class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg">
+                            <a href="{{ attachment }}" target="_blank" class="text-blue-400 hover:underline truncate max-w-[70%]">
+                                {{ attachment.split('/')[-1] }}
+                            </a>
+                            <form action="/remove_attachment" method="post">
+                                <input type="hidden" name="file_path" value="{{ attachment }}">
+                                <button type="submit" class="text-red-400 hover:text-red-300 text-sm">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Upload Form -->
+                    <form method="post" action="/upload/attachment" enctype="multipart/form-data" class="mt-4 flex gap-2">
+                        <input type="file" name="file" class="bg-gray-800 text-white text-sm rounded-lg p-2 w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-700 file:text-white hover:file:bg-cyan-600">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                            Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Team & Supervisors -->
+        <div class="space-y-6">
+            
+            <!-- Team Members Card -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    Team Members
+                </h2>
+                <div class="divide-y divide-gray-700">
+                    {% for name, member_id in compined %}
+                        <div class="py-3 flex items-center justify-between">
+                            <a href="/account/{{ member_id }}" class="text-gray-200 hover:text-cyan-400 transition font-medium">
+                                {{ name|title }}
+                                {% if member_id == project.leader %}
+                                    <span class="ml-2 text-xs bg-yellow-600/30 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/30">Leader</span>
+                                {% endif %}
+                            </a>
+                            
+                            {# Kick button: visible only to leader, not for themselves #}
+                            {% if session.pid == project.leader and member_id != project.leader %}
+                                <form action="{{ url_for('kick_member', project_id=project.pid, student_id=member_id) }}" method="post" 
+                                      onsubmit="return confirm('Are you sure you want to remove {{ name }} from the team?');">
+                                    <button type="submit" class="text-red-400 hover:text-red-300 text-sm flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h6m0 0v6m0-6l-8 8M4 19h16a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Kick
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Supervisors Card -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-4">Supervisors</h2>
+                {% if project.doctor %}
+                    <div class="text-gray-300">Dr. {{ project.doctor }}</div>
+                {% else %}
+                    <p class="text-gray-500 italic">No supervisor assigned yet.</p>
+                {% endif %}
+                {% if project.assistent %}
+                    <div class="text-gray-300 mt-1">TA. {{ project.assistent }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Similar Ideas (placeholder) -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-4">Similar Ideas</h2>
+                <p class="text-gray-500 italic">Coming soon...</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
