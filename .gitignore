@@ -1,3 +1,4 @@
 instance/data.db
+backup/data.db
 static/uploads
 gpm_app_docker.tar.gz

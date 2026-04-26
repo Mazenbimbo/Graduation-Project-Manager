@@ -19,32 +19,43 @@ def register_routes(app,db):
         # session['logged'] = False
         return redirect('/')
         
-    @app.route("/account/<id>")
+    @app.route("/account/<string:id>")
     def account(id):
         if 'logged' in session.keys(): 
-            if id == 'me' or id == session['pid']:
+            if id == 'me' or id == session['public_id']: # fix the pid
                 name = session['name']
-                phone = session['phone']
-                specialties = session['specialties']
-                email = session['email']
+                specialty = session['specialty']
                 department = session['department']
-                year = session['year']
-                in_team = session['in_team']
-                project_id = session['project_id']
                 image = session['image'] if 'image' in session.keys() else '/static/uploads/my_photo.jpg'
-                return render_template('account.html',authorized=True,specialties=specialties, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image)
+                phone = session['phone']
+                email = session['email']
+                if session['role'] in ['Doctor','Assistant'] :
+                    role = session['role']
+                    projects = session['projects']
+                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, department=department, projects=projects, role=role, image=image)
+                else : 
+                    year = session['year']
+                    in_team = session['in_team']
+                    project_id = session['project_id']
+                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image) 
             else :
-                student = Student.query.get_or_404(id)
-                name = student.name
-                department = student.department
-                year = student.year
-                in_team = student.in_team
-                image = student.image if student.image else '/static/uploads/my_photo.jpg' 
-                specialties = student.specialties
-                project_id = student.project_id
-                phone = student.phone
-                email = student.email
-                return render_template('account.html',authorized=False,specialties=specialties, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image)
+                if id.startswith('D') or id.startswith('A') : 
+                    id = int(id[1:])
+                    supervisor = Supervisor.query.get_or_404(id)
+                    # name = supervisor.name
+                    # specialties = supervisor.specialty
+                    # department = supervisor.department
+                    # phone = supervisor.phone
+                    # email = supervisor.email
+                    # image = supervisor.image
+                    # role = supervisor.role
+                    # projects = supervisor.projects
+                    return render_template('account.html',supervisor=supervisor,role='D')
+                else:
+                    id = int(id[1:])
+                    student = Student.query.get_or_404(id)
+                    return render_template('account.html',student=student,role='S')
+                # !!!! TO DO : MAKE THE LOGIC OF SOME ONE ELSE'S ACCOUNT (SUPERVISOR/STUDENT) THEN DESIGN THE TEMPLATE !!!!
         else :
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
@@ -53,7 +64,7 @@ def register_routes(app,db):
             if request.method == 'GET':
                 name = session['name']
                 phone = session['phone']
-                specialties = session['specialties']
+                specialties = session['specialty']
                 department = session['department']
                 year = session['year']
                 email = session['email']
@@ -75,7 +86,7 @@ def register_routes(app,db):
                     return render_template('edit_info.html') 
 
                 session['name'] = name
-                session['specialties'] = specialties
+                session['specialty'] = specialties
                 session['phone'] = phone
                 session['email'] = email
                 session['department'] = department
@@ -129,7 +140,7 @@ def register_routes(app,db):
                 if student and student.password == password :
                     session['pid'] = student.pid
                     session['name'] = student.name
-                    session['specialties'] = student.specialties
+                    session['specialty'] = student.specialties
                     session['phone'] = student.phone
                     session['email'] = student.email
                     session['year'] = student.year
@@ -139,10 +150,8 @@ def register_routes(app,db):
                     session['logged'] = True
                     session['project_id'] = student.project_id
                     session['in_team'] = student.in_team
-                    if request.form.get('supervisor'):
-                        session['role'] = 2
-                    else : 
-                        session['role'] = 3
+                    session['role'] = 'Student'
+                    session['public_id'] = student.public_id
                     return redirect('/')
                 else :
                     flash("Wrong email or password!","error")
@@ -175,7 +184,7 @@ def register_routes(app,db):
                         img.image = f"/static/uploads/{file.filename}"
                         db.session.commit()
                         session['image'] = f"/static/uploads/{file.filename}"
-                        return redirect(url_for('account')) # will cause error
+                        return redirect('/account/me')
                     elif _type == "attachment": 
                         my_project = Project.query.get_or_404(session['project_id'])
                         attachments = my_project.get_attachment()
@@ -297,6 +306,7 @@ def register_routes(app,db):
                 new_member.in_team = True
                 new_member.project_id = project_id
                 session['project_id'] = project_id
+                session['in_team'] = True
             else :
                 flash('Team is full!','error')
         deleted_notification = Notification.query.get_or_404(nid) 
@@ -363,13 +373,13 @@ def register_routes(app,db):
                     fields.append('AI')
                 if request.form.get('Networking') :
                     fields.append('Network')
-                if request.form.get('embedded') :
+                if request.form.get('Embedded') :
                     fields.append('Embedded')
-                if request.form.get('web') :
+                if request.form.get('Web') :
                     fields.append('Web')
-                if request.form.get('mobile') :
+                if request.form.get('Mobile') :
                     fields.append('Mobile')
-                if request.form.get('cyber') :
+                if request.form.get('Cyber Security') :
                     fields.append('CyberSec')
 
                 year = datetime.now().year
@@ -477,53 +487,71 @@ def register_routes(app,db):
         else:
             return redirect('/sign-in')
 
-    @app.route('/supervisor_signup',methods=['GET','POST'])
-    def supervisor_signup(): # test for any empty data and different http methods
-        if request.method == 'GET':
-            return render_template('supervisor_signup.html')
-        elif request.method == 'POST':
+    @app.route('/supervisor_register_0x1F', methods=['GET', 'POST'])
+    def supervisor_signup():
+        if request.method == 'POST':
             name = request.form.get('name')
-            email = request.form.get('email')
             phone = request.form.get('phone')
-            specialties = request.form.get('specialties')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            specialty = request.form.get('specialty')
             role = request.form.get('role')
             department = request.form.get('department')
-            password = request.form.get('password')
 
-            if Supervisor.query.filter_by(email=email).count() > 0 :
-                flash('Email already exist!','error')
-                return render_template('sign_in.html') 
-            else :
-                supervisor = Supervisor(name=name,email=email,phone=phone,specialties=specialties,department=department,role=role,password=password)
-                db.session.add(supervisor)
-                db.session.commit()
+            if not all([name, phone, email, password, role]):
+                flash('Name, Phone, Email, Password, and Role are required.', 'error')
+                return redirect(url_for('supervisor_signup'))
 
-                return redirect('/supervisor_signin')
+            if role not in ['Doctor', 'Assistant']:
+                flash('Role must be either "Doctor" or "Assistant".', 'error')
+                return redirect(url_for('supervisor_signup'))
+
+            existing = Supervisor.query.filter((Supervisor.email == email) | (Supervisor.phone == phone)).first()
+            if existing:
+                flash('A supervisor with that email or phone already exists.', 'error')
+                return redirect(url_for('supervisor_signup'))
+
+            #hashed_pw = generate_password_hash(password)
+            new_supervisor = Supervisor(name=name,phone=phone,email=email,password=password,specialty=specialty,role=role,department=department)
+            db.session.add(new_supervisor)
+            db.session.commit()
+
+            flash('Supervisor account created successfully. Please log in.', 'success')
+            return redirect(url_for('supervisor_signin')) 
+
+        return render_template('supervisor_signup.html')
     @app.route('/supervisor_signin', methods=['POST','GET'])
     def supervisor_signin():
         if request.method == 'POST': 
             email = request.form['email']
             password = request.form['password']
-
-            if Supervisor.query.filter_by(email=email).count() > 0 :
-                supervisor = Supervisor.query.filter_by(email=email).first()
+            supervisor_search = Supervisor.query.filter_by(email=email)
+            if supervisor_search.count() > 0 :
+                supervisor = supervisor_search.first()
                 if supervisor and supervisor.password == password :
-                    session['did'] = supervisor.did
+                    session['sid'] = supervisor.sid
                     session['name'] = supervisor.name
-                    session['specialties'] = supervisor.specialties
+                    session['specialty'] = supervisor.specialty
                     session['phone'] = supervisor.phone
                     session['email'] = supervisor.email
                     session['department'] = supervisor.department
                     session['password'] = supervisor.password
                     session['logged'] = True
-                    session['projects'] = supervisor.projects
                     session['role'] = supervisor.role
-                    return redirect('/')
+                    session['projects'] = [projects.id for project in supervisor.projects]
+                    session['public_id'] = supervisor.public_id
+                    return redirect('/supervisor_dashboard')
                 else :
                     flash("Wrong email or password!","error")
                     return render_template('supervisor_signin.html')
         elif request.method == 'GET':
             return render_template('supervisor_signin.html')
+
+    @app.route('/supervisor_dashboard',methods=['GET'])
+    def supervisor_dashboard():
+        if 'logged' in session.keys(): 
+            return render_template('supervisor_dashboard.html',name=session['name'],role=session['role'])
+        return render_template('supervisor_signin.html')
     @app.route('/supervisors') # make the supervisors list only from same department 
     def supervisors():
         if 'logged' in session.keys():

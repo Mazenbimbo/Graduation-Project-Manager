@@ -1,6 +1,12 @@
 from app import db
 import json
 
+supervisor_project = db.Table(
+    'supervisor_project',
+    db.Column('supervisor_id', db.Integer, db.ForeignKey('supervisor.sid'), primary_key=True),
+    db.Column('project_id', db.Integer, db.ForeignKey('project.pid'), primary_key=True)
+)
+
 class Student(db.Model):
     __tablename__ = 'person' 
     pid = db.Column(db.Integer, primary_key = True)
@@ -16,6 +22,10 @@ class Student(db.Model):
     image = db.Column(db.Text,default='/static/uploads/user.png')
     tasks = db.relationship('Task',backref='student',lazy=True) # you can access 'student.tasks'
     notifications = db.relationship('Notification',backref='student',lazy=True)
+
+    @property
+    def public_id(self):
+        return f'S{self.pid}'
 
     def __repr__(self):
         return f"name is : {self.name}"
@@ -73,20 +83,30 @@ class Project(db.Model):
 class Supervisor(db.Model):
     __tablename__ = 'supervisor'
 
-    did = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    name = db.Column(db.Text(200), nullable=False)
-    email = db.Column(db.Text(200), nullable=False)
-    phone = db.Column(db.Text(200), nullable=False)
-    specialties = db.Column(db.Text(200), nullable=False)
-    department = db.Column(db.Text(10),nullable=True)
-    role = db.Column(db.Text(10),nullable=False)
-    projects = db.Column(db.Text(200),nullable=True)
-    image = db.Column(db.Text,default='/static/uploads/user.png')
-    password = db.Column(db.Text(200), nullable=False)
+    sid = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    image = db.Column(db.String(255),default='/static/uploads/user.png')   
+    specialty = db.Column(db.String(100), nullable=True)
+    role = db.Column(db.String(20), nullable=False)
+    department = db.Column(db.String(100), nullable=True)
+    projects = db.relationship('Project',secondary=supervisor_project,backref=db.backref('supervisors', lazy='dynamic'),lazy='dynamic')
+    # ^^ Many-to-many relationship, backref creates 'supervisors' on Project ^^
     notifications = db.relationship('Supervisor_notification',backref='supervisor',lazy=True)
+    # add messages later
+
+    @property
+    def public_id(self):
+        if self.role == 'Doctor':
+            return f'D{self.sid}'
+        return f'A{self.sid}'
 
     def __repr__(self):
-        return f"Supervisor ID:{self.did}, name:{self.name}"    
+        return f"Supervisor ID:{self.sid}, name:{self.name}"  
+ 
+
 
 class Notification(db.Model):
     __tablename__ = 'notification'
@@ -96,6 +116,7 @@ class Notification(db.Model):
     _from_id = db.Column(db.Integer,nullable=True)
     _from_name = db.Column(db.String,nullable=True)
     student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False)
+    read = db.Column(db.Boolean,default=False,nullable=False)
 
     def __repr__(self):
         return f"notification action: {self.action}"
@@ -106,7 +127,8 @@ class Supervisor_notification(db.Model):
     action = db.Column(db.String,nullable=False) # actions : supervise - 
     _from_id = db.Column(db.Integer,nullable=True)
     _from_name = db.Column(db.String,nullable=True)
-    supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.did'),nullable=False)
+    supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
+    read = db.Column(db.Boolean,default=False,nullable=False)
 
     def __repr__(self):
         return f'from {self._from_id}, action {self.action}'
