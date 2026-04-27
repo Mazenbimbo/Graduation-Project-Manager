@@ -4,130 +4,192 @@
 
 {% block body %}
 <div class="min-h-screen bg-[#0a192f] py-10 px-4">
-  <div class="max-w-2xl mx-auto">
+  <div class="max-w-2xl mx-auto space-y-6">
+
     {% if name %}
-    <!-- Generic Profile Card -->
-    <div class="bg-[#0a192f] border-2 border-cyan-800 rounded-2xl shadow-xl shadow-cyan-900/20 overflow-hidden">
-      <div class="p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div class="flex-shrink-0">
-            {% if image %}
-            <img src="{{ image }}" alt="{{ name }}" class="w-24 h-24 rounded-full object-cover border-4 border-cyan-700">
-            {% else %}
-            <div class="w-24 h-24 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-3xl font-bold">
-              {{ name[0]|upper }}
-            </div>
-            {% endif %}
-          </div>
-          <div class="flex-1 text-center sm:text-left">
-            <h2 class="text-2xl font-bold text-gray-200">{{ name|title }}</h2>
-            <p class="text-gray-400 mt-1">{{ specialty }} · {{ department }}</p>
-            <div class="mt-3 space-y-1 text-sm text-gray-300">
-              <p><span class="font-medium text-gray-400">Phone:</span> {{ phone }}</p>
-              <p><span class="font-medium text-gray-400">Email:</span> {{ email }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-6 border-t border-cyan-900/50 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          {% if role %}
-            <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-              <span class="font-medium text-gray-400">Role:</span> <span class="text-gray-200">{{ role }}</span>
-            </div>
-            <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-              <span class="font-medium text-gray-400">Project IDs:</span>
-              <div class="mt-1 flex flex-wrap gap-1">
-                {% for project_id in projects %}
-                <a href="/project/{{ project_id }}" class="inline-block bg-cyan-900/30 text-cyan-300 px-2 py-0.5 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">{{ project_id }}</a>
-                {% endfor %}
-              </div>
-            </div>
+    <!-- Generic Profile -->
+    <div class="text-center">
+      <div class="inline-flex flex-col items-center">
+        <div class="mb-4">
+          {% if image %}
+          <img src="{{ image }}" alt="{{ name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
           {% else %}
-            <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-              <span class="font-medium text-gray-400">Year:</span> <span class="text-gray-200">{{ year }}</span>
-            </div>
-            <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-              <span class="font-medium text-gray-400">Team:</span>
-              {% if in_team %}
-                <span class="text-gray-200"><a href="project/{{ project_id }}" class="inline-block bg-cyan-900/30 text-cyan-300 px-2 py-0.5 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">{{ project_id }}</a></span>
-              {% else %}
-                <span class="text-gray-500">Not in team</span>
-              {% endif %}
-            </div>
+          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
+            {{ name[0]|upper }}
+          </div>
           {% endif %}
         </div>
+        <h2 class="text-3xl font-bold text-gray-200">{{ name|title }}</h2>
       </div>
     </div>
 
+    <!-- Detail cards grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- specialty card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
+        <p class="text-gray-200 font-medium">{{ specialty }}</p>
+      </div>
+      <!-- department card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
+        <p class="text-gray-200 font-medium">{{ department }}</p>
+      </div>
+      <!-- phone card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Phone</p>
+        <p class="text-gray-200 font-medium">{{ phone }}</p>
+      </div>
+      <!-- email card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Email</p>
+        <p class="text-gray-200 font-medium">{{ email }}</p>
+      </div>
+
+      {% if role %}
+      <!-- role card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Role</p>
+        <p class="text-gray-200 font-medium">{{ role }}</p>
+      </div>
+      {% else %}
+      <!-- year card -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Year</p>
+        <p class="text-gray-200 font-medium">{{ year }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Projects section -->
+    {% if role and projects %}
+    <div>
+      <h3 class="text-lg font-semibold text-gray-300 mb-3">Projects</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for project_id in projects %}
+        <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4 flex items-center justify-between">
+          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id }}</span></p>
+          <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors underline">
+            Go to the project {{ project_id }}
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- If not role (student mode) team section -->
+    {% if not role %}
+    <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+      <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Project Link</p>
+      {% if in_team %}
+        <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors underline">Go to project</a>
+      {% else %}
+        <p class="text-gray-500">Not in project</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
     {% elif student %}
-    <!-- Student Profile Card -->
-    <div class="bg-[#0a192f] border-2 border-cyan-800 rounded-2xl shadow-xl shadow-cyan-900/20 overflow-hidden">
-      <div class="p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div class="flex-shrink-0">
-            {% if student.image %}
-            <img src="{{ student.image }}" alt="{{ student.name }}" class="w-24 h-24 rounded-full object-cover border-4 border-cyan-700">
-            {% else %}
-            <div class="w-24 h-24 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-3xl font-bold">
-              {{ student.name[0]|upper }}
-            </div>
-            {% endif %}
+    <!-- Student Profile -->
+    <div class="text-center">
+      <div class="inline-flex flex-col items-center">
+        <div class="mb-4">
+          {% if student.image %}
+          <img src="{{ student.image }}" alt="{{ student.name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
+          {% else %}
+          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
+            {{ student.name[0]|upper }}
           </div>
-          <div class="flex-1 text-center sm:text-left">
-            <h2 class="text-2xl font-bold text-gray-200">{{ student.name }}</h2>
-            <p class="text-gray-400 mt-1">{{ student.specialty }} · {{ student.department }}</p>
-          </div>
+          {% endif %}
         </div>
-        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-            <span class="font-medium text-gray-400">Year:</span> <span class="text-gray-200">{{ student.year }}</span>
-          </div>
-          <div class="bg-[#112240] p-3 rounded-lg border border-cyan-900/40">
-            <span class="font-medium text-gray-400">Team:</span>
-            {% if student.in_team %}
-              <a href="project/{{ student.project_id }}" class="text-cyan-300 hover:text-cyan-200 font-mono">{{ project_id }}</a>
-            {% else %}
-              <span class="text-gray-500">Not in team</span>
-            {% endif %}
-          </div>
-        </div>
+        <h2 class="text-3xl font-bold text-gray-200">{{ student.name }}</h2>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- specialty -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
+        <p class="text-gray-200 font-medium">{{ student.specialties }}</p>
+      </div>
+      <!-- department -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
+        <p class="text-gray-200 font-medium">{{ student.department }}</p>
+      </div>
+      <!-- year -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Year</p>
+        <p class="text-gray-200 font-medium">{{ student.year }}</p>
+      </div>
+      <!-- team / project -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Project Link</p>
+        {% if student.in_team %}
+          <a href="/project/{{ student.project_id }}" class="text-cyan-300 hover:text-cyan-200 font-mono underline">Go to project</a>
+        {% else %}
+          <p class="text-gray-500">Not in a project</p>
+        {% endif %}
       </div>
     </div>
 
     {% elif supervisor %}
-    <!-- Supervisor Profile Card -->
-    <div class="bg-[#0a192f] border-2 border-cyan-800 rounded-2xl shadow-xl shadow-cyan-900/20 overflow-hidden">
-      <div class="p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div class="flex-shrink-0">
-            {% if supervisor.image %}
-            <img src="{{ supervisor.image }}" alt="{{ supervisor.name }}" class="w-24 h-24 rounded-full object-cover border-4 border-cyan-700">
-            {% else %}
-            <div class="w-24 h-24 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-3xl font-bold">
-              {{ supervisor.name[0]|upper }}
-            </div>
-            {% endif %}
+    <!-- Supervisor Profile -->
+    <div class="text-center">
+      <div class="inline-flex flex-col items-center">
+        <div class="mb-4">
+          {% if supervisor.image %}
+          <img src="{{ supervisor.image }}" alt="{{ supervisor.name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
+          {% else %}
+          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
+            {{ supervisor.name[0]|upper }}
           </div>
-          <div class="flex-1 text-center sm:text-left">
-            <h2 class="text-2xl font-bold text-gray-200">{{ supervisor.name }}</h2>
-            <p class="text-gray-400 mt-1">{{ supervisor.specialty }} · {{ supervisor.department }}</p>
-            <p class="mt-2 text-sm">
-              <span class="font-medium text-gray-400">Role:</span>
-              <span class="text-gray-200">{{ supervisor.role }}</span>
-            </p>
-          </div>
+          {% endif %}
         </div>
-        <div class="mt-6 border-t border-cyan-900/50 pt-4">
-          <p class="text-sm font-medium text-gray-400 mb-2">Project IDs:</p>
-          <div class="flex flex-wrap gap-2">
-            {% for project_id in supervisor.projects %}
-            <a href="project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">{{ project_id }}</a>
-            {% else %}
-            <span class="text-gray-500 text-sm">No projects assigned</span>
-            {% endfor %}
-          </div>
-        </div>
+        <h2 class="text-3xl font-bold text-gray-200">{{ supervisor.name }}</h2>
       </div>
     </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- specialty -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
+        <p class="text-gray-200 font-medium">{{ supervisor.specialty }}</p>
+      </div>
+      <!-- department -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
+        <p class="text-gray-200 font-medium">{{ supervisor.department }}</p>
+      </div>
+      <!-- role -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Role</p>
+        <p class="text-gray-200 font-medium">{{ supervisor.role }}</p>
+      </div>
+    </div>
+
+    <!-- Projects for supervisor -->
+    {% if supervisor.projects %}
+    <div>
+      <h3 class="text-lg font-semibold text-gray-300 mb-3">Projects</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for project_id in supervisor.projects %}
+        <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4 flex items-center justify-between">
+          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id }}</span></p>
+          <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">
+            {{ project_id }}
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+      <p class="text-gray-500 text-sm">No projects assigned</p>
+    </div>
+    {% endif %}
+
     {% endif %}
   </div>
 </div>

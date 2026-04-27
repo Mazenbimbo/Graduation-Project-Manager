@@ -53,7 +53,7 @@
                 
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
-                    <a href="{% if user.pid == my_id %}/account/me{% else %}/account/{{ user.pid }}{% endif %}" 
+                    <a href="{% if user.pid == my_id %}/account/me{% else %}/account/s{{ user.pid }}{% endif %}" 
                        class="font-semibold text-white hover:text-cyan-400 transition truncate block">
                         {{ user.name|title }}
                     </a>

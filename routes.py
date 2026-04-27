@@ -1,6 +1,6 @@
 from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify,flash
 from markupsafe import escape
-from models import Student,Task,Project,Supervisor,Notification
+from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
@@ -22,7 +22,7 @@ def register_routes(app,db):
     @app.route("/account/<string:id>")
     def account(id):
         if 'logged' in session.keys(): 
-            if id == 'me' or id == session['public_id']: # fix the pid
+            if id == 'me' or id == session['public_id']:
                 name = session['name']
                 specialty = session['specialty']
                 department = session['department']
@@ -39,23 +39,14 @@ def register_routes(app,db):
                     project_id = session['project_id']
                     return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image) 
             else :
-                if id.startswith('D') or id.startswith('A') : 
+                if id.startswith('d') or id.startswith('a') : 
                     id = int(id[1:])
                     supervisor = Supervisor.query.get_or_404(id)
-                    # name = supervisor.name
-                    # specialties = supervisor.specialty
-                    # department = supervisor.department
-                    # phone = supervisor.phone
-                    # email = supervisor.email
-                    # image = supervisor.image
-                    # role = supervisor.role
-                    # projects = supervisor.projects
                     return render_template('account.html',supervisor=supervisor,role='D')
                 else:
                     id = int(id[1:])
                     student = Student.query.get_or_404(id)
                     return render_template('account.html',student=student,role='S')
-                # !!!! TO DO : MAKE THE LOGIC OF SOME ONE ELSE'S ACCOUNT (SUPERVISOR/STUDENT) THEN DESIGN THE TEMPLATE !!!!
         else :
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
@@ -556,9 +547,22 @@ def register_routes(app,db):
     def supervisors():
         if 'logged' in session.keys():
             supervisors = Supervisor.query.all()
-            return render_template('supervisors.html',supervisors=supervisors)
+            return render_template('supervisors.html',supervisors=supervisors,my_id=session['pid'])
         else:
             return redirect('/sign-in')
+
+    @app.route('/req_to_supervise/<int:_from_id>/<int:sid>',methods=['POST'])
+    def req_to_supervise(sid,_from_id):
+        student_name = Student.query.get_or_404(_from_id).name
+        if Supervisor_notification.query.filter_by(_from_id=_from_id,action='supervise',_from_name=student_name,supervisor_id=sid).count()<1:
+            new_notification = Supervisor_notification(_from_id=_from_id,action='supervise',_from_name=student_name,supervisor_id=sid)
+            db.session.add(new_notification)
+            db.session.commit()
+            flash('Request sent successfully!','success')
+        else : 
+            flash('Request already sent!','error')
+        return redirect(url_for('supervisors'))
+
     @app.route('/my_teams')
     def my_teams():
         return 'my teams'
@@ -566,8 +570,12 @@ def register_routes(app,db):
     @app.route('/notifications')
     def notifications():
         if 'logged' in session.keys():
-            student = Student.query.get_or_404(session['pid'])
-            return render_template('notifications.html',notifications=student.notifications)
+            if session['role'] == 'Doctor' or session['role'] == 'Assistant':
+                supervisor = Supervisor.query.get_or_404(session['sid'])
+                return render_template('notifications.html',notifications=supervisor.notifications)
+            else :
+                student = Student.query.get_or_404(session['pid'])
+                return render_template('notifications.html',notifications=student.notifications)
         else:
             return redirect('/sign-in')
     # -------------- APIs ----------------

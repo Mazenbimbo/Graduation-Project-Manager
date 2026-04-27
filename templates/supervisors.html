@@ -32,8 +32,8 @@
           <tbody class="divide-y divide-cyan-800/30">
             {% for supervisor in supervisors %}
             <tr class="hover:bg-blue-900/30 transition-colors duration-150">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.sid }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{{ supervisor.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.public_id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
@@ -43,7 +43,7 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <form action="#" method="POST">
+                <form action="/req_to_supervise/{{my_id}}/{{ supervisor.sid }}" method="POST">
                   <button type="submit" 
                           class="bg-cyan-700 hover:bg-cyan-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-blue-950">
                     Request Supervision

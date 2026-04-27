@@ -115,7 +115,7 @@
                 <div class="divide-y divide-gray-700">
                     {% for name, member_id in compined %}
                         <div class="py-3 flex items-center justify-between">
-                            <a href="/account/{{ member_id }}" class="text-gray-200 hover:text-cyan-400 transition font-medium">
+                            <a href="/account/s{{ member_id }}" class="text-gray-200 hover:text-cyan-400 transition font-medium">
                                 {{ name|title }}
                                 {% if member_id == project.leader %}
                                     <span class="ml-2 text-xs bg-yellow-600/30 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-500/30">Leader</span>

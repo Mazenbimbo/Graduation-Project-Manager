@@ -25,7 +25,7 @@ class Student(db.Model):
 
     @property
     def public_id(self):
-        return f'S{self.pid}'
+        return f's{self.pid}'
 
     def __repr__(self):
         return f"name is : {self.name}"
@@ -100,8 +100,8 @@ class Supervisor(db.Model):
     @property
     def public_id(self):
         if self.role == 'Doctor':
-            return f'D{self.sid}'
-        return f'A{self.sid}'
+            return f'd{self.sid}'
+        return f'a{self.sid}'
 
     def __repr__(self):
         return f"Supervisor ID:{self.sid}, name:{self.name}"  
