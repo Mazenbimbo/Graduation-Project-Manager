@@ -529,7 +529,7 @@ def register_routes(app,db):
                     session['password'] = supervisor.password
                     session['logged'] = True
                     session['role'] = supervisor.role
-                    session['projects'] = [projects.id for project in supervisor.projects]
+                    session['projects'] = [project.pid for project in supervisor.projects]
                     session['public_id'] = supervisor.public_id
                     return redirect('/supervisor_dashboard')
                 else :
@@ -576,7 +576,8 @@ def register_routes(app,db):
 
     @app.route('/my_teams')
     def my_teams():
-        return 'my teams'
+        if 'role' in session.keys():
+            return render_template('my_teams')
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():
