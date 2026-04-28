@@ -176,9 +176,9 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {% for project_id in supervisor.projects %}
         <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4 flex items-center justify-between">
-          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id }}</span></p>
+          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id.pid }}</span></p>
           <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">
-            {{ project_id }}
+            {{ project_id.pid }}
           </a>
         </div>
         {% endfor %}

@@ -42,11 +42,11 @@ def register_routes(app,db):
                 if id.startswith('d') or id.startswith('a') : 
                     id = int(id[1:])
                     supervisor = Supervisor.query.get_or_404(id)
-                    return render_template('account.html',supervisor=supervisor,role='D')
+                    return render_template('account.html',supervisor=supervisor)
                 else:
                     id = int(id[1:])
                     student = Student.query.get_or_404(id)
-                    return render_template('account.html',student=student,role='S')
+                    return render_template('account.html',student=student)
         else :
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
@@ -562,6 +562,17 @@ def register_routes(app,db):
         else : 
             flash('Request already sent!','error')
         return redirect(url_for('supervisors'))
+
+    @app.route('/res_to_supervision/<int:nid>/<int:_from_id>/<string:action>',methods=['POST'])
+    def res_to_supervision(nid,action,_from_id):
+        if action== 'accept':
+            project_id = Student.query.get_or_404(_from_id).project_id
+            project = Project.query.get_or_404(project_id)
+            Supervisor.query.get_or_404(session['sid']).projects.append(project)
+        n = Supervisor_notification.query.get_or_404(nid)
+        db.session.delete(n)
+        db.session.commit()
+        return redirect('/notifications')
 
     @app.route('/my_teams')
     def my_teams():
