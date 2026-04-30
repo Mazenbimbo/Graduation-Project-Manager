@@ -7,6 +7,7 @@ supervisor_project = db.Table(
     db.Column('project_id', db.Integer, db.ForeignKey('project.pid'), primary_key=True)
 )
 
+
 class Student(db.Model):
     __tablename__ = 'person' 
     pid = db.Column(db.Integer, primary_key = True)
@@ -55,8 +56,9 @@ class Project(db.Model):
     doctor = db.Column(db.Text(200))
     assistent = db.Column(db.Text(200))
     leader = db.Column(db.Integer,nullable=False)
-    team_members = db.Column(db.Text(200))
+    team_members = db.Column(db.Text(200)) # old
     attachments = db.Column(db.Text(200))
+    members = db.relationship('Student',backref='project',lazy='dynamic')
     
 
     def set_attachments(self,attachments):

@@ -574,10 +574,12 @@ def register_routes(app,db):
         db.session.commit()
         return redirect('/notifications')
 
-    @app.route('/my_teams')
-    def my_teams():
+    @app.route('/my_projects')
+    def my_projects():
         if 'role' in session.keys():
-            return render_template('my_teams')
+            projects = Supervisor.query.get_or_404(session['sid']).projects
+            return render_template('my_projects.html',projects=projects)
+        return redirect('/sign-in')
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():
