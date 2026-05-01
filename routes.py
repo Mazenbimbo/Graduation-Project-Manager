@@ -474,7 +474,7 @@ def register_routes(app,db):
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            return render_template('project_details.html', project=project,fields=project.get_fields(),id=session['project_id'],compined=compined,attachments = project.get_attachment())
+            return render_template('project_details.html', project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment())
         else:
             return redirect('/sign-in')
 
@@ -516,9 +516,8 @@ def register_routes(app,db):
         if request.method == 'POST': 
             email = request.form['email']
             password = request.form['password']
-            supervisor_search = Supervisor.query.filter_by(email=email)
-            if supervisor_search.count() > 0 :
-                supervisor = supervisor_search.first()
+            if Supervisor.query.filter_by(email=email).count() > 0:
+                supervisor = Supervisor.query.filter_by(email=email).first()
                 if supervisor and supervisor.password == password :
                     session['sid'] = supervisor.sid
                     session['name'] = supervisor.name
@@ -535,6 +534,9 @@ def register_routes(app,db):
                 else :
                     flash("Wrong email or password!","error")
                     return render_template('supervisor_signin.html')
+            else :
+                flash("Wrong email or password!","error")
+                return render_template('supervisor_signin.html')
         elif request.method == 'GET':
             return render_template('supervisor_signin.html')
 
@@ -568,6 +570,22 @@ def register_routes(app,db):
         if action== 'accept':
             project_id = Student.query.get_or_404(_from_id).project_id
             project = Project.query.get_or_404(project_id)
+            doctor,assistant = False,False
+            for supervisor in project.supervisors : 
+                if supervisor.role == 'Doctor': 
+                    doctor =True
+                else : 
+                    assistant = False
+            if session['role'] == 'Doctor' and doctor==False:
+                project.doctor = session['sid']
+            elif session['role'] == 'Assistant' and assistant==False:
+                project.assistent = session['sid']
+            else :
+                flash(f"Team already has a {session['role']}","error")
+                n = Supervisor_notification.query.get_or_404(nid)
+                db.session.delete(n)
+                db.session.commit()
+                return redirect('/notifications')
             Supervisor.query.get_or_404(session['sid']).projects.append(project)
         n = Supervisor_notification.query.get_or_404(nid)
         db.session.delete(n)
@@ -576,9 +594,9 @@ def register_routes(app,db):
 
     @app.route('/my_projects')
     def my_projects():
-        if 'role' in session.keys():
+        if session['role'] != 'Student':
             projects = Supervisor.query.get_or_404(session['sid']).projects
-            return render_template('my_projects.html',projects=projects)
+            return render_template('my_projects.html',projects=projects,current_year=datetime.now().year)
         return redirect('/sign-in')
     # ----------- Notifications ----------
     @app.route('/notifications')

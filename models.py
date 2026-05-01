@@ -21,7 +21,7 @@ class Student(db.Model):
     year = db.Column(db.Integer,nullable=False)
     department = db.Column(db.Text,nullable=False)
     image = db.Column(db.Text,default='/static/uploads/user.png')
-    tasks = db.relationship('Task',backref='student',lazy=True) # you can access 'student.tasks'
+    tasks = db.relationship('Task',backref='student',lazy='dynamic') # you can access 'student.tasks'
     notifications = db.relationship('Notification',backref='student',lazy=True)
 
     @property
@@ -53,13 +53,16 @@ class Project(db.Model):
     year = db.Column(db.Text(200), nullable=False)
     fields = db.Column(db.Text)
     statue = db.Column(db.Text(200))
-    doctor = db.Column(db.Text(200))
-    assistent = db.Column(db.Text(200))
+    doctor = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=False)
+    assistent = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=False)
     leader = db.Column(db.Integer,nullable=False)
     team_members = db.Column(db.Text(200)) # old
     attachments = db.Column(db.Text(200))
     members = db.relationship('Student',backref='project',lazy='dynamic')
     
+    @property
+    def public_id(self):
+        return f'p{self.pid}'
 
     def set_attachments(self,attachments):
         self.attachments = json.dumps(attachments)
