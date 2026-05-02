@@ -6,12 +6,16 @@ import os
 from datetime import datetime
 
 def register_routes(app,db):
-    @app.route("/")
+
+    @app.route('/')
+    def homepage():
+        return render_template('homepage.html')
+    @app.route("/home")
     def home():
-        if "name" in session.keys() :
+        if 'logged' in session.keys(): 
             name = session["name"]
-        else : name = "Friend"
-        return render_template("home.html",name=name)
+            return render_template("home.html",data=session)
+        return render_template("homepage.html")
 
     @app.route('/logout')
     def logout():
@@ -143,7 +147,7 @@ def register_routes(app,db):
                     session['in_team'] = student.in_team
                     session['role'] = 'Student'
                     session['public_id'] = student.public_id
-                    return redirect('/')
+                    return redirect('/home')
                 else :
                     flash("Wrong email or password!","error")
                     return render_template('sign_in.html')

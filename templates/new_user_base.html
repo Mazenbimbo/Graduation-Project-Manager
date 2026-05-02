@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+    <title>{% block title %}Graduation Project Manager{% endblock %}</title>
+    {% block head %}{% endblock %}
+    <!-- Optional: Add Inter font for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Smooth transitions */
+        .nav-link { transition: all 0.2s ease; }
+        /* Flash message animation */
+        .flash-message { animation: slideIn 0.3s ease; }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-[#12102B] text-white min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-[#1e1b4b] border-b border-cyan-500/30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Left side: Logo + Need help? -->
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('homepage') }}" class="text-xl font-bold text-cyan-400 tracking-tight">
+                        GP<span class="text-white">Manager</span>
+                    </a>
+                    <a href="#" class="text-gray-300 hover:text-cyan-300 font-medium text-sm">
+                        Need help with your project?
+                    </a>
+                </div>
+
+                <!-- Right side: Sign Up / Sign In -->
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('sign_up') }}"
+                       class="px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-[#2a2355] hover:text-white nav-link">
+                        Sign up
+                    </a>
+                    <a href="{{ url_for('sign_in') }}"
+                       class="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-700 text-white hover:bg-cyan-600 nav-link shadow-md">
+                        Sign in
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages (unchanged) -->
+    <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-message flex items-center justify-between p-4 rounded-lg shadow-lg
+                    {% if category == 'error' %}bg-red-600{% else %}bg-green-600{% endif %} text-white">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block body %}{% endblock %}
+    </main>
+
+    <!-- Footer (unchanged) -->
+    <footer class="bg-[#1e1b4b] border-t border-cyan-500/30 mt-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
+            &copy; 2025 Graduation Project Manager. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Scripts (unchanged) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(el => el.remove());
+        }, 5000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

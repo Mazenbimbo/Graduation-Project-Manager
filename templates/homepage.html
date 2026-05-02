@@ -1,0 +1,58 @@
+{% extends 'new_user_base.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% block body %}
+
+<div class="min-h-screen bg-[#12102B] py-10 px-4">
+  <!-- Welcome Section -->
+  <div class="max-w-4xl mx-auto mb-10">
+    <div class="bg-blue-950 rounded-xl border border-cyan-800 p-6 md:p-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">
+        Welcome to <span class="text-cyan-400">GP</span><span class="text-white">Manager</span>
+      </h1>
+      <p class="text-gray-300 text-lg">
+        We will help to complete your most creative idea
+      </p>
+    </div>
+  </div>
+
+  <!-- Section Title -->
+  <div class="max-w-5xl mx-auto mb-8">
+    <div class="flex items-center justify-center space-x-3">
+      <div class="h-0.5 w-12 bg-cyan-700"></div>
+      <h2 class="text-2xl font-semibold text-white uppercase tracking-wide">Get Started</h2>
+      <div class="h-0.5 w-12 bg-cyan-700"></div>
+    </div>
+  </div>
+
+  <!-- Action Cards Grid -->
+  <div class="max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Projects List Card -->
+      <a href="{{ url_for('projects') }}"
+         class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
+        <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
+          <i class="fas fa-list-check text-xl text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">Projects List</h3>
+        <p class="text-gray-400 text-sm">Browse all available projects.</p>
+      </a>
+
+      <!-- How to Card -->
+      <a href="#"
+         class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
+        <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
+          <i class="fas fa-lightbulb text-xl text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">How to create a successful project?</h3>
+        <p class="text-gray-400 text-sm">Tips and guidelines for your graduation project.</p>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Font Awesome (if not already in base.html) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+{% endblock %}
