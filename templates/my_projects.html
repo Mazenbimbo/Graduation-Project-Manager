@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'supervisor_base.html' %}
 
 {% block title %}My Projects{% endblock %}
 
@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <!-- Filter using a select dropdown -->
-<div class="mb-8 flex justify-center">
+<div class="mb-8 flex justify-center p-2">
   <div class="relative">
     <select id="statusFilter" onchange="filterProjects(this.value)"
             class="appearance-none bg-blue-950 border-2 border-cyan-800 text-gray-200 rounded-lg px-5 py-3 pr-10 font-medium shadow-md focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer">

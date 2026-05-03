@@ -36,21 +36,21 @@ def register_routes(app,db):
                 if session['role'] in ['Doctor','Assistant'] :
                     role = session['role']
                     projects = session['projects']
-                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, department=department, projects=projects, role=role, image=image)
+                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, department=department, projects=projects, role=role, image=image,data=session)
                 else : 
                     year = session['year']
                     in_team = session['in_team']
                     project_id = session['project_id']
-                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image) 
+                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image,data=session) 
             else :
                 if id.startswith('d') or id.startswith('a') : 
                     id = int(id[1:])
                     supervisor = Supervisor.query.get_or_404(id)
-                    return render_template('account.html',supervisor=supervisor)
+                    return render_template('account.html',supervisor=supervisor,data=session)
                 else:
                     id = int(id[1:])
                     student = Student.query.get_or_404(id)
-                    return render_template('account.html',student=student)
+                    return render_template('account.html',student=student,data=session)
         else :
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
@@ -478,7 +478,7 @@ def register_routes(app,db):
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            return render_template('project_details.html', project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment())
+            return render_template('project_details.html',data=session, project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment())
         else:
             return redirect('/sign-in')
 
@@ -547,13 +547,17 @@ def register_routes(app,db):
     @app.route('/supervisor_dashboard',methods=['GET'])
     def supervisor_dashboard():
         if 'logged' in session.keys(): 
-            return render_template('supervisor_dashboard.html',name=session['name'],role=session['role'])
+            return render_template('supervisor_dashboard.html',data=session)
         return render_template('supervisor_signin.html')
     @app.route('/supervisors') # make the supervisors list only from same department 
     def supervisors():
         if 'logged' in session.keys():
-            supervisors = Supervisor.query.all()
-            return render_template('supervisors.html',supervisors=supervisors,my_id=session['pid'])
+            if session['in_team'] == True:
+                supervisors = Supervisor.query.all()
+                return render_template('supervisors.html',supervisors=supervisors,my_id=session['pid'])
+            else :
+                flash('Join team to register with a supervisor!',"error")
+                return redirect('/home')
         else:
             return redirect('/sign-in')
 

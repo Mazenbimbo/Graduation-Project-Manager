@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% if data['role'] == 'Student'%}{% extends 'base.html' %}{%else%}{% extends 'supervisor_base.html' %}{%endif%}
 
 {% block title %}{{ project.name|title }}{% endblock %}
 
