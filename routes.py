@@ -219,7 +219,7 @@ def register_routes(app,db):
         if 'logged' in session.keys() :
             if request.method == 'GET':
                 tasks = Student.query.get(session['pid']).tasks
-                return render_template('todo.html',tasks = tasks)
+                return render_template('todo.html',tasks = tasks,data=session)
             elif request.method == 'POST':
                 task = request.form.get('task')
                 date = request.form.get('deadline')
@@ -606,6 +606,13 @@ def register_routes(app,db):
             projects = Supervisor.query.get_or_404(session['sid']).projects
             return render_template('my_projects.html',projects=projects,current_year=datetime.now().year)
         return redirect('/sign-in')
+
+    # @app.route('/team_tasks/<int:pid>')
+    # def team_tasks(pid):
+    #     project_members = Project.query.get_or_404(pid).members
+    #     # for member in project_members:
+    #     return render_template('tasks.html',members=project_members)
+
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():

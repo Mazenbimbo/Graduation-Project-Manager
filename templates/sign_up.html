@@ -1,27 +1,143 @@
-{%extends 'base.html'%}
-{%block title%}Sign up{%endblock%}
-{%block body%}
-<div class="flex flex-col items-center m-5 space-y-5">
-<h1 class="text-3xl font-extrabold">Sign up</h1>
-<div class="flex flex-col items-center bg-gray-700 w-[30%] h-50 border border-syan-2 rounded-2xl p-5">
-    <form action="{{url_for('sign_up')}}" method="POST">
-        <input name="name" type="text" placeholder="Full Name" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <input name="phone" type="phone" placeholder="Phone Number" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <input name="specialty" type="text" placeholder="specialty" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <input name="email" type="email" placeholder="Email" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <select name="department" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-gray-600 text-black" required>
+{% extends 'new_user_base.html' %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block body %}
+
+<div class="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+
+    <!-- Header -->
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-white">Sign Up</h2>
+    </div>
+
+    <!-- Sign Up Card -->
+    <div class="bg-blue-950 rounded-xl border border-cyan-800 shadow-xl p-8">
+      <form action="{{ url_for('sign_up') }}" method="POST" class="space-y-6">
+
+        <!-- Full Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="Your full name"
+          >
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="+20 1xx xxxx xxx"
+          >
+        </div>
+
+        <!-- Specialty -->
+        <div>
+          <label for="specialty" class="block text-sm font-medium text-gray-300 mb-1">Specialty</label>
+          <input
+            id="specialty"
+            name="specialty"
+            type="text"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="e.g. Software Engineering"
+          >
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email address</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="you@example.com"
+          >
+        </div>
+
+        <!-- Department -->
+        <div>
+          <label for="department" class="block text-sm font-medium text-gray-300 mb-1">Department</label>
+          <select
+            id="department"
+            name="department"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          >
             <option>Computer Science</option>
             <option>Information Systems</option>
             <option>Business</option>
             <option>Managment</option>
-        </select>
-        <input name="year" type="year" placeholder="Graduation Year" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <input name="password" type="password" placeholder="Password" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full text-black" required>
-        <input type="submit" value="Sign up" class="flex flex-col items-center space-y-2 rounded-xl p-2 m-2 w-full bg-blue-600 font-bold">
-    </form>
-    {% if massage %}
-        <p class="font-bold">{{massage}}</p>
-    {% endif %}
+          </select>
+        </div>
+
+        <!-- Graduation Year -->
+        <div>
+          <label for="year" class="block text-sm font-medium text-gray-300 mb-1">Graduation Year</label>
+          <input
+            id="year"
+            name="year"
+            type="text"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="2026"
+          >
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            required
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            placeholder="••••••••"
+          >
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+          <button
+            type="submit"
+            class="w-full py-3 px-4 bg-cyan-700 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-blue-950"
+          >
+            Sign Up
+          </button>
+        </div>
+
+      </form>
+
+      <!-- Message (if any) -->
+      {% if massage %}
+      <p class="mt-4 text-center text-sm text-red-400 font-medium">{{ massage }}</p>
+      {% endif %}
+
+      <!-- Sign In Link -->
+      <div class="mt-6 text-center">
+        <a href="{{ url_for('sign_in') }}" class="text-sm text-cyan-400 hover:text-cyan-300 font-medium">
+          Already have an account? Sign in
+        </a>
+      </div>
     </div>
+
+  </div>
 </div>
-{%endblock%}
+
+{% endblock %}

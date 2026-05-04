@@ -37,7 +37,6 @@ class Task(db.Model):
     tid = db.Column(db.Integer,primary_key=True)
     description = db.Column(db.Text(200), nullable=False)
     project_id = db.Column(db.Text(200), nullable=True)
-    assigned_to = db.Column(db.Text(200))
     status = db.Column(db.Text(10),default="Not Done")
     deadline = db.Column(db.Date)
     student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False) # Task.student_id
@@ -53,8 +52,8 @@ class Project(db.Model):
     year = db.Column(db.Text(200), nullable=False)
     fields = db.Column(db.Text)
     statue = db.Column(db.Text(200))
-    doctor = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=False)
-    assistent = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=False)
+    doctor = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=True)
+    assistent = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=True)
     leader = db.Column(db.Integer,nullable=False)
     team_members = db.Column(db.Text(200)) # old
     attachments = db.Column(db.Text(200))

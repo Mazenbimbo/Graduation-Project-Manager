@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %} To Do List {% endblock %}
+{% block body %}
+
+{% for member in members %}
+    {% for task in member.tasks%}
+    Description : {{task.description}} - assigned to : {{member.name}} - {{task.deadline}} - {{task.status}} - <br> 
+    {% endfor %}
+{% endfor %}
+
+{% endblock%}
