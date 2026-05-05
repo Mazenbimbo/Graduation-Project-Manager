@@ -216,23 +216,49 @@ def register_routes(app,db):
         
     @app.route('/todo',methods=['GET','POST'])
     def todo():
-        if 'logged' in session.keys() :
+        if 'logged' in session.keys() : # might need to add a check if in_team 
             if request.method == 'GET':
-                tasks = Student.query.get(session['pid']).tasks
-                return render_template('todo.html',tasks = tasks,data=session)
+                if 'project_id' in request.args: # add check after this if it is a supervisor and this project is his
+                    project_members = Project.query.get_or_404(request.args['project_id']).members
+                    return render_template('tasks.html',members = project_members,data=session)
+                else:
+                    if session['role'] == 'Student':
+                        student = Student.query.get(session['pid'])
+                        return render_template('tasks.html',student = student,data=session)
+                    flash("You're not a student!","error")
+                    return redirect('/my_projects')
             elif request.method == 'POST':
                 task = request.form.get('task')
                 date = request.form.get('deadline')
-                if not date : 
-                    flash("Please add a deadline","error")
-                    return redirect('/todo')
+                assigned_to = request.form.get('assigned')
+                if not date: 
+                    flash("Please add a deadline!","error")
+                    if 'project_id' in request.args:
+                        return redirect(f'/todo?project_id={request.args["project_id"]}')
+                    else:
+                        return redirect('/todo')
+                if session['role'] != 'Student' and not assigned_to:
+                    flash("Please choose which student to assign task to!","error")
+                    if 'project_id' in request.args:
+                        return redirect(f'/todo?project_id={request.args["project_id"]}')
+                    else:
+                        return redirect('/todo')
                 deadline = datetime.strptime(date,"%Y-%m-%d").date() # converts html form date to python date object
-                t = Task(description=task,student_id=session['pid'],deadline=deadline) # add project_id & assigned_to
+                t = Task(description=task,student_id=assigned_to if assigned_to else session['pid'],deadline=deadline) # add project_id
                 db.session.add(t)
                 db.session.commit()
-                return redirect('/todo')
+                if 'project_id' in request.args:
+                    return redirect(f'/todo?project_id={request.args["project_id"]}')
+                else:
+                    return redirect('/todo')
         else:
                 return redirect('/sign-in')
+
+    @app.route('/team_tasks/<int:pid>')
+    def team_tasks(pid):
+        project_members = Project.query.get_or_404(pid).members
+        # for member in project_members:
+        return render_template('tasks.html',members=project_members)
 
     @app.route('/change_status/<tid>',methods=['POST'])
     def change_status(tid):
@@ -240,7 +266,8 @@ def register_routes(app,db):
             task = Task.query.get(tid)
             task.status = "Done"
             db.session.commit()
-            return redirect('/todo')
+            source = request.form.get('source')
+            return redirect(source)
         else:
             return redirect('/sign-in')
 
@@ -250,7 +277,8 @@ def register_routes(app,db):
             t = Task.query.get_or_404(id)
             db.session.delete(t)
             db.session.commit()
-            return redirect('/todo')
+            source = request.form.get('source')
+            return redirect(source)
         else:
             return redirect('/sign-in')
 
@@ -606,12 +634,6 @@ def register_routes(app,db):
             projects = Supervisor.query.get_or_404(session['sid']).projects
             return render_template('my_projects.html',projects=projects,current_year=datetime.now().year)
         return redirect('/sign-in')
-
-    # @app.route('/team_tasks/<int:pid>')
-    # def team_tasks(pid):
-    #     project_members = Project.query.get_or_404(pid).members
-    #     # for member in project_members:
-    #     return render_template('tasks.html',members=project_members)
 
     # ----------- Notifications ----------
     @app.route('/notifications')
