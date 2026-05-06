@@ -25,7 +25,7 @@
     </div>
 
     <!-- Action Buttons (for team members) -->
-    {% if session.pid == project.leader or session.pid in project.get_members() %}
+    {% if session.pid == project.leader or session.pid in project.get_members() or data['sid'] and data['sid'] == project.doctor or data['sid'] == project.assistant %}
     <div class="flex flex-wrap gap-3 mb-6">
         {% if session.pid == project.leader %}
         <a href="{{ url_for('supervisors') }}" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
@@ -35,14 +35,21 @@
             Add Friend to Team
         </a>
         {% endif %}
-        <a href="#" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+        {% if data['role'] != 'Student'%}
+        <a href="/todo?project_id={{project.pid}}" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
             Go to Team Tasks →
         </a>
+        <a href="/meeting?project_id={{project.pid}}" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+            Schedule A Meeting
+        </a>
+        {% endif %}
+        {% if data['role'] == 'Student'%}
         <form action="/exit_team" method="post" class="inline">
             <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
                 Exit Team
             </button>
         </form>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -156,6 +163,17 @@
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Similar Ideas</h2>
                 <p class="text-gray-500 italic">Coming soon...</p>
+            </div>
+
+            <!-- Discussions -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-4">Discussions</h2>
+                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                    Start the first discussion
+                </a><br><br>
+                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                    Start the second discussion
+                </a>
             </div>
         </div>
     </div>

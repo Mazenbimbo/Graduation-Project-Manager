@@ -136,3 +136,16 @@ class Supervisor_notification(db.Model):
 
     def __repr__(self):
         return f'from {self._from_id}, action {self.action}'
+
+
+class Meeting(db.Model):
+    __tablename__ = 'meeting'
+    mid = db.Column(db.Integer,primary_key=True)
+    title = db.Column(db.Text(200))
+    notes = db.Column(db.Text(200),nullable=True)
+    date = db.Column(db.Date,nullable=False)
+    time = db.Column(db.Time,nullable=False)
+    place = db.Column(db.Text,nullable=False) # online or in_person
+    link = db.Column(db.Text(200),nullable=True)
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
+    project = db.relationship('Project',backref='meeting')

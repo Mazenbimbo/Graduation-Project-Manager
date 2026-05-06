@@ -1,4 +1,6 @@
 instance/data.db
 backup/data.db
 static/uploads
-gpm_app_docker.tar.gz
+gpm_app.tar.gz
+.dockerignore
+tailwind.config.js

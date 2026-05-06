@@ -1,9 +1,9 @@
 from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify,flash
 from markupsafe import escape
-from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification
+from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting
 from werkzeug.utils import secure_filename
 import os
-from datetime import datetime
+from datetime import datetime,time, date
 
 def register_routes(app,db):
 
@@ -635,16 +635,54 @@ def register_routes(app,db):
             return render_template('my_projects.html',projects=projects,current_year=datetime.now().year)
         return redirect('/sign-in')
 
+    @app.route('/meeting',methods=['POST','GET'])
+    def meeting():
+        if session['role'] != 'Student':
+            if 'project_id' in request.args: 
+                if Project.query.get_or_404(request.args.get('project_id')).doctor == session['sid']:
+                    if request.method == 'GET':
+                        return render_template('meeting.html',project_id=request.args.get('project_id'))
+                    elif request.method == 'POST': 
+                        title = request.form.get('title')
+                        notes = request.form.get('notes','').strip() or None
+                        if 'online' in request.form:
+                            place = 'online'
+                        else : 
+                            place = 'in_person'
+                        meeting_date = request.form.get('date')
+                        meeting_time = request.form.get('time')
+                        link = request.form.get('link','').strip() or None
+
+                        meeting_date = date.fromisoformat(meeting_date)
+                        meeting_time = time.fromisoformat(meeting_time)
+                        
+                        project_id = request.args.get('project_id')
+                        meeting = Meeting(title=title,notes=notes,date=meeting_date,time=meeting_time,place=place,link=link,project_id=project_id)
+                        db.session.add(meeting)
+                        db.session.commit()
+                        flash("Meeting scheduled successfully!","info")
+                        return redirect(f'/project/{request.args.get('project_id')}')
+                flash("You're not allowed here!","error")
+                return redirect('/supervisor_dashboard')
+            flash("Missing project ID parameter!","error")
+            return redirect('/supervisor_dashboard')
+        flash("You're not allowed here!","error")
+        return redirect('/home')
+
+    @app.route('/my_meetings',methods=['GET'])
+    def my_meetings():
+        meetings = Meeting.query.all()
+        return render_template('my_meetings.html', meetings=meetings,data=session)
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():
         if 'logged' in session.keys():
             if session['role'] == 'Doctor' or session['role'] == 'Assistant':
                 supervisor = Supervisor.query.get_or_404(session['sid'])
-                return render_template('notifications.html',notifications=supervisor.notifications)
+                return render_template('notifications.html',notifications=supervisor.notifications,data=session)
             else :
                 student = Student.query.get_or_404(session['pid'])
-                return render_template('notifications.html',notifications=student.notifications)
+                return render_template('notifications.html',notifications=student.notifications,data=session)
         else:
             return redirect('/sign-in')
     # -------------- APIs ----------------
