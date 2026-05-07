@@ -157,9 +157,6 @@ def register_routes(app,db):
         elif request.method == 'GET':
             return render_template('sign_in.html')
 
-    @app.route('/role')
-    def choose_role():
-        return render_template('roles.html')
     # ------------ uploading files -----------------
     ALLOWED_EXTENSIONS = {'png','jpg','jpeg','gif','pdf'} 
     def allowed_file(filename):
