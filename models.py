@@ -57,6 +57,7 @@ class Project(db.Model):
     leader = db.Column(db.Integer,nullable=False)
     team_members = db.Column(db.Text(200)) # old
     attachments = db.Column(db.Text(200))
+    special = db.Column(db.Boolean,default=False)
     members = db.relationship('Student',backref='project',lazy='dynamic')
     
     @property

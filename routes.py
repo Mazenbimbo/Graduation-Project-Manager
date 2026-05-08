@@ -9,7 +9,11 @@ def register_routes(app,db):
 
     @app.route('/')
     def homepage():
-        return render_template('homepage.html')
+        students = Student.query.all()
+        supervisors = Supervisor.query.all()
+        projects = Project.query.all() 
+        return render_template('homepage.html',students=students,projects=projects,supervisors=supervisors)
+
     @app.route("/home")
     def home():
         if 'logged' in session.keys(): 
