@@ -43,7 +43,7 @@
             Schedule A Meeting
         </a>
         {% endif %}
-        {% if data['role'] == 'Student'%}
+        {% if data['role'] == 'Student' and data['project_id'] == project.pid %}
         <form action="/exit_team" method="post" class="inline">
             <button type="submit" class="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
                 Exit Team
@@ -76,7 +76,7 @@
                     {% endfor %}
                 </div>
             </div>
-            
+            {% if data['project_id'] and data['project_id'] == project.pid %}
             <!-- Attachments Card -->
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
                 <h2 class="text-xl font-semibold text-cyan-400 mb-3">Attachments</h2>
@@ -106,6 +106,7 @@
                     </form>
                 </div>
             </div>
+            {% endif %}
         </div>
         
         <!-- Right Column: Team & Supervisors -->
@@ -150,7 +151,7 @@
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Supervisors</h2>
                 {% if project.doctor %}
-                    <div class="text-gray-300">Dr. {{ project.doctor }}</div>
+                    <div class="text-gray-300">Dr. {{ Supervisor.query.get_or_404(project.doctor).name }}</div>
                 {% else %}
                     <p class="text-gray-500 italic">No supervisor assigned yet.</p>
                 {% endif %}
@@ -164,7 +165,8 @@
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Similar Ideas</h2>
                 <p class="text-gray-500 italic">Coming soon...</p>
             </div>
-
+            
+            {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
             <!-- Discussions -->
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Discussions</h2>
@@ -175,6 +177,7 @@
                     Start the second discussion
                 </a>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
