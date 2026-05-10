@@ -59,6 +59,9 @@ class Project(db.Model):
     attachments = db.Column(db.Text(200))
     special = db.Column(db.Boolean,default=False)
     members = db.relationship('Student',backref='project',lazy='dynamic')
+
+    doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
+    assistant_supervisor = db.relationship('Supervisor', foreign_keys=[assistent], lazy=True)
     
     @property
     def public_id(self):

@@ -502,12 +502,15 @@ def register_routes(app,db):
     def project_detail(id):
         if 'logged' in session.keys():
             project = Project.query.get_or_404(id)
+            s = Supervisor.query
+            doctor = s.get_or_404(project.doctor) if project.doctor else None
+            assistant = s.get_or_404(project.assistent) if project.assistent else None 
             members=project.get_members()
             members_name = []
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            return render_template('project_details.html',data=session, project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment())
+            return render_template('project_details.html',data=session, project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment(),doctor=doctor,assistant=assistant)
         else:
             return redirect('/sign-in')
 

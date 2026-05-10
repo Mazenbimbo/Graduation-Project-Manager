@@ -79,17 +79,16 @@
           <div class="text-sm text-gray-300 mb-3 space-y-1">
             <div>
               <span class="text-cyan-400 font-medium">Doctor:</span>
-              {% if project.doctor %}
-                {# Assumes project.doctor is a Supervisor object with .name; if not, shows ID #}
-                <span>{{ project.doctor.name if project.doctor.name is defined else project.doctor }}</span>
+              {% if project.doctor_supervisor %}
+                <span>{{ project.doctor_supervisor.name }}</span>
               {% else %}
                 <span class="text-gray-500">Not assigned</span>
               {% endif %}
             </div>
             <div>
               <span class="text-cyan-400 font-medium">Assistant:</span>
-              {% if project.assistent %}
-                <span>{{ project.assistent.name if project.assistent.name is defined else project.assistent }}</span>
+              {% if project.assistent_supervisor %}
+                <span>{{ project.assistent_supervisor.name }}</span>
               {% else %}
                 <span class="text-gray-500">Not assigned</span>
               {% endif %}

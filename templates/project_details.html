@@ -50,6 +50,14 @@
             </button>
         </form>
         {% endif %}
+
+        {% if data['role'] == 'Student' and data['project_id'] == project.pid and project.leader == data['pid']%}
+        <form action="#" method="post" class="inline">
+            <button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                Edit project
+            </button>
+        </form>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -151,12 +159,15 @@
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Supervisors</h2>
                 {% if project.doctor %}
-                    <div class="text-gray-300">Dr. {{ Supervisor.query.get_or_404(project.doctor).name }}</div>
+                    <a href='/account/{{doctor.public_id}}' class="text-gray-200 hover:text-cyan-400 transition font-medium">- Dr. {{ doctor.name }}</a>
                 {% else %}
-                    <p class="text-gray-500 italic">No supervisor assigned yet.</p>
+                    <p class="text-gray-500">- No supervisor assigned yet.</p>
                 {% endif %}
-                {% if project.assistent %}
-                    <div class="text-gray-300 mt-1">TA. {{ project.assistent }}</div>
+                {% if project.assistant %}
+                    <a href='/account/{{doctor.public_id}}' class="text-gray-200 hover:text-cyan-400 transition font-medium">- TA. {{ assistant.name }}</a>
+                {% else %}
+                    <p class="text-gray-500">- No assistant assigned yet.</p>
+                
                 {% endif %}
             </div>
             
