@@ -392,6 +392,7 @@ def register_routes(app,db):
             else : 
                 name = request.form.get('name')
                 description = request.form.get('description')
+                #team_size = request.form.get('team_size')
                 fields = []
                 if request.form.get('AI') :
                     fields.append('AI')
@@ -405,6 +406,10 @@ def register_routes(app,db):
                     fields.append('Mobile')
                 if request.form.get('Cyber Security') :
                     fields.append('CyberSec')
+                if request.form.get('Desktop') :
+                    fields.append('Desktop')
+                if request.form.get('IT') :
+                    fields.append('IT')
 
                 year = datetime.now().year
                 project = Project(name=name, description=description, year=year,leader=session['pid'])
@@ -562,6 +567,7 @@ def register_routes(app,db):
                     session['email'] = supervisor.email
                     session['department'] = supervisor.department
                     session['password'] = supervisor.password
+                    session['image'] = supervisor.image
                     session['logged'] = True
                     session['role'] = supervisor.role
                     session['projects'] = [project.pid for project in supervisor.projects]

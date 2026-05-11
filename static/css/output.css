@@ -426,6 +426,9 @@
   .h-0\.5 {
     height: calc(var(--spacing) * 0.5);
   }
+  .h-2 {
+    height: calc(var(--spacing) * 2);
+  }
   .h-4 {
     height: calc(var(--spacing) * 4);
   }
@@ -1290,6 +1293,9 @@
   }
   .accent-cyan-400 {
     accent-color: var(--color-cyan-400);
+  }
+  .accent-cyan-500 {
+    accent-color: var(--color-cyan-500);
   }
   .opacity-0 {
     opacity: 0%;
