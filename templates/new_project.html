@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Create Project{% endblock %}
+{% block title %}Create/Edit Project{% endblock %}
 
 {% block body %}
 <div class="max-w-3xl mx-auto px-4 py-8">
@@ -10,7 +10,7 @@
       <svg class="w-8 h-8 mr-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
       </svg>
-      Create New Project
+      Create/Edit Project
     </h1>
     <p class="text-gray-400 mt-2">Fill in the details below to propose a new graduation project.</p>
   </div>
@@ -24,7 +24,7 @@
           Project Name <span class="text-red-400">*</span>
         </label>
         <input type="text" name="name" id="name" required
-               placeholder="e.g., AI-Powered Task Manager"
+               placeholder="e.g., AI-Powered Task Manager" {% if project %} value="{{project.name}}" {%endif%}
                class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition">
       </div>
 
@@ -35,32 +35,18 @@
         </label>
         <textarea name="description" id="description" rows="5" required
                   placeholder="Describe the project's objectives, scope, and expected outcomes..."
-                  class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-y"></textarea>
+                  class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-y">{% if project %}{{project.description}}{%endif%}</textarea>
       </div>
-
-      <!-- Team Size Drag Bar (inserted before fields part) -->
-      <!-- <div>
-        <label for="team_size" class="block text-sm font-medium text-gray-300 mb-2">
-          Team Size <span class="text-red-400">*</span>
-        </label>
-        <div class="flex items-center space-x-4">
-          <input type="range" id="team_size" name="team_size" min="3" max="6" value="3" step="1"
-                 oninput="document.getElementById('team_size_value').textContent = this.value"
-                 class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-500">
-          <span id="team_size_value" class="text-white font-bold w-8 text-center">3</span>
-        </div>
-        <p class="text-xs text-gray-500 mt-1">Drag to select team size (3-6 members)</p>
-      </div> -->
 
       <!-- Fields / Specialties Section -->
       <div>
         <h3 class="text-lg font-semibold text-cyan-400 mb-3">Project Fields / Specialties</h3>
         <p class="text-sm text-gray-400 mb-4">Select all fields that apply to this project.</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {% set fields = ['AI', 'Cyber Security', 'Networking', 'Web', 'Mobile', 'Embedded', 'IT', 'Desktop'] %}
+          {% set fields = ['AI', 'Cyber Security', 'Network', 'Web', 'Mobile', 'Embedded', 'IT', 'Desktop'] %}
           {% for field in fields %}
           <label class="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-cyan-500/50 cursor-pointer transition">
-            <input type="checkbox" name="{{ field }}" value="on"
+            <input type="checkbox" name="{{ field }}" value="on" {% if project and field in project.get_fields() %} checked {%endif%}
                    class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500 focus:ring-2">
             <span class="text-gray-200">{{ field }}</span>
           </label>
@@ -76,7 +62,7 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
-          Create Project
+          Create/Edit Project
         </button>
         <a href="{{ url_for('projects') }}"
            class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 text-center">

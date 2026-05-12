@@ -1202,6 +1202,9 @@
   .whitespace-nowrap {
     white-space: nowrap;
   }
+  .text-\[\#12102B\] {
+    color: #12102B;
+  }
   .text-black {
     color: var(--color-black);
   }

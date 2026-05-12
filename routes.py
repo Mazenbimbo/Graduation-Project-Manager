@@ -388,28 +388,31 @@ def register_routes(app,db):
     def new_project():
         if 'logged' in session.keys() :
             if request.method == 'GET':
+                if 'action' in request.args:
+                    project = Project.query.get_or_404(session['project_id'])
+                    return render_template('new_project.html',project=project)
                 return render_template('new_project.html')
             else : 
                 name = request.form.get('name')
                 description = request.form.get('description')
-                #team_size = request.form.get('team_size')
+                available_fields = ['AI','Network','Embedded','Web','Cyber Security','Desktop','IT']
                 fields = []
-                if request.form.get('AI') :
-                    fields.append('AI')
-                if request.form.get('Networking') :
-                    fields.append('Network')
-                if request.form.get('Embedded') :
-                    fields.append('Embedded')
-                if request.form.get('Web') :
-                    fields.append('Web')
-                if request.form.get('Mobile') :
-                    fields.append('Mobile')
-                if request.form.get('Cyber Security') :
-                    fields.append('CyberSec')
-                if request.form.get('Desktop') :
-                    fields.append('Desktop')
-                if request.form.get('IT') :
-                    fields.append('IT')
+
+                for field in available_fields : 
+                    if request.form.get(field) :
+                        fields.append(field)
+
+                # edit ptoject (only student can edit)
+                if 'action' in request.args:
+                    p = Project.query.get_or_404(session['project_id'])
+                    p.name =  request.form.get('name')
+                    p.description = request.form.get('description')
+                    p.set_fields(fields)
+                    db.session.commit()
+
+                    flash('Edited successfully!','info')
+                    return redirect(f'/project/{session['project_id']}')
+
 
                 year = datetime.now().year
                 project = Project(name=name, description=description, year=year,leader=session['pid'])
@@ -592,7 +595,8 @@ def register_routes(app,db):
         if 'logged' in session.keys():
             if session['in_team'] == True:
                 supervisors = Supervisor.query.all()
-                return render_template('supervisors.html',supervisors=supervisors,my_id=session['pid'])
+                my_project = Project.query.get_or_404(session['project_id'])
+                return render_template('supervisors.html',supervisors=supervisors,my_id=session['pid'],my_project=my_project)
             else :
                 flash('Join team to register with a supervisor!',"error")
                 return redirect('/home')
@@ -689,6 +693,7 @@ def register_routes(app,db):
         if 'logged' in session.keys():
             if session['role'] == 'Doctor' or session['role'] == 'Assistant':
                 supervisor = Supervisor.query.get_or_404(session['sid'])
+                # project = Student.query.get_or_404()
                 return render_template('notifications.html',notifications=supervisor.notifications,data=session)
             else :
                 student = Student.query.get_or_404(session['pid'])
