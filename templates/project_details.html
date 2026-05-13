@@ -52,11 +52,7 @@
         {% endif %}
 
         {% if data['role'] == 'Student' and data['project_id'] == project.pid and project.leader == data['pid']%}
-        <form action="#" method="post" class="inline">
-            <button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
-                Edit project
-            </button>
-        </form>
+        <a href="/new_project?action=edit" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">Edit project</a>
         {% endif %}
     </div>
     {% endif %}
@@ -84,6 +80,22 @@
                     {% endfor %}
                 </div>
             </div>
+
+            {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
+            <!-- Discussions -->
+            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
+                <h2 class="text-xl font-semibold text-cyan-400 mb-3">Discussions</h2>
+                <div class="flex space-x-2">
+                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                    Start the first discussion
+                </a>
+                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+                    Start the second discussion
+                </a>
+                </div>
+            </div>
+            {% endif %}
+
             {% if data['project_id'] and data['project_id'] == project.pid %}
             <!-- Attachments Card -->
             <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
@@ -176,19 +188,6 @@
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Similar Ideas</h2>
                 <p class="text-gray-500 italic">Coming soon...</p>
             </div>
-            
-            {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
-            <!-- Discussions -->
-            <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-5">
-                <h2 class="text-xl font-semibold text-cyan-400 mb-4">Discussions</h2>
-                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
-                    Start the first discussion
-                </a><br><br>
-                <a href="#" class="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
-                    Start the second discussion
-                </a>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
