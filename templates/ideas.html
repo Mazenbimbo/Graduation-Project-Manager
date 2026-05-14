@@ -9,34 +9,16 @@
 
     <!-- Page heading -->
     <div class="text-center mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-white">Browse Projects</h1>
-      <p class="text-gray-400 mt-2">Explore old graduation projects and get creative.</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-white">Browse Ideas</h1>
+      <p class="text-gray-400 mt-2">Discover graduation projects and join a team</p>
     </div>
 
-    <!-- Filters: Year Dropdown + Featured Toggle -->
+    <!-- Filters: Field Dropdown + Featured Toggle -->
     <div class="bg-blue-950 rounded-xl border border-cyan-800 p-3 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-      <form method="GET" action="{{ url_for('projects') }}" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+      <form method="GET" action="{{ url_for('ideas') }}" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
         <!-- Year dropdown -->
-        <div class="flex-1 w-full sm:w-auto mb-4">
-          <label for="year_filter" class="text-sm text-gray-300 font-medium mb-1 block">Graduation Year</label>
-          <select name="year" id="year_filter"
-                  class="w-full bg-gray-800 text-white border border-cyan-800 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400">
-            <option value="all" {% if not request.args.get('year') or request.args.get('year') == 'all' %}selected{% endif %}>All Years</option>
-            {% set unique_years = [] %}
-            {% for p in projects %}
-              {% if p.year not in unique_years %}
-                {% set _ = unique_years.append(p.year) %}
-              {% endif %}
-            {% endfor %}
-            {% for y in unique_years|sort %}
-              <option value="{{ y }}" {% if request.args.get('year') == y %}selected{% endif %}>{{ y }}</option>
-            {% endfor %}
-          </select>
-          </div>
-          
-          <!-- Field dropdown -->
-          <div class="flex-1 w-full sm:w-auto mb-4">
-          <label for="field_filter" class="text-sm text-gray-300 font-medium mb-1 block">Fields</label>
+        <div class="flex-1 w-full sm:w-auto">
+          <label for="field_filter" class="text-sm text-gray-300 font-medium mb-1 block">Graduation Year</label>
           <select name="field" id="field"
                   class="w-full bg-gray-800 text-white border border-cyan-800 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400">
             <option value="all" {% if not request.args.get('field') or request.args.get('field') == 'all' %}selected{% endif %}>All Fields</option>
@@ -55,7 +37,7 @@
         </div>
 
         <!-- Featured toggle -->
-        <div class="flex items-center space-x-3 pt-2 sm:pt-0">
+        <div class="flex items-center space-x-3 pt-2 sm:pt-6">
           <label for="featured_filter" class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" name="featured" id="featured_filter" value="1"
                    class="sr-only peer"
@@ -67,12 +49,12 @@
 
         <!-- Apply button -->
         <button type="submit"
-                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-0">
+                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6">
           Apply Filters
         </button>
       </form>
-      <a href="{{url_for('projects')}}"
-                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-0">
+      <a href="{{url_for('ideas')}}"
+                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6">
           Reset
         </a>
     </div>
@@ -80,6 +62,8 @@
     <!-- Projects Grid (all projects together) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for project in projects %}
+        {# Client-side filtering can be done with JS, but server-side would need route update.
+           For now, display all, leaving filter logic to backend when ready. #}
         <div class="bg-blue-950 rounded-xl border border-cyan-800 p-6 hover:border-cyan-500 transition-all duration-200 flex flex-col">
 
           <!-- Name + Featured Star -->
@@ -142,11 +126,16 @@
                class="flex-1 text-center bg-cyan-800 hover:bg-cyan-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
               <i class="fas fa-info-circle mr-1"></i> Details
             </a>
+            {% if not in_team %}
+            <a href="/join/{{ project.pid }}"
+               class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-3 rounded-lg border border-cyan-800 transition-colors">
+              <i class="fas fa-user-plus mr-1"></i> Join
+            </a>
+            {% endif %}
           </div>
         </div>
       {% endfor %}
     </div>
-
   </div>
 </div>
 

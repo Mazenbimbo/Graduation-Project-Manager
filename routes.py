@@ -18,7 +18,9 @@ def register_routes(app,db):
     def home():
         if 'logged' in session.keys(): 
             name = session["name"]
-            return render_template("home.html",data=session)
+            if session['project_id'] : 
+                project = Project.query.get_or_404(session['project_id'])
+            return render_template("home.html",data=session,project=project if session['project_id'] else "")
         return render_template("homepage.html")
 
     @app.route('/logout')
@@ -500,12 +502,26 @@ def register_routes(app,db):
 
     @app.route('/projects')
     def projects():
-        if 'logged' in session.keys():
-            projects = Project.query.all()
-            year = str(datetime.now().year)
-            return render_template('projects.html',projects=projects,in_team = session['in_team'],this_year =year)
-        else:
-            return redirect('/sign-in')
+            this_year = str(datetime.now().year)
+            projects = Project.query.filter(Project.year<this_year)
+            if 'field' in request.args and request.args.get('field') != 'all':
+                projects = [p for p in projects if request.args.get('field') in p.get_fields()]
+            if 'year' in request.args and request.args.get('year') != 'all': 
+                projects = projects.filter_by(year = request.args.get('year'))
+            if 'featured' in request.args :
+                projects = projects.filter_by(special=True)
+            return render_template('projects.html',projects=projects,this_year =this_year)
+
+    @app.route('/ideas')
+    def ideas():
+        this_year = str(datetime.now().year)
+        projects = Project.query.filter_by(year=this_year)
+        if 'field' in request.args and request.args.get('field') != 'all':
+            projects = [p for p in projects if request.args.get('field') in p.get_fields()]
+        if 'featured' in request.args :
+            projects = projects.filter_by(special=True)
+        return render_template('ideas.html',projects=projects)
+
     @app.route('/project/<id>')
     def project_detail(id):
         if 'logged' in session.keys():

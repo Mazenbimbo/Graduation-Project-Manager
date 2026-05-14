@@ -29,12 +29,12 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       <!-- Idea List Card -->
-      <a href="#" 
+      <a href="{{url_for('ideas')}}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
         <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
-          <i class="fas fa-list-check text-xl text-white"></i>
+          <i class="fas fa-lightbulb text-xl text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-1">Join an Idea</h3>
+        <h3 class="text-xl font-bold text-white mb-1">Explore/Join an Idea</h3>
         <p class="text-gray-400 text-sm">Explore projects ideas & find your team.</p>
       </a>
 
@@ -42,7 +42,7 @@
       <a href="{{ url_for('projects') }}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
         <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
-          <i class="fas fa-list-check text-xl text-white"></i>
+          <i class="fas fa-book text-xl text-white"></i>
         </div>
         <h3 class="text-xl font-bold text-white mb-1">Library</h3>
         <p class="text-gray-400 text-sm">Explore previous ideas and get creative.</p>
@@ -60,16 +60,19 @@
       {% endif %}
       
       {% if data['in_team'] %}
+      {% if project != "" and project.get_members()|length < 6 %}
       <!-- Choose Teammate Card -->
       <a href="{{ url_for('friends') }}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
         <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
           <i class="fas fa-user-plus text-xl text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-1">Choose Teammate</h3>
-        <p class="text-gray-400 text-sm">Invite or select collaborators.</p>
+        <h3 class="text-xl font-bold text-white mb-1">Invite Friends</h3>
+        <p class="text-gray-400 text-sm">Invite friends to join your team.</p>
       </a>
+      {% endif %}
 
+      {% if project != "" and (not project.doctor or not project.assistant) %}
       <!-- Choose a supervisor Card -->
       <a href="{{ url_for('supervisors') }}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
@@ -79,25 +82,51 @@
         <h3 class="text-xl font-bold text-white mb-1">Choose Supervisor</h3>
         <p class="text-gray-400 text-sm">Invite or select supervisors.</p>
       </a>
+      {% endif %}
 
+      <!-- My Project -->
       <a href="/project/{{data['project_id']}}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
         <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
-          <i class="fas fa-list-check text-xl text-white"></i>
+          <i class="fas fa-diagram-project text-xl text-white"></i>
         </div>
         <h3 class="text-xl font-bold text-white mb-1">My Project</h3>
         <p class="text-gray-400 text-sm">View your project's details</p>
       </a>
 
-      <a href="/my_meetings" 
+      <!-- My Tasks -->
+      <a href="{{ url_for('todo') }}" 
          class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
         <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
           <i class="fas fa-list-check text-xl text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">My Tasks</h3>
+        <p class="text-gray-400 text-sm">Check your project tasks or add new ones.</p>
+      </a>
+
+      {% if project != "" and (project.doctor or project.assistant) %}
+      <a href="/my_meetings" 
+         class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
+        <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
+          <i class="fas fa-calendar-check text-xl text-white"></i>
         </div>
         <h3 class="text-xl font-bold text-white mb-1">My Meetings</h3>
         <p class="text-gray-400 text-sm">View your scheduled meetings</p>
       </a>
       {% endif %}
+
+      {% endif %}
+
+
+      <!-- Announecments -->
+      <a href="#" 
+         class="block bg-blue-950 rounded-lg border border-cyan-800 hover:border-cyan-500 transition-colors duration-200 p-6">
+        <div class="w-12 h-12 bg-cyan-800 rounded-lg flex items-center justify-center mb-4">
+          <i class="fas fa-bullhorn text-xl text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">Announecments</h3>
+        <p class="text-gray-400 text-sm">Check the announecments published by the admin.</p>
+      </a>
     </div>
   </div>
 </div>
