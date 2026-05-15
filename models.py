@@ -100,6 +100,7 @@ class Supervisor(db.Model):
     specialty = db.Column(db.String(100), nullable=True)
     role = db.Column(db.String(20), nullable=False)
     department = db.Column(db.String(100), nullable=True)
+    projects_limit = db.Column(db.Integer,default=10)
     projects = db.relationship('Project',secondary=supervisor_project,backref=db.backref('supervisors', lazy='dynamic'),lazy='dynamic')
     # ^^ Many-to-many relationship, backref creates 'supervisors' on Project ^^
     notifications = db.relationship('Supervisor_notification',backref='supervisor',lazy=True)

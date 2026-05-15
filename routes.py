@@ -590,6 +590,7 @@ def register_routes(app,db):
                     session['logged'] = True
                     session['role'] = supervisor.role
                     session['projects'] = [project.pid for project in supervisor.projects]
+                    session['number_of_projects'] = supervisor.projects_limit or 10
                     session['public_id'] = supervisor.public_id
                     return redirect('/supervisor_dashboard')
                 else :
@@ -703,6 +704,15 @@ def register_routes(app,db):
     def my_meetings():
         meetings = Meeting.query.all()
         return render_template('my_meetings.html', meetings=meetings,data=session)
+
+    @app.route('/edit_projects_number',methods=['POST'])
+    def edit_projects_number():
+        number = request.form.get('number')
+        s = Supervisor.query.get_or_404(session['sid'])
+        s.projects_limit = number
+        session['number_of_projects'] = number
+        db.session.commit()
+        return redirect(url_for('supervisor_dashboard'))
     # ----------- Notifications ----------
     @app.route('/notifications')
     def notifications():
