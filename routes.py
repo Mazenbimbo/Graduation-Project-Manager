@@ -219,15 +219,19 @@ def register_routes(app,db):
         
     @app.route('/todo',methods=['GET','POST'])
     def todo():
-        if 'logged' in session.keys() : # might need to add a check if in_team 
+        if 'logged' in session.keys() : # might need to add a check if in_team  
             if request.method == 'GET':
                 if 'project_id' in request.args: # add check after this if it is a supervisor and this project is his
                     project_members = Project.query.get_or_404(request.args['project_id']).members
                     return render_template('tasks.html',members = project_members,data=session)
                 else:
                     if session['role'] == 'Student':
-                        student = Student.query.get(session['pid'])
-                        return render_template('tasks.html',student = student,data=session)
+                        if session['in_team']:
+                            student = Student.query.get(session['pid'])
+                            return render_template('tasks.html',student = student,data=session)
+                        else : 
+                            flash("Can't access task page if you're not in team!","error")
+                            return redirect('/ideas')
                     flash("You're not a student!","error")
                     return redirect('/my_projects')
             elif request.method == 'POST':
