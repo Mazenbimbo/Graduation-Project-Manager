@@ -219,7 +219,7 @@ def register_routes(app,db):
         
     @app.route('/todo',methods=['GET','POST'])
     def todo():
-        if 'logged' in session.keys() : # might need to add a check if in_team  
+        if 'logged' in session.keys() : 
             if request.method == 'GET':
                 if 'project_id' in request.args: # add check after this if it is a supervisor and this project is his
                     project_members = Project.query.get_or_404(request.args['project_id']).members
@@ -730,6 +730,9 @@ def register_routes(app,db):
                 return render_template('notifications.html',notifications=student.notifications,data=session)
         else:
             return redirect('/sign-in')
+        @app.route('/messages',methods=['GET','POST'])
+        def messages():
+            return 'Coming Soon...'
     # -------------- APIs ----------------
     def is_allowed_api(): # change to better auth token
         header = request.headers.get("Authorization")

@@ -154,3 +154,10 @@ class Meeting(db.Model):
     link = db.Column(db.Text(200),nullable=True)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     project = db.relationship('Project',backref='meeting')
+
+class Message(db.Model):
+    __tablename__ = 'message'
+    mid = db.Column(db.Integer,primary_key=True)
+    from_id = db.Column(db.Integer)
+    to_id = db.Column(db.Integer)
+    content = db.Column(db.Text(200),nullable=True)
