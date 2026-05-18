@@ -158,6 +158,7 @@ class Meeting(db.Model):
 class Message(db.Model):
     __tablename__ = 'message'
     mid = db.Column(db.Integer,primary_key=True)
-    from_id = db.Column(db.Integer)
-    to_id = db.Column(db.Integer)
-    content = db.Column(db.Text(200),nullable=True)
+    direction = db.Column(db.Integer,nullable=False) # 1 = student->supervisor ,2 = supervisor->student 
+    supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
+    content = db.Column(db.Text(200),nullable=False)

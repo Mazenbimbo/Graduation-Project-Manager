@@ -4,3 +4,4 @@ static/uploads
 gpm_app.tar.gz
 .dockerignore
 tailwind.config.js
+templates/tst.html

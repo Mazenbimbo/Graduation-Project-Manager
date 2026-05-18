@@ -17,7 +17,7 @@
 
   <!-- Form Card -->
   <div class="bg-[#1e1b4b] rounded-xl border border-cyan-500/30 p-6 md:p-8">
-    <form action="{{ url_for('new_project') }}" method="POST" class="space-y-6">
+    <form action="{% if project%} /new_project?action='edit' {%else%} /new_project {% endif %}" method="POST" class="space-y-6">
       <!-- Project Name -->
       <div>
         <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
