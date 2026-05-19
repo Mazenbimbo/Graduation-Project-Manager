@@ -1,6 +1,6 @@
 from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify,flash
 from markupsafe import escape
-from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting
+from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting,Message
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime,time, date
@@ -451,7 +451,7 @@ def register_routes(app,db):
                 session['in_team'] = True
                 db.session.commit()
 
-                return redirect('/projects')
+                return redirect('/ideas')
         else:
             return redirect('/sign-in')
     
@@ -524,7 +524,7 @@ def register_routes(app,db):
             projects = [p for p in projects if request.args.get('field') in p.get_fields()]
         if 'featured' in request.args :
             projects = projects.filter_by(special=True)
-        return render_template('ideas.html',projects=projects)
+        return render_template('ideas.html',projects=projects,data=session)
 
     @app.route('/project/<id>')
     def project_detail(id):
@@ -538,7 +538,15 @@ def register_routes(app,db):
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            return render_template('project_details.html',data=session, project=project,fields=project.get_fields() ,compined=compined,attachments = project.get_attachment(),doctor=doctor,assistant=assistant)
+            #messages = Messages.query.all()
+            return render_template(
+                'project_details.html',
+                data=session, 
+                project=project,
+                fields=project.get_fields(),
+                compined=compined,attachments = project.get_attachment(),
+                doctor=doctor,
+                assistant=assistant)
         else:
             return redirect('/sign-in')
 

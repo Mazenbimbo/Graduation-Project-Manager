@@ -49,6 +49,40 @@
                 Exit Team
             </button>
         </form>
+
+        <button id="openModalBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">
+            Messages
+        </button>
+
+        <!-- messages popup -->
+        <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
+            <div class="bg-[#1e1b4b] w-full max-w-md p-6 rounded-lg shadow-xl relative">
+            <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+
+            <h2 class="text-xl font-semibold text-cyan-400 mb-3">Messages</h2>
+
+                <!-- Messages list-->
+                {% if messages %}
+                
+                {% else %}
+                <span class="text-gray-600 italic">No messgaes found...</span>
+                {% endif %}
+                <!-- New message field-->
+                 <form action="/messages" method="post">
+                    <textarea name="content" placeholder="Write your message here"></textarea>
+                    <input type="submit" value="Send">
+                 </form>
+
+            </div>
+        </div>
+
+          <script>
+                const modal = document.getElementById('loginModal');
+                document.getElementById('openModalBtn').addEventListener('click', () => modal.classList.remove('hidden'));
+                document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.add('hidden'));
+                modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+                document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) modal.classList.add('hidden'); });
+            </script>
         {% endif %}
 
         {% if data['role'] == 'Student' and data['project_id'] == project.pid and project.leader == data['pid']%}

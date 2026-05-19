@@ -59,6 +59,7 @@ class Project(db.Model):
     attachments = db.Column(db.Text(200))
     special = db.Column(db.Boolean,default=False)
     members = db.relationship('Student',backref='project',lazy='dynamic')
+    messages = db.relationship('Message',backref='project',lazy='dynamic')
 
     doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
     assistant_supervisor = db.relationship('Supervisor', foreign_keys=[assistent], lazy=True)
@@ -102,6 +103,7 @@ class Supervisor(db.Model):
     department = db.Column(db.String(100), nullable=True)
     projects_limit = db.Column(db.Integer,default=10)
     projects = db.relationship('Project',secondary=supervisor_project,backref=db.backref('supervisors', lazy='dynamic'),lazy='dynamic')
+    messages = db.relationship('Message',backref='supervisor',lazy='dynamic')
     # ^^ Many-to-many relationship, backref creates 'supervisors' on Project ^^
     notifications = db.relationship('Supervisor_notification',backref='supervisor',lazy=True)
     # add messages later
@@ -162,3 +164,4 @@ class Message(db.Model):
     supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     content = db.Column(db.Text(200),nullable=False)
+    message_type = db.Column(db.Text(200),nullable=False) # message - feedback
