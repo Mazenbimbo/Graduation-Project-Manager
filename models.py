@@ -164,4 +164,4 @@ class Message(db.Model):
     supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     content = db.Column(db.Text(200),nullable=False)
-    message_type = db.Column(db.Text(200),nullable=False) # message - feedback
+    message_type = db.Column(db.Text(200),default='message') # message - feedback

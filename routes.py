@@ -725,7 +725,7 @@ def register_routes(app,db):
         session['number_of_projects'] = number
         db.session.commit()
         return redirect(url_for('supervisor_dashboard'))
-    # ----------- Notifications ----------
+
     @app.route('/notifications')
     def notifications():
         if 'logged' in session.keys():
@@ -738,9 +738,15 @@ def register_routes(app,db):
                 return render_template('notifications.html',notifications=student.notifications,data=session)
         else:
             return redirect('/sign-in')
+
         @app.route('/messages',methods=['GET','POST'])
         def messages():
-            return 'Coming Soon...'
+            if request.method == 'POST':
+                if session['role'] == 'Student':
+                    supervisor = request.form.get('supervisor')
+                    content = request.form.get('content')
+                    new_message = Message(direction=1,project_id=session['project_id'],content=content,supervisor_id=supervisor)
+                    
     # -------------- APIs ----------------
     def is_allowed_api(): # change to better auth token
         header = request.headers.get("Authorization")
