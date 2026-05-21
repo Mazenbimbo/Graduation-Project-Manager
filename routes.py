@@ -746,6 +746,10 @@ def register_routes(app,db):
                     supervisor = request.form.get('supervisor')
                     content = request.form.get('content')
                     new_message = Message(direction=1,project_id=session['project_id'],content=content,supervisor_id=supervisor)
+                    db.session.add(new_message)
+                    db.session.commit()
+                else: 
+                    pass
                     
     # -------------- APIs ----------------
     def is_allowed_api(): # change to better auth token
