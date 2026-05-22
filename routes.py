@@ -538,7 +538,7 @@ def register_routes(app,db):
             for member in members :
                 members_name.append(f"{Student.query.get_or_404(member).name}")
             compined = zip(members_name, members)
-            #messages = Messages.query.all()
+            messages = Message.query.filter_by(project_id=id)
             return render_template(
                 'project_details.html',
                 data=session, 
@@ -546,7 +546,8 @@ def register_routes(app,db):
                 fields=project.get_fields(),
                 compined=compined,attachments = project.get_attachment(),
                 doctor=doctor,
-                assistant=assistant)
+                assistant=assistant,
+                messages=messages)
         else:
             return redirect('/sign-in')
 
@@ -739,17 +740,24 @@ def register_routes(app,db):
         else:
             return redirect('/sign-in')
 
-        @app.route('/messages',methods=['GET','POST'])
-        def messages():
-            if request.method == 'POST':
-                if session['role'] == 'Student':
-                    supervisor = request.form.get('supervisor')
-                    content = request.form.get('content')
-                    new_message = Message(direction=1,project_id=session['project_id'],content=content,supervisor_id=supervisor)
-                    db.session.add(new_message)
-                    db.session.commit()
-                else: 
-                    pass
+    @app.route('/messages',methods=['POST'])
+    def messages():
+        # validate if missing data
+        if session['role'] == 'Student':
+            supervisor = request.form.get('supervisor')
+            content = request.form.get('content')
+            new_message = Message(direction=1,project_id=session['project_id'],content=content,supervisor_id=supervisor)
+            db.session.add(new_message)
+            db.session.commit()
+        else: 
+            project_id = request.form.get('project_id')
+            content = request.form.get('content')
+            new_message = Message(direction=2,project_id=project_id,content=content,supervisor_id=session['sid'])
+            db.session.add(new_message)
+            db.session.commit() 
+        
+        return redirect('/ideas')
+
                     
     # -------------- APIs ----------------
     def is_allowed_api(): # change to better auth token
