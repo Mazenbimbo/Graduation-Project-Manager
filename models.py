@@ -124,7 +124,8 @@ class Notification(db.Model):
 
     nid = db.Column(db.Integer,primary_key=True)
     action = db.Column(db.String,nullable=False) # actions : add - join - supervise 
-    _from_id = db.Column(db.Integer,nullable=True)
+    _from_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=True)
+    _from = db.relationship('Student', backref='notifications_sent', lazy=True)
     _from_name = db.Column(db.String,nullable=True)
     student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False)
     read = db.Column(db.Boolean,default=False,nullable=False)
@@ -136,7 +137,7 @@ class Supervisor_notification(db.Model):
     __tablename__ = 'supervisor_notification'
     nid = db.Column(db.Integer,primary_key=True)
     action = db.Column(db.String,nullable=False) # actions : supervise - 
-    _from_id = db.Column(db.Integer,nullable=True)
+    _from_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=True)
     _from_name = db.Column(db.String,nullable=True)
     supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
     read = db.Column(db.Boolean,default=False,nullable=False)
