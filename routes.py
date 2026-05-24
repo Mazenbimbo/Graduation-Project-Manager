@@ -758,6 +758,17 @@ def register_routes(app,db):
         
         return redirect('/ideas')
 
+    @app.route('/disscutions',methods=['POST','GET'])
+    def disscutions():
+        return 'coming soon'
+
+    @app.route('/announecments',methods=['POST','GET'])
+    def announecments():
+        return 'coming soon'
+
+    @app.route('/guide',methods=['POST','GET'])
+    def guide():
+        return 'coming soon'
                     
     # -------------- APIs ----------------
     def is_allowed_api(): # change to better auth token
