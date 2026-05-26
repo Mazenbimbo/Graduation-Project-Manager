@@ -514,7 +514,7 @@ def register_routes(app,db):
                 projects = projects.filter_by(year = request.args.get('year'))
             if 'featured' in request.args :
                 projects = projects.filter_by(special=True)
-            return render_template('projects.html',projects=projects,this_year =this_year)
+            return render_template('projects.html',projects=projects,data=session,this_year =this_year)
 
     @app.route('/ideas')
     def ideas():
