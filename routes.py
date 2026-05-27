@@ -830,3 +830,23 @@ def register_routes(app,db):
                 db.session.add(student)
                 db.session.commit()
                 return jsonify({"message":"User registered successfully!"})
+    @app.route('/api/model',methods=['POST','GET'])
+    def model():
+        if request.method == 'GET' :
+            all_ideas = Project.query
+            # how to get the new idea? 
+
+            this_year = str(datetime.now().year)
+            old_ideas = all_ideas.filter_by(year=this_year)
+            old_ideas_json = []
+            for idea in old_ideas :
+                old_ideas_json.append({
+                    'Name':idea.name,
+                    'Description' : idea.description
+                })
+            json_final_form = json.dumps(old_ideas_json)
+            
+        else :
+            data = request.json()
+            similar_idea = data.get('similar_idea')
+            # loop if there is more then one
