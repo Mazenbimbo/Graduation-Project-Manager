@@ -349,7 +349,7 @@ def register_routes(app,db):
 
 
     @app.route('/join/<int:id>',methods=['GET']) # req to join a team
-    def join(id): # bug : reduntent join request
+    def join(id):
         if 'logged' in session.keys():
             project = Project.query.get(id)
             if Notification.query.filter_by(action='join',_from_id=session['pid'],_from_name=session['name'],student_id=project.leader).count()<1:
@@ -359,7 +359,7 @@ def register_routes(app,db):
                 flash("Request sent!","info")
             else :
                 flash("Request already sent","info")
-            return redirect('/projects')
+            return redirect('/ideas')
         else:
             return redirect('/sign-in')
             
@@ -844,7 +844,7 @@ def register_routes(app,db):
                     'Name':idea.name,
                     'Description' : idea.description
                 })
-            json_final_form = json.dumps(old_ideas_json)
+            return jsonify(old_ideas_json)
             
         else :
             data = request.json()
