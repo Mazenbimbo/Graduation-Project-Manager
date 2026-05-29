@@ -123,10 +123,11 @@ class Notification(db.Model):
     __tablename__ = 'notification'
 
     nid = db.Column(db.Integer,primary_key=True)
-    action = db.Column(db.String,nullable=False) # actions : add - join - supervise 
+    action = db.Column(db.String,nullable=False) # actions : add - join - supervise - announce
     _from_id = db.Column(db.Integer,nullable=True)
     _from_name = db.Column(db.String,nullable=True)
     student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False)
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
     read = db.Column(db.Boolean,default=False,nullable=False)
 
     def __repr__(self):

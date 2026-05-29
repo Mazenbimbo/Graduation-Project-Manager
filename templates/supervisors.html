@@ -73,7 +73,7 @@
                 
                 <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Name</th>
                 <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Specialty</th>
-                {% if not my_project.assistant %}
+                {% if not my_project.assistent %}
                 <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Action</th>
                 {% endif %}
               </tr>
@@ -84,7 +84,7 @@
               <tr class="hover:bg-blue-900/30 transition-colors duration-150">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
-                {% if not my_project.assistant %}
+                {% if not my_project.assistent %}
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <form action="/req_to_supervise/{{my_id}}/{{ supervisor.sid }}" method="POST">
                     <button type="submit"

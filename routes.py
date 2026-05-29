@@ -401,7 +401,7 @@ def register_routes(app,db):
             else : 
                 name = request.form.get('name')
                 description = request.form.get('description')
-                available_fields = ['AI','Network','Embedded','Web','Cyber Security','Desktop','IT']
+                available_fields = ['AI','Network','Embedded','Web','Cyber Security','Desktop','IT','Mobile']
                 fields = []
 
                 for field in available_fields : 
@@ -533,18 +533,13 @@ def register_routes(app,db):
             s = Supervisor.query
             doctor = s.get_or_404(project.doctor) if project.doctor else None
             assistant = s.get_or_404(project.assistent) if project.assistent else None 
-            members=project.get_members()
-            members_name = []
-            for member in members :
-                members_name.append(f"{Student.query.get_or_404(member).name}")
-            compined = zip(members_name, members)
             messages = Message.query.filter_by(project_id=id)
             return render_template(
                 'project_details.html',
                 data=session, 
                 project=project,
                 fields=project.get_fields(),
-                compined=compined,attachments = project.get_attachment(),
+                attachments = project.get_attachment(),
                 doctor=doctor,
                 assistant=assistant,
                 messages=messages)
