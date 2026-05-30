@@ -23,6 +23,9 @@ class Student(db.Model):
     image = db.Column(db.Text,default='/static/uploads/user.png')
     tasks = db.relationship('Task',backref='student',lazy='dynamic') # you can access 'student.tasks'
     notifications = db.relationship('Notification',backref='student',lazy=True)
+    linkedin_url = db.Column(db.Text,nullable=True)
+    github_url = db.Column(db.Text,nullable=True)
+
 
     @property
     def public_id(self):
@@ -102,6 +105,8 @@ class Supervisor(db.Model):
     role = db.Column(db.String(20), nullable=False)
     department = db.Column(db.String(100), nullable=True)
     projects_limit = db.Column(db.Integer,default=10)
+    linkedin_url = db.Column(db.Text,nullable=True)
+    github_url = db.Column(db.Text,nullable=True)
     projects = db.relationship('Project',secondary=supervisor_project,backref=db.backref('supervisors', lazy='dynamic'),lazy='dynamic')
     messages = db.relationship('Message',backref='supervisor',lazy='dynamic')
     # ^^ Many-to-many relationship, backref creates 'supervisors' on Project ^^

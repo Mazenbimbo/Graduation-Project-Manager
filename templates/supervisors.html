@@ -24,10 +24,11 @@
           <table class="min-w-full divide-y divide-cyan-800/50">
             <thead class="bg-blue-900/50">
               <tr>
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Name</th>
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Specialty</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Name</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Specialty</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Capacity</th>
                 {% if not my_project.doctor %}
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Action</th>
+                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Request</th>
                 {% endif %}
               </tr>
             </thead>
@@ -35,8 +36,9 @@
               {% set doctors = supervisors | selectattr('role', 'equalto', 'Doctor') | list %}
               {% for supervisor in doctors %}
               <tr class="hover:bg-blue-900/30 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.projects.count() }}/{{ supervisor.projects_limit }}</td>
                 {% if not my_project.doctor %}
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <form action="/req_to_supervise/{{my_id}}/{{ supervisor.sid }}" method="POST">
@@ -71,10 +73,11 @@
             <thead class="bg-blue-900/50">
               <tr>
                 
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Name</th>
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Specialty</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Name</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Specialty</th>
+                <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Capacity</th>
                 {% if not my_project.assistent %}
-                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Action</th>
+                <th scope="col" class="px-6 py-4 text-left text-sm font-semibold text-cyan-300 uppercase tracking-wider">Request</th>
                 {% endif %}
               </tr>
             </thead>
@@ -82,8 +85,9 @@
               {% set assistants = supervisors | selectattr('role', 'equalto', 'Assistant') | list %}
               {% for supervisor in assistants %}
               <tr class="hover:bg-blue-900/30 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-white"><a href="/account/{{ supervisor.public_id }}">{{ supervisor.name }}</a></td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.specialty or '—' }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{{ supervisor.projects.count() }}/{{ supervisor.projects_limit }}</td>
                 {% if not my_project.assistent %}
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <form action="/req_to_supervise/{{my_id}}/{{ supervisor.sid }}" method="POST">

@@ -845,3 +845,42 @@ def register_routes(app,db):
             data = request.json()
             similar_idea = data.get('similar_idea')
             # loop if there is more then one
+    @app.route('/api/account/<string:id>',methods=['GET'])
+    def api_account(id):
+        if request.method == 'GET':
+                if id.startswith('s') or id.startswith('a') :
+                    supervisor = Supervisor.query.get_or_404(int(id[1:]))
+                    return jsonify({
+                    "id": supervisor.sid,
+                    "name": supervisor.name,
+                    "email": supervisor.email,
+                    "phone": supervisor.phone,
+                    "image": supervisor.image,
+                    "role": supervisor.role,
+                    "department": supervisor.department,
+                    "specialties": supervisor.specialty, 
+                    "linkedin_url": supervisor.linkedin_url,
+                    "github_url": supervisor.github_url,
+                    "supervisedProjects": [3, 5],
+                    "assistantProjects": [4],
+                    "years_of_experience": 10,
+                    "research_areas": ["AI", "NLP"],
+                    "office_hours": "Sundays 10 AM - 12 PM"
+            })
+                else : 
+                    student = Student.query.get_or_404(int(id))
+                    return jsonify({
+                        "id": student.pid,
+                        "name": student.name,
+                        "email": student.email,
+                        "phone": student.phone,
+                        "image": student.image,
+                        "year": student.year,
+                        "department": student.department,
+                        "specialties": student.specialties, 
+                        "in_team": student.in_team, 
+                        "project_id": student.project_id, 
+                        "linkedin_url": student.linkedin_url,
+                        "github_url": student.github_url
+                    })
+                
