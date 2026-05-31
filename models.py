@@ -63,6 +63,7 @@ class Project(db.Model):
     special = db.Column(db.Boolean,default=False)
     members = db.relationship('Student',backref='project',lazy='dynamic')
     messages = db.relationship('Message',backref='project',lazy='dynamic')
+    notifications = db.relationship('Notification',backref='project',lazy='dynamic')
 
     doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
     assistant_supervisor = db.relationship('Supervisor', foreign_keys=[assistent], lazy=True)

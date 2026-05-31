@@ -630,9 +630,9 @@ def register_routes(app,db):
 
     @app.route('/req_to_supervise/<int:_from_id>/<int:sid>',methods=['POST'])
     def req_to_supervise(sid,_from_id):
-        student_name = Student.query.get_or_404(_from_id).name
-        if Supervisor_notification.query.filter_by(_from_id=_from_id,action='supervise',_from_name=student_name,supervisor_id=sid).count()<1:
-            new_notification = Supervisor_notification(_from_id=_from_id,action='supervise',_from_name=student_name,supervisor_id=sid)
+        student = Student.query.get_or_404(_from_id)
+        if Supervisor_notification.query.filter_by(_from_id=_from_id,action='supervise',_from_name=student.name,supervisor_id=sid,project_id=student.project_id).count()<1:
+            new_notification = Supervisor_notification(_from_id=_from_id,action='supervise',_from_name=student.name,supervisor_id=sid,project_id=student.project_id)
             db.session.add(new_notification)
             db.session.commit()
             flash('Request sent successfully!','success')

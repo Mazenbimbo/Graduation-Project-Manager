@@ -386,7 +386,9 @@
 
                 <h2 class="text-xl font-semibold text-cyan-400 mb-4">Notifications</h2>
 
-                
+                {% for notification in project.notifications%}
+                    {{notification.nid}}
+                {%endfor%}
             </div>
 
             <!-- Team Members Card -->
