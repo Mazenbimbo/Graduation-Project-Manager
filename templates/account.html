@@ -44,7 +44,16 @@
         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Email</p>
         <p class="text-gray-200 font-medium">{{ email }}</p>
       </div>
-
+      <!-- LinkedIn -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
+        <p class="text-gray-200 font-medium">{{ github_url or '-'}}</p>
+      </div>
+      <!-- Github -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
+        <p class="text-gray-200 font-medium">{{ linkedin_url or '-'}}</p>
+      </div>
       {% if role %}
       <!-- role card -->
       <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
@@ -122,6 +131,16 @@
         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Year</p>
         <p class="text-gray-200 font-medium">{{ student.year }}</p>
       </div>
+      <!-- LinkedIn -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
+        <p class="text-gray-200 font-medium">{{ student.github_url or '-'}}</p>
+      </div>
+      <!-- Github -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
+        <p class="text-gray-200 font-medium">{{ student.linkedin_url or '-'}}</p>
+      </div>
       <!-- team / project -->
       <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Project Link</p>
@@ -165,6 +184,16 @@
       <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
         <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Role</p>
         <p class="text-gray-200 font-medium">{{ supervisor.role }}</p>
+      </div>
+       <!-- LinkedIn -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
+        <p class="text-gray-200 font-medium">{{ supervisor.github_url or '-'}}</p>
+      </div>
+      <!-- Github -->
+      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
+        <p class="text-gray-200 font-medium">{{ supervisor.linkedin_url or '-'}}</p>
       </div>
     </div>
 

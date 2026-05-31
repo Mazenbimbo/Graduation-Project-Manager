@@ -650,7 +650,7 @@ def register_routes(app,db):
                 if supervisor.role == 'Doctor': 
                     doctor =True
                 else : 
-                    assistant = False
+                    assistant = True
             if session['role'] == 'Doctor' and doctor==False:
                 project.doctor = session['sid']
             elif session['role'] == 'Assistant' and assistant==False:
