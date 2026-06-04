@@ -884,3 +884,16 @@ def register_routes(app,db):
                         "github_url": student.github_url
                     })
                 
+    @app.route('/api/library',methods=['GET'])
+    def api_library():
+        projects = Project.query.all()
+        all_projects = []
+        for project in projects :
+            all_projects.append({
+                'name':project.name,
+                'description':project.description,
+                'members': [member.name for member in project.members],
+                'doctor' : project.doctor,
+                'assistant' : project.assistent
+            })
+        return 'soon'
