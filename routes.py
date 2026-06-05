@@ -894,6 +894,9 @@ def register_routes(app,db):
                 'description':project.description,
                 'members': [member.name for member in project.members],
                 'doctor' : project.doctor,
-                'assistant' : project.assistent
+                'assistant' : project.assistent,
+                'special': project.special,
+                'year': project.year,
+                'fields':project.get_fields()
             })
-        return 'soon'
+        return jsonify(all_projects)
