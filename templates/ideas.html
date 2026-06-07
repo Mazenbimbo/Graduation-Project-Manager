@@ -4,139 +4,140 @@
 
 {% block body %}
 
-<div class="min-h-screen bg-gray-900 py-10 px-4">
-  <div class="max-w-7xl mx-auto">
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
 
-    <!-- Page heading -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-white">Browse Ideas</h1>
-      <p class="text-gray-400 mt-2">Discover graduation projects and join a team</p>
-    </div>
+<div class="min-h-screen py-10 px-4 {{ 'bg-gray-900' if is_dark else 'bg-blue-50' }}">
+<div class="max-w-7xl mx-auto">
 
-    <!-- Filters: Field Dropdown + Featured Toggle -->
-    <div class="bg-blue-950 rounded-xl border border-cyan-800 p-3 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-      <form method="GET" action="{{ url_for('ideas') }}" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
-        <!-- Year dropdown -->
-        <div class="flex-1 w-full sm:w-auto">
-          <label for="field_filter" class="text-sm text-gray-300 font-medium mb-1 block">Filter by fields</label>
-          <select name="field" id="field"
-                  class="w-full bg-gray-800 text-white border border-cyan-800 rounded-lg px-3 py-2 focus:outline-none focus:border-cyan-400">
-            <option value="all" {% if not request.args.get('field') or request.args.get('field') == 'all' %}selected{% endif %}>All Fields</option>
-            {% set unique_fields = [] %}
-            {% for p in projects %}
-            {% for field in p.get_fields()%}
+  <!-- Page heading -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl md:text-4xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">Browse Ideas</h1>
+    <p class="mt-2 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Discover graduation projects and join a team</p>
+  </div>
+
+  <!-- Filters: Field Dropdown + Featured Toggle -->
+  <div class="rounded-xl border p-3 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200 shadow-sm' }}">
+    <form method="GET" action="{{ url_for('ideas') }}" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+      <!-- Year dropdown -->
+      <div class="flex-1 w-full sm:w-auto">
+        <label for="field_filter" class="text-sm font-medium mb-1 block {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Filter by fields</label>
+        <select name="field" id="field"
+          class="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-1 {{ 'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400' if is_dark else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500' }}">
+          <option value="all" {% if not request.args.get('field') or request.args.get('field') == 'all' %}selected{% endif %}>All Fields</option>
+          {% set unique_fields = [] %}
+          {% for p in projects %}
+            {% for field in p.get_fields() %}
               {% if field not in unique_fields %}
                 {% set _ = unique_fields.append(field) %}
               {% endif %}
-              {% endfor %}
             {% endfor %}
-            {% for y in unique_fields|sort %}
-              <option value="{{ y }}" {% if request.args.get('field') == y %}selected{% endif %}>{{ y }}</option>
-            {% endfor %}
-          </select>
+          {% endfor %}
+          {% for y in unique_fields|sort %}
+            <option value="{{ y }}" {% if request.args.get('field') == y %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Featured toggle -->
+      <div class="flex items-center space-x-3 pt-2 sm:pt-6">
+        <label for="featured_filter" class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" name="featured" id="featured_filter" value="1"
+            class="sr-only peer"
+            {% if request.args.get('featured') == '1' %}checked{% endif %}>
+          <div class="w-11 h-6 rounded-full peer peer-focus:ring-2 transition-colors {{ 'bg-gray-700 peer-checked:bg-cyan-600 peer-focus:ring-cyan-800' if is_dark else 'bg-gray-300 peer-checked:bg-blue-600 peer-focus:ring-blue-400' }}"></div>
+          <span class="ml-2 text-sm font-medium {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Featured only</span>
+        </label>
+      </div>
+
+      <!-- Apply button -->
+      <button type="submit"
+        class="font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6 shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+        Apply Filters
+      </button>
+    </form>
+    <a href="{{url_for('ideas')}}"
+      class="font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6 shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+      Reset
+    </a>
+  </div>
+
+  <!-- Projects Grid (all projects together) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for project in projects %}
+      <div class="rounded-xl border p-6 hover:shadow-md transition-all duration-200 flex flex-col {{ 'bg-blue-950 border-cyan-800 hover:border-cyan-500' if is_dark else 'bg-white border-blue-200 hover:border-blue-400' }}">
+
+        <!-- Name + Featured Star -->
+        <div class="flex justify-between items-start mb-2">
+          <h2 class="text-xl font-bold {{ 'text-white' if is_dark else 'text-gray-800' }}">{{ project.name|title }}</h2>
+          {% if project.special %}
+            <span class="text-yellow-400 text-lg" title="Featured project">
+              <i class="fas fa-star"></i>
+            </span>
+          {% endif %}
         </div>
 
-        <!-- Featured toggle -->
-        <div class="flex items-center space-x-3 pt-2 sm:pt-6">
-          <label for="featured_filter" class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" name="featured" id="featured_filter" value="1"
-                   class="sr-only peer"
-                   {% if request.args.get('featured') == '1' %}checked{% endif %}>
-            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-cyan-600 peer-focus:ring-2 peer-focus:ring-cyan-800 transition-colors"></div>
-            <span class="ml-2 text-sm font-medium text-gray-300">Featured only</span>
-          </label>
-        </div>
+        <!-- Year -->
+        <p class="text-sm mb-3 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">
+          <i class="far fa-calendar-alt mr-1 {{ 'text-cyan-400' if is_dark else 'text-blue-500' }}"></i> {{ project.year }}
+        </p>
 
-        <!-- Apply button -->
-        <button type="submit"
-                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6">
-          Apply Filters
-        </button>
-      </form>
-      <a href="{{url_for('ideas')}}"
-                class="bg-cyan-800 hover:bg-cyan-700 text-white font-semibold px-5 py-2 rounded-lg transition-colors mt-2 sm:mt-6">
-          Reset
-        </a>
-    </div>
-
-    <!-- Projects Grid (all projects together) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for project in projects %}
-        {# Client-side filtering can be done with JS, but server-side would need route update.
-           For now, display all, leaving filter logic to backend when ready. #}
-        <div class="bg-blue-950 rounded-xl border border-cyan-800 p-6 hover:border-cyan-500 transition-all duration-200 flex flex-col">
-
-          <!-- Name + Featured Star -->
-          <div class="flex justify-between items-start mb-2">
-            <h2 class="text-xl font-bold text-white">{{ project.name|title }}</h2>
-            {% if project.special %}
-              <span class="text-yellow-400 text-lg" title="Featured project">
-                <i class="fas fa-star"></i>
-              </span>
+        <!-- Supervisors -->
+        <div class="text-sm mb-3 space-y-1 {{ 'text-gray-300' if is_dark else 'text-gray-600' }}">
+          <div>
+            <span class="font-medium {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}">Doctor:</span>
+            {% if project.doctor_supervisor %}
+              <span>{{ project.doctor_supervisor.name }}</span>
+            {% else %}
+              <span class="{{ 'text-gray-500' if is_dark else 'text-gray-400' }}">Not assigned</span>
             {% endif %}
           </div>
-
-          <!-- Year -->
-          <p class="text-gray-400 text-sm mb-3">
-            <i class="far fa-calendar-alt mr-1 text-cyan-400"></i> {{ project.year }}
-          </p>
-
-          <!-- Supervisors -->
-          <div class="text-sm text-gray-300 mb-3 space-y-1">
-            <div>
-              <span class="text-cyan-400 font-medium">Doctor:</span>
-              {% if project.doctor_supervisor %}
-                <span>{{ project.doctor_supervisor.name }}</span>
-              {% else %}
-                <span class="text-gray-500">Not assigned</span>
-              {% endif %}
-            </div>
-            <div>
-              <span class="text-cyan-400 font-medium">Assistant:</span>
-              {% if project.assistent_supervisor %}
-                <span>{{ project.assistent_supervisor.name }}</span>
-              {% else %}
-                <span class="text-gray-500">Not assigned</span>
-              {% endif %}
-            </div>
+          <div>
+            <span class="font-medium {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}">Assistant:</span>
+            {% if project.assistent_supervisor %}
+              <span>{{ project.assistent_supervisor.name }}</span>
+            {% else %}
+              <span class="{{ 'text-gray-500' if is_dark else 'text-gray-400' }}">Not assigned</span>
+            {% endif %}
           </div>
+        </div>
 
-          <!-- Team Members -->
-          <div class="mb-3">
-            <h4 class="text-xs font-semibold text-cyan-400 uppercase tracking-wide mb-1">Team</h4>
-            <div class="flex flex-wrap gap-1">
-              {% for student in project.members %}
-                <span class="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full border border-cyan-800/50">
-                  {{ student.name }}
-                </span>
-              {% endfor %}
-            </div>
-          </div>
-
-          <!-- Specialties (fields) -->
-          <div class="flex flex-wrap gap-2 mb-4 mt-auto">
-            {% for field in project.get_fields() %}
-              <span class="bg-gray-900 text-cyan-300 text-xs font-medium px-2.5 py-0.5 rounded-full border border-cyan-700">{{ field }}</span>
+        <!-- Team Members -->
+        <div class="mb-3">
+          <h4 class="text-xs font-semibold uppercase tracking-wide mb-1 {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}">Team</h4>
+          <div class="flex flex-wrap gap-1">
+            {% for student in project.members %}
+              <span class="text-xs px-2 py-0.5 rounded-full border {{ 'bg-gray-800 text-gray-300 border-cyan-800/50' if is_dark else 'bg-gray-100 text-gray-600 border-gray-300' }}">
+                {{ student.name }}
+              </span>
             {% endfor %}
           </div>
+        </div>
 
-          <!-- Action Buttons -->
-          <div class="flex gap-2 mt-2">
-            <a href="/project/{{ project.pid }}"
-               class="flex-1 text-center bg-cyan-800 hover:bg-cyan-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
-              <i class="fas fa-info-circle mr-1"></i> Details
-            </a>
-            {% if not data['in_team'] and data['role'] == 'Student'  %}
+        <!-- Specialties (fields) -->
+        <div class="flex flex-wrap gap-2 mb-4 mt-auto">
+          {% for field in project.get_fields() %}
+            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full border {{ 'bg-gray-900 text-cyan-300 border-cyan-700' if is_dark else 'bg-blue-50 text-blue-700 border-blue-200' }}">{{ field }}</span>
+          {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-2">
+          <a href="/project/{{ project.pid }}"
+            class="flex-1 text-center text-sm font-medium py-2 px-3 rounded-lg transition-colors shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+            <i class="fas fa-info-circle mr-1"></i> Details
+          </a>
+          {% if not data['in_team'] and data['role'] == 'Student' %}
             <a href="/join/{{ project.pid }}"
-               class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium py-2 px-3 rounded-lg border border-cyan-800 transition-colors">
+              class="flex-1 text-center text-sm font-medium py-2 px-3 rounded-lg transition-colors {{ 'bg-gray-800 hover:bg-gray-700 text-white border border-cyan-800' if is_dark else 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300' }}">
               <i class="fas fa-user-plus mr-1"></i> Join
             </a>
-            {% endif %}
-          </div>
+          {% endif %}
         </div>
-      {% endfor %}
-    </div>
+      </div>
+    {% endfor %}
   </div>
+</div>
 </div>
 
 <!-- Font Awesome -->

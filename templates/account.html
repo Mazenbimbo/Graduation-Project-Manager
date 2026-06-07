@@ -1,224 +1,229 @@
 {% if data['role'] == 'Student'%}{% extends 'base.html' %}{%else%}{% extends 'supervisor_base.html' %}{%endif%}
+
 {% block title %}Profile Details{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#0a192f] py-10 px-4">
+
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+
+<div class="min-h-screen py-10 px-4 {{ 'bg-gray-900' if is_dark else 'bg-blue-50' }}">
   <div class="max-w-2xl mx-auto space-y-6">
 
     {% if name %}
-    <!-- Generic Profile -->
-    <div class="text-center">
-      <div class="inline-flex flex-col items-center">
-        <div class="mb-4">
-          {% if image %}
-          <img src="{{ image }}" alt="{{ name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
-          {% else %}
-          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
-            {{ name[0]|upper }}
+      <!-- Generic Profile -->
+      <div class="text-center">
+        <div class="inline-flex flex-col items-center">
+          <div class="mb-4">
+            {% if image %}
+              <img src="{{ image }}" alt="{{ name }}" class="w-28 h-28 rounded-full object-cover border-4 {{ 'border-cyan-600' if is_dark else 'border-blue-600' }}">
+            {% else %}
+              <div class="w-28 h-28 rounded-full border-4 flex items-center justify-center text-4xl font-bold {{ 'bg-gray-800 border-cyan-600 text-gray-300' if is_dark else 'bg-gray-200 border-blue-600 text-gray-600' }}">
+                {{ name[0]|upper }}
+              </div>
+            {% endif %}
           </div>
-          {% endif %}
+          <h2 class="text-3xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ name|title }}</h2>
         </div>
-        <h2 class="text-3xl font-bold text-gray-200">{{ name|title }}</h2>
       </div>
-    </div>
 
-    <!-- Detail cards grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- specialty card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
-        <p class="text-gray-200 font-medium">{{ specialty }}</p>
-      </div>
-      <!-- department card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
-        <p class="text-gray-200 font-medium">{{ department }}</p>
-      </div>
-      <!-- phone card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Phone</p>
-        <p class="text-gray-200 font-medium">{{ phone }}</p>
-      </div>
-      <!-- email card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Email</p>
-        <p class="text-gray-200 font-medium">{{ email }}</p>
-      </div>
-      <!-- LinkedIn -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
-        <p class="text-gray-200 font-medium">{{ github_url or '-'}}</p>
-      </div>
-      <!-- Github -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
-        <p class="text-gray-200 font-medium">{{ linkedin_url or '-'}}</p>
-      </div>
-      {% if role %}
-      <!-- role card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Role</p>
-        <p class="text-gray-200 font-medium">{{ role }}</p>
-      </div>
-      {% else %}
-      <!-- year card -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Year</p>
-        <p class="text-gray-200 font-medium">{{ year }}</p>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Projects section -->
-    {% if role and projects %}
-    <div>
-      <h3 class="text-lg font-semibold text-gray-300 mb-3">Projects</h3>
+      <!-- Detail cards grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {% for project_id in projects %}
-        <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4 flex items-center justify-between">
-          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id }}</span></p>
-          <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors underline">
-            Go to the project {{ project_id }}
-          </a>
+        <!-- specialty card -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Specialty</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ specialty }}</p>
         </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- If not role (student mode) team section -->
-    {% if not role %}
-    <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-      <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Project Link</p>
-      {% if in_team %}
-        <a href="/project/{{ project_id }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors underline">Go to project</a>
-      {% else %}
-        <p class="text-gray-500">Not in project</p>
-      {% endif %}
-    </div>
-    {% endif %}
-
-    {% elif student %}
-    <!-- Student Profile -->
-    <div class="text-center">
-      <div class="inline-flex flex-col items-center">
-        <div class="mb-4">
-          {% if student.image %}
-          <img src="{{ student.image }}" alt="{{ student.name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
-          {% else %}
-          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
-            {{ student.name[0]|upper }}
+        <!-- department card -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Department</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ department }}</p>
+        </div>
+        <!-- phone card -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Phone</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ phone }}</p>
+        </div>
+        <!-- email card -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Email</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ email }}</p>
+        </div>
+        <!-- LinkedIn -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">LinkedIn</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ github_url or '-'}}</p>
+        </div>
+        <!-- Github -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Github</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ linkedin_url or '-'}}</p>
+        </div>
+        {% if role %}
+          <!-- role card -->
+          <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+            <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Role</p>
+            <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ role }}</p>
           </div>
-          {% endif %}
-        </div>
-        <h2 class="text-3xl font-bold text-gray-200">{{ student.name }}</h2>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- specialty -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
-        <p class="text-gray-200 font-medium">{{ student.specialties }}</p>
-      </div>
-      <!-- department -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
-        <p class="text-gray-200 font-medium">{{ student.department }}</p>
-      </div>
-      <!-- year -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Year</p>
-        <p class="text-gray-200 font-medium">{{ student.year }}</p>
-      </div>
-      <!-- LinkedIn -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
-        <p class="text-gray-200 font-medium">{{ student.github_url or '-'}}</p>
-      </div>
-      <!-- Github -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
-        <p class="text-gray-200 font-medium">{{ student.linkedin_url or '-'}}</p>
-      </div>
-      <!-- team / project -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Project Link</p>
-        {% if student.in_team %}
-          <a href="/project/{{ student.project_id }}" class="text-cyan-300 hover:text-cyan-200 font-mono underline">Go to project</a>
         {% else %}
-          <p class="text-gray-500">Not in a project</p>
+          <!-- year card -->
+          <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+            <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Year</p>
+            <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ year }}</p>
+          </div>
         {% endif %}
       </div>
-    </div>
 
-    {% elif supervisor %}
-    <!-- Supervisor Profile -->
-    <div class="text-center">
-      <div class="inline-flex flex-col items-center">
-        <div class="mb-4">
-          {% if supervisor.image %}
-          <img src="{{ supervisor.image }}" alt="{{ supervisor.name }}" class="w-28 h-28 rounded-full object-cover border-4 border-cyan-700">
-          {% else %}
-          <div class="w-28 h-28 rounded-full bg-gray-800 border-4 border-cyan-700 flex items-center justify-center text-gray-300 text-4xl font-bold">
-            {{ supervisor.name[0]|upper }}
+      <!-- Projects section -->
+      {% if role and projects %}
+        <div>
+          <h3 class="text-lg font-semibold mb-3 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Projects</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for project_id in projects %}
+              <div class="rounded-lg p-4 shadow-sm flex items-center justify-between {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+                <p class="text-sm {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project ID: <span class="font-mono {{ 'text-gray-200' if is_dark else 'text-gray-700' }}">{{ project_id }}</span></p>
+                <a href="/project/{{ project_id }}" class="px-3 py-1 rounded-full text-xs font-mono transition-colors underline {{ 'bg-cyan-900/30 text-cyan-300 hover:bg-cyan-900/50' if is_dark else 'bg-blue-100 text-blue-600 hover:bg-blue-200' }}">
+                  Go to the project {{ project_id }}
+                </a>
+              </div>
+            {% endfor %}
           </div>
+        </div>
+      {% endif %}
+
+      <!-- If not role (student mode) team section -->
+      {% if not role %}
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project Link</p>
+          {% if in_team %}
+            <a href="/project/{{ project_id }}" class="px-3 py-1 rounded-full text-xs font-mono transition-colors underline {{ 'bg-cyan-900/30 text-cyan-300 hover:bg-cyan-900/50' if is_dark else 'bg-blue-100 text-blue-600 hover:bg-blue-200' }}">Go to project</a>
+          {% else %}
+            <p class="{{ 'text-gray-500' if is_dark else 'text-gray-400' }}">Not in project</p>
           {% endif %}
         </div>
-        <h2 class="text-3xl font-bold text-gray-200">{{ supervisor.name }}</h2>
-      </div>
-    </div>
+      {% endif %}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- specialty -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Specialty</p>
-        <p class="text-gray-200 font-medium">{{ supervisor.specialty }}</p>
-      </div>
-      <!-- department -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Department</p>
-        <p class="text-gray-200 font-medium">{{ supervisor.department }}</p>
-      </div>
-      <!-- role -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Role</p>
-        <p class="text-gray-200 font-medium">{{ supervisor.role }}</p>
-      </div>
-       <!-- LinkedIn -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">LinkedIn</p>
-        <p class="text-gray-200 font-medium">{{ supervisor.github_url or '-'}}</p>
-      </div>
-      <!-- Github -->
-      <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-1">Github</p>
-        <p class="text-gray-200 font-medium">{{ supervisor.linkedin_url or '-'}}</p>
-      </div>
-    </div>
-
-    <!-- Projects for supervisor -->
-    {% if supervisor.projects %}
-    <div>
-      <h3 class="text-lg font-semibold text-gray-300 mb-3">Projects</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {% for project_id in supervisor.projects %}
-        <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4 flex items-center justify-between">
-          <p class="text-sm text-gray-400">Project ID: <span class="text-gray-200 font-mono">{{ project_id.pid }}</span></p>
-          <a href="/project/{{ project_id.pid }}" class="bg-cyan-900/30 text-cyan-300 px-3 py-1 rounded-full text-xs font-mono hover:bg-cyan-900/50 transition-colors">
-            {{ project_id.name }}
-          </a>
+    {% elif student %}
+      <!-- Student Profile -->
+      <div class="text-center">
+        <div class="inline-flex flex-col items-center">
+          <div class="mb-4">
+            {% if student.image %}
+              <img src="{{ student.image }}" alt="{{ student.name }}" class="w-28 h-28 rounded-full object-cover border-4 {{ 'border-cyan-600' if is_dark else 'border-blue-600' }}">
+            {% else %}
+              <div class="w-28 h-28 rounded-full border-4 flex items-center justify-center text-4xl font-bold {{ 'bg-gray-800 border-cyan-600 text-gray-300' if is_dark else 'bg-gray-200 border-blue-600 text-gray-600' }}">
+                {{ student.name[0]|upper }}
+              </div>
+            {% endif %}
+          </div>
+          <h2 class="text-3xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ student.name }}</h2>
         </div>
-        {% endfor %}
       </div>
-    </div>
-    {% else %}
-    <div class="bg-[#112240] border border-cyan-900/40 rounded-lg p-4">
-      <p class="text-gray-500 text-sm">No projects assigned</p>
-    </div>
-    {% endif %}
 
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- specialty -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Specialty</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.specialties }}</p>
+        </div>
+        <!-- department -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Department</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.department }}</p>
+        </div>
+        <!-- year -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Year</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.year }}</p>
+        </div>
+        <!-- LinkedIn -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">LinkedIn</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.github_url or '-'}}</p>
+        </div>
+        <!-- Github -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Github</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.linkedin_url or '-'}}</p>
+        </div>
+        <!-- team / project -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project Link</p>
+          {% if student.in_team %}
+            <a href="/project/{{ student.project_id }}" class="font-mono underline transition-colors {{ 'text-cyan-300 hover:text-cyan-200' if is_dark else 'text-blue-600 hover:text-blue-800' }}">Go to project</a>
+          {% else %}
+            <p class="{{ 'text-gray-500' if is_dark else 'text-gray-400' }}">Not in a project</p>
+          {% endif %}
+        </div>
+      </div>
+
+    {% elif supervisor %}
+      <!-- Supervisor Profile -->
+      <div class="text-center">
+        <div class="inline-flex flex-col items-center">
+          <div class="mb-4">
+            {% if supervisor.image %}
+              <img src="{{ supervisor.image }}" alt="{{ supervisor.name }}" class="w-28 h-28 rounded-full object-cover border-4 {{ 'border-cyan-600' if is_dark else 'border-blue-600' }}">
+            {% else %}
+              <div class="w-28 h-28 rounded-full border-4 flex items-center justify-center text-4xl font-bold {{ 'bg-gray-800 border-cyan-600 text-gray-300' if is_dark else 'bg-gray-200 border-blue-600 text-gray-600' }}">
+                {{ supervisor.name[0]|upper }}
+              </div>
+            {% endif %}
+          </div>
+          <h2 class="text-3xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ supervisor.name }}</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- specialty -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Specialty</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ supervisor.specialty }}</p>
+        </div>
+        <!-- department -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Department</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ supervisor.department }}</p>
+        </div>
+        <!-- role -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Role</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ supervisor.role }}</p>
+        </div>
+        <!-- LinkedIn -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">LinkedIn</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ supervisor.github_url or '-'}}</p>
+        </div>
+        <!-- Github -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Github</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ supervisor.linkedin_url or '-'}}</p>
+        </div>
+      </div>
+
+      <!-- Projects for supervisor -->
+      {% if supervisor.projects %}
+        <div>
+          <h3 class="text-lg font-semibold mb-3 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Projects</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for project in supervisor.projects %}
+              <div class="rounded-lg p-4 shadow-sm flex items-center justify-between {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+                <p class="text-sm {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project ID: <span class="font-mono {{ 'text-gray-200' if is_dark else 'text-gray-700' }}">{{ project.pid }}</span></p>
+                <a href="/project/{{ project.pid }}" class="px-3 py-1 rounded-full text-xs font-mono transition-colors {{ 'bg-cyan-900/30 text-cyan-300 hover:bg-cyan-900/50' if is_dark else 'bg-blue-100 text-blue-600 hover:bg-blue-200' }}">
+                  {{ project.name }}
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-sm {{ 'text-gray-500' if is_dark else 'text-gray-400' }}">No projects assigned</p>
+        </div>
+      {% endif %}
     {% endif %}
   </div>
 </div>
+
 {% endblock %}

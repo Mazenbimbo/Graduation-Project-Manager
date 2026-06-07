@@ -22,7 +22,9 @@
         }
     </style>
 </head>
-<body class="bg-[#12102B] text-white min-h-screen flex flex-col">
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+<body class="{{ 'bg-[#12102B]' if is_dark else 'bg-[#EFF6FF]' }} text-white min-h-screen flex flex-col">
 
     <!-- Navigation Bar -->
     <nav class="bg-[#1e1b4b] border-b border-cyan-500/30 shadow-lg">

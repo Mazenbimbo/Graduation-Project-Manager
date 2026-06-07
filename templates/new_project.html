@@ -3,73 +3,93 @@
 {% block title %}Create/Edit Project{% endblock %}
 
 {% block body %}
+
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+
 <div class="max-w-3xl mx-auto px-4 py-8">
   <!-- Page Header -->
   <div class="mb-8">
-    <h1 class="text-3xl font-bold text-black flex items-center">
-      <svg class="w-8 h-8 mr-3 text-cyan-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <h1 class="text-3xl font-bold flex items-center {{ 'text-white' if is_dark else 'text-gray-900' }}">
+      <svg class="w-8 h-8 mr-3 {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
       </svg>
       Create/Edit Project
     </h1>
-    <p class="text-gray-700 mt-2">Fill in the details below to propose a new graduation project.</p>
+    <p class="mt-2 {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Fill in the details below to propose a new graduation project.</p>
   </div>
 
   <!-- Form Card -->
-  <div class="bg-white rounded-xl border border-cyan-500/30 p-6 md:p-8">
+  <div class="rounded-xl border p-6 md:p-8 shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
     <form action="{% if project%} /new_project?action='edit' {%else%} /new_project {% endif %}" method="POST" class="space-y-6">
+      
       <!-- Project Name -->
       <div>
-        <label for="name" class="block text-sm font-medium text-black mb-2">
+        <label for="name" class="block text-sm font-medium mb-2 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
           Project Name <span class="text-red-400">*</span>
         </label>
         <input type="text" name="name" id="name" required
-               placeholder="e.g., AI-Powered Task Manager" {% if project %} value="{{project.name}}" {%endif%}
-               class="w-full bg-gray-100 text-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition">
+          placeholder="e.g., AI-Powered Task Manager" {% if project %} value="{{project.name}}" {%endif%}
+          class="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-1 transition {{ 
+            'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+            else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+          }}">
       </div>
 
       <!-- Project Description -->
       <div>
-        <label for="description" class="block text-sm font-medium text-black mb-2">
+        <label for="description" class="block text-sm font-medium mb-2 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
           Description <span class="text-red-400">*</span>
         </label>
         <textarea name="description" id="description" rows="5" required
-                  placeholder="Describe the project's objectives, scope, and expected outcomes..."
-                  class="w-full bg-gray-100 text-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-y">{% if project %}{{project.description}}{%endif%}</textarea>
+          placeholder="Describe the project's objectives, scope, and expected outcomes..."
+          class="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-1 transition resize-y {{ 
+            'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+            else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+          }}">{% if project %}{{project.description}}{%endif%}</textarea>
       </div>
 
       <!-- Fields / Specialties Section -->
       <div>
-        <h3 class="text-lg font-semibold text-cyan-700 mb-3">Project Fields / Specialties</h3>
-        <p class="text-sm text-gray-700 mb-4">Select all fields that apply to this project.</p>
+        <h3 class="text-lg font-semibold mb-3 {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}">Project Fields / Specialties</h3>
+        <p class="text-sm mb-4 {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Select all fields that apply to this project.</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {% set fields = ['AI', 'Cyber Security', 'Network', 'Web', 'Mobile', 'Embedded', 'IT', 'Desktop'] %}
           {% for field in fields %}
-          <label class="flex items-center space-x-3 p-3 bg-blue-600/70 rounded-lg border border-gray-700 hover:border-cyan-500/50 cursor-pointer transition">
-            <input type="checkbox" name="{{ field }}" value="on" {% if project and field in project.get_fields() %} checked {%endif%}
-                   class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500 focus:ring-2">
-            <span class="text-white">{{ field }}</span>
-          </label>
+            <label class="flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition
+                        {{ 'bg-gray-800 border-cyan-800 hover:border-cyan-500' if is_dark 
+                           else 'bg-blue-50 border-blue-200 hover:border-blue-400' }}">
+              <input type="checkbox" name="{{ field }}" value="on" 
+                {% if project and field in project.get_fields() %} checked{%endif%}
+                class="w-4 h-4 rounded focus:ring-2 {{ 
+                  'text-cyan-600 bg-gray-700 border-cyan-600 focus:ring-cyan-500' if is_dark 
+                  else 'text-blue-600 bg-white border-blue-300 focus:ring-blue-500' 
+                }}">
+              <span class="{{ 'text-white' if is_dark else 'text-gray-800' }}">{{ field }}</span>
+            </label>
           {% endfor %}
         </div>
-        <p class="text-xs text-gray-500 mt-2">You can also add custom fields later.</p>
+        <p class="text-xs mt-2 {{ 'text-gray-500' if is_dark else 'text-gray-400' }}">You can also add custom fields later.</p>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-700">
+      <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t {{ 'border-cyan-800' if is_dark else 'border-blue-200' }}">
         <button type="submit"
-                class="flex-1 bg-cyan-700 hover:bg-cyan-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+          class="flex-1 font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center shadow-sm
+            {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
           Create/Edit Project
         </button>
         <a href="{{ url_for('projects') }}"
-           class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 text-center">
+          class="flex-1 font-medium py-3 px-6 rounded-lg transition duration-200 text-center shadow-sm
+            {{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
           Cancel
         </a>
       </div>
     </form>
   </div>
 </div>
+
 {% endblock %}

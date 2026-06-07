@@ -1,92 +1,106 @@
 {% extends 'base.html' %}
+
 {% block title %}Friends{% endblock %}
+
 {% block head %}
 <link rel="stylesheet" href="/static/css/friends.css">
 {% endblock %}
+
 {% block body %}
+
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <h2 class="text-3xl font-bold text-white mb-6 text-center">Friends</h2>
-    
-    <!-- Filter Bar -->
-    <div class="bg-[#1e1b4b] p-4 rounded-xl border border-cyan-500/50 mb-6">
-        <form method="GET" action="{{ url_for('friends') }}" class="flex flex-wrap items-center gap-4">
-            <!-- Specialty Dropdown -->
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm text-gray-300 mb-1">Filter by Specialty</label>
-                <select name="specialty" class="w-full bg-gray-900 text-white border border-cyan-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                    <option value="">All Specialties</option>
-                    {% for spec in specialties %}
-                        <option value="{{ spec }}" {% if current_specialty == spec %}selected{% endif %}>{{ spec }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <!-- Not in Team Checkbox -->
-            <div class="flex items-center pt-6">
-                <input type="checkbox" name="not_in_team" value="1" id="notInTeam" 
-                       {% if not_in_team_checked %}checked{% endif %}
-                       class="w-4 h-4 text-cyan-600 bg-gray-900 border-cyan-400 rounded focus:ring-cyan-500">
-                <label for="notInTeam" class="ml-2 text-sm text-gray-300">Show only students not in a team</label>
-            </div>
-            
-            <!-- Submit & Reset Buttons -->
-            <div class="flex gap-2 pt-6">
-                <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition">
-                    Apply Filters
+
+  <!-- Header -->
+  <h2 class="text-3xl font-bold mb-6 text-center {{ 'text-white' if is_dark else 'text-gray-900' }}">Friends</h2>
+
+  <!-- Filter Bar -->
+  <div class="p-4 rounded-xl mb-6 {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white shadow-sm' }}">
+    <form method="GET" action="{{ url_for('friends') }}" class="flex flex-wrap items-center gap-4">
+
+      <!-- Specialty Dropdown -->
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm mb-1 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Filter by Specialty</label>
+        <select name="specialty" 
+          class="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-1 {{ 'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500' }}">
+          <option value="">All Specialties</option>
+          {% for spec in specialties %}
+            <option value="{{ spec }}" {% if current_specialty == spec %}selected{% endif %}>{{ spec }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Not in Team Checkbox -->
+      <div class="flex items-center pt-6">
+        <input type="checkbox" name="not_in_team" value="1" id="notInTeam"
+          {% if not_in_team_checked %}checked{% endif %}
+          class="w-4 h-4 rounded focus:ring-1 {{ 'text-cyan-600 bg-gray-900 border-cyan-700 focus:ring-cyan-500' if is_dark else 'text-blue-600 bg-white border-blue-300 focus:ring-blue-500' }}">
+        <label for="notInTeam" class="ml-2 text-sm {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Show only students not in a team</label>
+      </div>
+
+      <!-- Submit & Reset Buttons -->
+      <div class="flex gap-2 pt-6">
+        <button type="submit" 
+          class="px-4 py-2 rounded-lg transition shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+          Apply Filters
+        </button>
+        <a href="{{ url_for('friends') }}" 
+          class="px-4 py-2 rounded-lg transition shadow-sm {{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
+          Reset
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Friends Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for user in users %}
+      <div class="rounded-xl p-4 transition duration-200 {{ 'bg-blue-950 border border-cyan-800 hover:border-cyan-500' if is_dark else 'bg-white border border-blue-200 hover:shadow-lg hover:shadow-blue-500/20' }}">
+        <div class="flex items-start gap-4">
+
+          <!-- Avatar -->
+          <img src="{{ user.image }}" alt="{{ user.name }}"
+            class="w-14 h-14 rounded-full object-cover border-2 {{ 'border-cyan-700' if is_dark else 'border-blue-500' }}">
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <a href="{% if user.pid == my_id %}/account/me{% else %}/account/s{{ user.pid }}{% endif %}"
+              class="font-semibold transition truncate block {{ 'text-white hover:text-cyan-400' if is_dark else 'text-gray-900 hover:text-blue-600' }}">
+              {{ user.name|title }}
+            </a>
+            <span class="inline-block text-xs px-3 py-1 rounded-full mt-1 {{ 'bg-gray-800 text-cyan-300' if is_dark else 'bg-blue-100 text-blue-700' }}">
+              {{ user.specialties }}
+            </span>
+            {% if user.in_team %}
+              <p class="text-xs mt-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project ID: {{ user.project_id }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Action Button -->
+          <div class="flex-shrink-0">
+            {% if in_team and not user.in_team %}
+              <form action="/req_to_add/{{ user.pid }}" method="POST">
+                <button type="submit"
+                  class="text-sm px-4 py-2 rounded-lg transition shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white border border-cyan-800' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-600' }}">
+                  Add to Team
                 </button>
-                <a href="{{ url_for('friends') }}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
-                    Reset
-                </a>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Friends Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {% for user in users %}
-        <div class="bg-[#12102B] border border-cyan-600/60 rounded-xl p-4 hover:shadow-lg hover:shadow-cyan-500/20 transition duration-200">
-            <div class="flex items-start gap-4">
-                <!-- Avatar -->
-                <img src="{{ user.image }}" alt="{{ user.name }}" 
-                     class="w-14 h-14 rounded-full object-cover border-2 border-cyan-400">
-                
-                <!-- Info -->
-                <div class="flex-1 min-w-0">
-                    <a href="{% if user.pid == my_id %}/account/me{% else %}/account/s{{ user.pid }}{% endif %}" 
-                       class="font-semibold text-white hover:text-cyan-400 transition truncate block">
-                        {{ user.name|title }}
-                    </a>
-                    <span class="inline-block bg-gray-800 text-cyan-300 text-xs px-3 py-1 rounded-full mt-1 border border-cyan-500/50">
-                        {{ user.specialties }}
-                    </span>
-                    {% if user.in_team %}
-                        <p class="text-gray-400 text-xs mt-1">Project ID: {{ user.project_id }}</p>
-                    {% endif %}
-                </div>
-                
-                <!-- Action Button -->
-                <div class="flex-shrink-0">
-                    {% if in_team and not user.in_team %}
-                        <form action="/req_to_add/{{ user.pid }}" method="POST">
-                            <button type="submit" 
-                                    class="bg-cyan-700 hover:bg-cyan-600 text-white text-sm px-4 py-2 rounded-lg transition border border-cyan-400">
-                                Add to Team
-                            </button>
-                        </form>
-                    {% elif user.in_team %}
-                        <span class="bg-gray-800 text-gray-300 text-sm px-4 py-2 rounded-lg border border-gray-600">
-                            In Team
-                        </span>
-                    {% endif %}
-                </div>
-            </div>
+              </form>
+            {% elif user.in_team %}
+              <span class="text-sm px-4 py-2 rounded-lg border {{ 'bg-gray-800 text-gray-400 border-cyan-800' if is_dark else 'bg-gray-100 text-gray-500 border-gray-300' }}">
+                In Team
+              </span>
+            {% endif %}
+          </div>
         </div>
-        {% else %}
-        <div class="col-span-full text-center text-gray-400 py-8">
-            No students match the selected filters.
-        </div>
-        {% endfor %}
-    </div>
+      </div>
+    {% else %}
+      <div class="col-span-full text-center py-8 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">
+        No students match the selected filters.
+      </div>
+    {% endfor %}
+  </div>
 </div>
+
 {% endblock %}

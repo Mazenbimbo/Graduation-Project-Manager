@@ -4,51 +4,53 @@
 
 {% block body %}
 
-<div class="min-h-screen bg-gray-300 py-10 px-4">
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+
+<div class="min-h-screen py-10 px-4 {{ 'bg-gray-900' if is_dark else 'bg-blue-50' }}">
   
-  <!-- Guest Mode Card (exactly like the provided image) -->
+  <!-- Guest Mode Card -->
   <div class="max-w-4xl mx-auto mb-8">
-    <div class="bg-white rounded-xl border p-6 md:p-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-black">Welcome, Guest! 👋</h1>
-      <p class="text-gray-700 text-lg mt-1">Browse previous research projects (View Only)</p>
+    <div class="rounded-xl border p-6 md:p-8 shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
+      <h1 class="text-3xl md:text-4xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">Welcome, Guest! 👋</h1>
+      <p class="text-lg mt-1 {{ 'text-gray-300' if is_dark else 'text-gray-600' }}">Browse previous research projects (View Only)</p>
     </div>
   </div>
 
   <!-- Quick stats (numbers only – no departments) -->
   <section class="max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-    <div class="bg-white rounded-lg border p-6 text-center">
-      <h3 class="text-2xl font-bold text-black">{{ students|length }}</h3>
-      <p class="text-gray-700">Students</p>
+    <div class="rounded-lg border p-6 text-center shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
+      <h3 class="text-2xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ students|length }}</h3>
+      <p class="{{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Students</p>
     </div>
-    <div class="bg-white rounded-lg border p-6 text-center">
-      <h3 class="text-2xl font-bold text-black">{{ supervisors|length }}</h3>
-      <p class="text-gray-700">Supervisors</p>
+    <div class="rounded-lg border p-6 text-center shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
+      <h3 class="text-2xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ supervisors|length }}</h3>
+      <p class="{{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Supervisors</p>
     </div>
-    <div class="bg-white rounded-lg border p-6 text-center">
-      <h3 class="text-2xl font-bold text-black">{{ projects|length }}</h3>
-      <p class="text-gray-700">Projects</p>
+    <div class="rounded-lg border p-6 text-center shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
+      <h3 class="text-2xl font-bold {{ 'text-white' if is_dark else 'text-gray-900' }}">{{ projects|length }}</h3>
+      <p class="{{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Projects</p>
     </div>
   </section>
 
   <!-- Two cards: Library / Browse & How-to -->
   <section class="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-    
     <!-- Card 1: Projects List -->
-    <div class="bg-white rounded-xl border p-8 hover:border-cyan-500 transition duration-200">
-      <h2 class="text-2xl font-bold text-black mb-4">Projects List</h2>
-      <p class="text-gray-700 mb-6">Browse all available projects.</p>
+    <div class="rounded-xl border p-8 transition-all duration-200 {{ 'bg-blue-950 border-cyan-800 hover:border-cyan-500' if is_dark else 'bg-white border-blue-200 hover:border-blue-400 hover:shadow-md' }}">
+      <h2 class="text-2xl font-bold mb-4 {{ 'text-white' if is_dark else 'text-gray-800' }}">Projects List</h2>
+      <p class="mb-6 {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Browse all available projects.</p>
       <a href="{{ url_for('projects') }}"
-         class="inline-block bg-cyan-800 text-white font-medium py-2 px-5 rounded-lg hover:bg-cyan-700 transition">
+        class="inline-block font-medium py-2 px-5 rounded-lg transition-colors shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
         View Projects ({{ projects|length }})
       </a>
     </div>
 
     <!-- Card 2: How to create a successful project -->
-    <div class="bg-white rounded-xl border p-8 hover:border-cyan-500 transition duration-200">
-      <h2 class="text-2xl font-bold text-black mb-4">How to create a successful project?</h2>
-      <p class="text-gray-700 mb-6">Tips and guidelines for your graduation project.</p>
+    <div class="rounded-xl border p-8 transition-all duration-200 {{ 'bg-blue-950 border-cyan-800 hover:border-cyan-500' if is_dark else 'bg-white border-blue-200 hover:border-blue-400 hover:shadow-md' }}">
+      <h2 class="text-2xl font-bold mb-4 {{ 'text-white' if is_dark else 'text-gray-800' }}">How to create a successful project?</h2>
+      <p class="mb-6 {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">Tips and guidelines for your graduation project.</p>
       <a href="{{ url_for('guide') }}"
-         class="inline-block bg-cyan-800 text-white font-medium py-2 px-5 rounded-lg hover:bg-cyan-700 transition">
+        class="inline-block font-medium py-2 px-5 rounded-lg transition-colors shadow-sm {{ 'bg-cyan-800 hover:bg-cyan-700 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
         Read the guide
       </a>
     </div>

@@ -4,70 +4,91 @@
 
 {% block body %}
 
+{# Theme switching logic #}
+{% set is_dark = theme is defined and theme == 'dark' %}
+
 <div class="max-w-2xl mx-auto px-4 py-10">
-    <div class="bg-[#1E2A4A] rounded-2xl border-2 border-cyan-400 shadow-xl p-8">
-        <h2 class="text-3xl font-bold text-white mb-6">Schedule Meeting</h2>
+  <div class="rounded-2xl border shadow-xl p-8 {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
+    <h2 class="text-3xl font-bold mb-6 {{ 'text-white' if is_dark else 'text-gray-900' }}">Schedule Meeting</h2>
 
-        <form action="/meeting?project_id={{project_id}}" method="post" class="space-y-6">
-            <!-- Meeting Title -->
-            <div class="flex flex-col">
-                <label for="title" class="text-sm font-medium text-cyan-200 mb-1">Meeting Title</label>
-                <input name="title" type="text" required placeholder="e.g. Progress Review Meeting"
-                       class="rounded-xl border border-gray-400 bg-white p-3 text-gray-900 w-full focus:ring-2 focus:ring-cyan-400 focus:border-transparent">
-            </div>
+    <form action="/meeting?project_id={{project_id}}" method="post" class="space-y-6">
+      <!-- Meeting Title -->
+      <div class="flex flex-col">
+        <label for="title" class="text-sm font-medium mb-1 {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">Meeting Title</label>
+        <input name="title" type="text" required placeholder="e.g. Progress Review Meeting"
+          class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+            'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+            else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+          }}">
+      </div>
 
-            <!-- Date & Time -->
-            <div class="flex flex-col sm:flex-row sm:gap-4">
-                <div class="flex flex-col flex-1">
-                    <label class="text-sm font-medium text-cyan-200 mb-1">Date</label>
-                    <input name="date" type="date" required
-                           class="rounded-xl border border-gray-400 bg-white p-3 text-gray-900 w-full focus:ring-2 focus:ring-cyan-400">
-                </div>
-                <div class="flex flex-col flex-1 mt-4 sm:mt-0">
-                    <label class="text-sm font-medium text-cyan-200 mb-1">Time</label>
-                    <input name="time" type="time" required
-                           class="rounded-xl border border-gray-400 bg-white p-3 text-gray-900 w-full focus:ring-2 focus:ring-cyan-400">
-                </div>
-            </div>
+      <!-- Date & Time -->
+      <div class="flex flex-col sm:flex-row sm:gap-4">
+        <div class="flex flex-col flex-1">
+          <label class="text-sm font-medium mb-1 {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">Date</label>
+          <input name="date" type="date" required
+            class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+              'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark 
+              else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500' 
+            }}">
+        </div>
+        <div class="flex flex-col flex-1 mt-4 sm:mt-0">
+          <label class="text-sm font-medium mb-1 {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">Time</label>
+          <input name="time" type="time" required
+            class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+              'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark 
+              else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500' 
+            }}">
+        </div>
+      </div>
 
-            <!-- Meeting Place (Alpine) -->
-            <div x-data="{ type: 'online' }">
-                <label class="text-sm font-medium text-cyan-200 mb-1 block">Meeting Place</label>
-                <div class="flex gap-6 mt-2">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="in_person" value="in_person" x-model="type"
-                               class="accent-cyan-400 w-4 h-4">
-                        <span class="text-white">In Person</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="online" value="online" x-model="type" checked
-                               class="accent-cyan-400 w-4 h-4">
-                        <span class="text-white">Online</span>
-                    </label>
-                </div>
+      <!-- Meeting Place (Alpine) -->
+      <div x-data="{ type: 'online' }">
+        <label class="text-sm font-medium mb-1 block {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">Meeting Place</label>
+        <div class="flex gap-6 mt-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="in_person" value="in_person" x-model="type"
+              class="w-4 h-4 {{ 'accent-cyan-400' if is_dark else 'accent-blue-600' }}">
+            <span class="{{ 'text-white' if is_dark else 'text-gray-800' }}">In Person</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="online" value="online" x-model="type" checked
+              class="w-4 h-4 {{ 'accent-cyan-400' if is_dark else 'accent-blue-600' }}">
+            <span class="{{ 'text-white' if is_dark else 'text-gray-800' }}">Online</span>
+          </label>
+        </div>
 
-                <div x-show="type === 'online'" x-transition class="mt-4">
-                    <input name="link" type="url" placeholder="Meeting Link (e.g. Zoom/Google Meet)"
-                           class="rounded-xl border border-gray-400 bg-white p-3 text-gray-900 w-full focus:ring-2 focus:ring-cyan-400">
-                </div>
-            </div>
+        <div x-show="type === 'online'" x-transition class="mt-4">
+          <input name="link" type="url" placeholder="Meeting Link (e.g. Zoom/Google Meet)"
+            class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+              'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+              else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+            }}">
+        </div>
+      </div>
 
-            <!-- Description -->
-            <div class="flex flex-col">
-                <label for="notes" class="text-sm font-medium text-cyan-200 mb-1">Description (Optional)</label>
-                <textarea name="notes" rows="3"
-                          class="rounded-xl border border-gray-400 bg-white p-3 text-gray-900 w-full focus:ring-2 focus:ring-cyan-400"></textarea>
-            </div>
+      <!-- Description -->
+      <div class="flex flex-col">
+        <label for="notes" class="text-sm font-medium mb-1 {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">Description (Optional)</label>
+        <textarea name="notes" rows="3"
+          class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+            'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+            else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+          }}"></textarea>
+      </div>
 
-            <!-- Submit -->
-            <div class="flex justify-end">
-                <button type="submit"
-                        class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-colors">
-                    Schedule
-                </button>
-            </div>
-        </form>
-    </div>
+      <!-- Submit -->
+      <div class="flex justify-end">
+        <button type="submit"
+          class="font-bold py-3 px-8 rounded-xl shadow-md transition-colors {{ 
+            'bg-cyan-600 hover:bg-cyan-700 text-white' if is_dark 
+            else 'bg-blue-600 hover:bg-blue-700 text-white' 
+          }}">
+          Schedule
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 {% endblock %}
