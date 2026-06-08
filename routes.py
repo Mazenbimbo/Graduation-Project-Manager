@@ -889,14 +889,33 @@ def register_routes(app,db):
         projects = Project.query.all()
         all_projects = []
         for project in projects :
-            all_projects.append({
-                'name':project.name,
-                'description':project.description,
-                'members': [member.name for member in project.members],
-                'doctor' : project.doctor,
-                'assistant' : project.assistent,
-                'special': project.special,
-                'year': project.year,
-                'fields':project.get_fields()
-            })
+            if project.year != datetime.now().year : 
+                all_projects.append({
+                    'name':project.name,
+                    'description':project.description,
+                    'members': [member.name for member in project.members],
+                    'doctor' : project.doctor,
+                    'assistant' : project.assistent,
+                    'special': project.special,
+                    'year': project.year,
+                    'fields':project.get_fields()
+                })
+        return jsonify(all_projects)
+
+    @app.route('/api/ideas',methods=['GET'])
+    def api_ideas():
+        projects = Project.query.all()
+        all_projects = []
+        for project in projects :
+            if project.year == datetime.now().year : 
+                all_projects.append({
+                    'name':project.name,
+                    'description':project.description,
+                    'members': [member.name for member in project.members],
+                    'doctor' : project.doctor,
+                    'assistant' : project.assistent,
+                    'special': project.special,
+                    'year': project.year,
+                    'fields':project.get_fields()
+                })
         return jsonify(all_projects)
