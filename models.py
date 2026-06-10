@@ -160,6 +160,7 @@ class Meeting(db.Model):
     date = db.Column(db.Date,nullable=False)
     time = db.Column(db.Time,nullable=False)
     place = db.Column(db.Text,nullable=False) # online or in_person
+    location = db.Column(db.Text,nullable=True)
     link = db.Column(db.Text(200),nullable=True)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     project = db.relationship('Project',backref='meeting')

@@ -65,6 +65,14 @@
               else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
             }}">
         </div>
+
+        <div x-show="type === 'in_person'" x-transition class="mt-4">
+          <input name="location" type="text" placeholder="Meeting Place (e.g. Lec5)"
+            class="rounded-xl border p-3 w-full focus:outline-none focus:ring-1 {{ 
+              'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+              else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+            }}">
+        </div>
       </div>
 
       <!-- Description -->

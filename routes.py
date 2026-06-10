@@ -688,9 +688,11 @@ def register_routes(app,db):
                             place = 'online'
                         else : 
                             place = 'in_person'
+
                         meeting_date = request.form.get('date')
                         meeting_time = request.form.get('time')
                         link = request.form.get('link','').strip() or None
+                        location = request.form.get('location').strip() or None
 
                         meeting_date = date.fromisoformat(meeting_date)
                         meeting_time = time.fromisoformat(meeting_time)
