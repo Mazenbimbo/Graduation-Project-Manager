@@ -22,6 +22,13 @@
         <!-- Meeting title -->
         <h3 class="text-xl font-semibold mb-4 {{ 'text-white' if is_dark else 'text-gray-800' }}">{{ meeting.title }}</h3>
 
+        <!-- With who -->
+        {% if 'pid' in data %}
+        <h3 class="text-l mb-3 {{ 'text-white' if is_dark else 'text-gray-800' }}">{{ meeting.supervisor.name }}</h3>
+        {% else %}
+        <h3 class="text-l mb-3 {{ 'text-white' if is_dark else 'text-gray-400' }}">Project : {{ meeting.project.name }} </h3>
+        {% endif %}
+
         <!-- Date, Time, Place row -->
         <div class="flex flex-wrap gap-4 text-sm mb-4 {{ 'text-cyan-300' if is_dark else 'text-blue-700' }}">
           <span class="inline-flex items-center gap-1">
@@ -56,6 +63,21 @@
               </svg>
               {{ meeting.link }}
             </a>
+          </div>
+        {% endif %}
+
+        <!-- Optional location -->
+        {% if meeting.location %}
+          <div class="mb-3">
+            <span
+               class="text-sm flex items-center gap-1 break-all transition-colors
+                      {{ 'text-cyan-400 hover:text-cyan-300 ' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {{ meeting.location }}
+            </span>
           </div>
         {% endif %}
 

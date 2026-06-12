@@ -696,9 +696,11 @@ def register_routes(app,db):
 
                         meeting_date = date.fromisoformat(meeting_date)
                         meeting_time = time.fromisoformat(meeting_time)
+
+                        supervisor = session['sid'] 
                         
                         project_id = request.args.get('project_id')
-                        meeting = Meeting(title=title,notes=notes,date=meeting_date,time=meeting_time,place=place,link=link,project_id=project_id)
+                        meeting = Meeting(title=title,notes=notes,date=meeting_date,time=meeting_time,place=place,link=link,project_id=project_id,location=location,supervisor=supervisor)
                         db.session.add(meeting)
                         db.session.commit()
                         flash("Meeting scheduled successfully!","info")
@@ -710,10 +712,19 @@ def register_routes(app,db):
         flash("You're not allowed here!","error")
         return redirect('/home')
 
+    def delete_old_meetings():
+        today = date.today()
+        old_meetings = Meeting.query.filter(Meeting.date<today).all()
+        for meeting in old_meetings : 
+            db.session.delete(meeting)
+        db.session.commit()
+
     @app.route('/my_meetings',methods=['GET'])
     def my_meetings():
+        delete_old_meetings()
         meetings = Meeting.query.all()
         return render_template('my_meetings.html', meetings=meetings,data=session)
+
 
     @app.route('/edit_projects_number',methods=['POST'])
     def edit_projects_number():
@@ -767,157 +778,899 @@ def register_routes(app,db):
     def guide():
         return 'coming soon'
                     
-    # -------------- APIs ----------------
-    def is_allowed_api(): # change to better auth token
-        header = request.headers.get("Authorization")
-        if header and " Token " in header:
-            token = header.rsplit(" ",1)[1]
-            if token == "xxx":
-                return True
-            else : return False
-        else : return False
-    @app.route('/api/student/<int:id>')
-    def student_api(id):
-        if is_allowed_api():
-            student = Student.query.get_or_404(id)
+    # ========== API V2 ROUTES ==========
+
+    # Generic response helpers
+    def api_unauthorized():
+        return jsonify({"error": "Authentication required"}), 401
+
+    def api_not_found(resource):
+        return jsonify({"error": f"{resource} not found"}), 404
+
+    def api_bad_request(message):
+        return jsonify({"error": message}), 400
+
+    # ----------------------------------------------------------------------
+    # Public endpoints (no login required)
+    @app.route('/api/v2/public/homepage', methods=['GET'])
+    def api_public_homepage():
+        """Return list of students, supervisors, projects (public)"""
+        students = Student.query.all()
+        supervisors = Supervisor.query.all()
+        projects = Project.query.all()
+        return jsonify({
+            "students": [{"pid": s.pid, "name": s.name, "email": s.email} for s in students],
+            "supervisors": [{"sid": sup.sid, "name": sup.name, "role": sup.role} for sup in supervisors],
+            "projects": [{"pid": p.pid, "name": p.name, "year": p.year} for p in projects]
+        })
+
+    # ----------------------------------------------------------------------
+    # Authentication endpoints (JSON versions of sign-in/sign-up)
+    @app.route('/api/v2/sign-up', methods=['POST'])
+    def api_sign_up():
+        """Register a new student (JSON body)"""
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON body")
+        name = data.get('name')
+        phone = data.get('phone')
+        email = data.get('email')
+        specialties = data.get('specialties')
+        year = data.get('year')
+        department = data.get('department')
+        password = data.get('password')
+        if not all([name, phone, email, year, department, password]):
+            return api_bad_request("Missing required fields: name, phone, email, year, department, password")
+        if Student.query.filter_by(email=email).count() > 0:
+            return jsonify({"error": "Email already exists"}), 400
+        student = Student(name=name, specialties=specialties, phone=phone, email=email,
+                        department=department, year=year, password=password)
+        db.session.add(student)
+        db.session.commit()
+        return jsonify({"message": "Student created successfully", "pid": student.pid}), 201
+
+    @app.route('/api/v2/sign-in', methods=['POST'])
+    def api_sign_in():
+        """Student login, returns session data"""
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON body")
+        email = data.get('email')
+        password = data.get('password')
+        student = Student.query.filter_by(email=email).first()
+        if not student or student.password != password:
+            return jsonify({"error": "Invalid email or password"}), 401
+        # Set session (same as web)
+        session['pid'] = student.pid
+        session['name'] = student.name
+        session['specialty'] = student.specialties
+        session['phone'] = student.phone
+        session['email'] = student.email
+        session['year'] = student.year
+        session['department'] = student.department
+        session['image'] = student.image
+        session['logged'] = True
+        session['project_id'] = student.project_id
+        session['in_team'] = student.in_team
+        session['role'] = 'Student'
+        session['public_id'] = student.public_id
+        return jsonify({
+            "message": "Login successful",
+            "pid": student.pid,
+            "name": student.name,
+            "email": student.email,
+            "role": "Student",
+            "in_team": student.in_team,
+            "project_id": student.project_id
+        })
+
+    # Supervisor sign-in
+    @app.route('/api/v2/supervisor/sign-in', methods=['POST'])
+    def api_supervisor_sign_in():
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON body")
+        email = data.get('email')
+        password = data.get('password')
+        sup = Supervisor.query.filter_by(email=email).first()
+        if not sup or sup.password != password:
+            return jsonify({"error": "Invalid email or password"}), 401
+        session['sid'] = sup.sid
+        session['name'] = sup.name
+        session['specialty'] = sup.specialty
+        session['phone'] = sup.phone
+        session['email'] = sup.email
+        session['department'] = sup.department
+        session['image'] = sup.image
+        session['logged'] = True
+        session['role'] = sup.role
+        session['projects'] = [p.pid for p in sup.projects]
+        session['number_of_projects'] = sup.projects_limit or 10
+        session['public_id'] = sup.public_id
+        return jsonify({
+            "message": "Login successful",
+            "sid": sup.sid,
+            "name": sup.name,
+            "role": sup.role
+        })
+
+    @app.route('/api/v2/logout', methods=['POST'])
+    def api_logout():
+        session.clear()
+        return jsonify({"message": "Logged out"})
+
+    # ----------------------------------------------------------------------
+    # Account & profile (student & supervisor)
+    @app.route('/api/v2/account/me', methods=['GET'])
+    def api_account_me():
+        if 'logged' not in session:
+            return api_unauthorized()
+        role = session.get('role')
+        if role == 'Student':
+            student = Student.query.get(session['pid'])
+            if not student:
+                return api_not_found("Student")
             return jsonify({
-            "name":student.name,
-            "specialties":student.specialties,
-            "department":student.department,
-            "grad_year":student.year,
-            "image":student.image,
-            "specialties_level":student.specialties_level,
-            "in_team":student.in_team,
-            "project_id":student.project_id
+                "pid": student.pid,
+                "name": student.name,
+                "email": student.email,
+                "phone": student.phone,
+                "specialties": student.specialties,
+                "year": student.year,
+                "department": student.department,
+                "image": student.image,
+                "in_team": student.in_team,
+                "project_id": student.project_id,
+                "linkedin_url": student.linkedin_url,
+                "github_url": student.github_url
             })
-        else :
-            return jsonify({"error":"Not authenticated"})
-    @app.route('/api/login',methods=['POST']) # Make input data JSON
-    def api_login():
-        email = request.form.get('email')
-        password = request.form.get('password')
-        if Student.query.filter_by(email=email).count() > 0 :
-            student = Student.query.filter_by(email=email).first()
-            if student and student.password == password :
-                return jsonify({
-                    "name":student.name,
-                    "specialties":student.specialties,
-                    "department":student.department,
-                    "grad_year":student.year,
-                    "image":student.image,
-                    "in_team":student.in_team,
-                    "project_id":student.project_id
-                })
-            else : return jsonify({"message":"Invalid credintials!!!!!1"})
-        else : return jsonify({"message":"Invalid credintials!!!!!!2"})
-
-    @app.route('/api/signup',methods=['POST']) # Make input data JSON
-    def api_signup():
-            name = request.form.get('name')
-            phone = request.form.get('phone')
-            email = request.form.get('email')
-            specialties = request.form.get('specialties')
-            year = request.form.get('year')
-            department = request.form.get('department')
-            password = request.form.get('password')
-            if Student.query.filter_by(email=email).count()> 0 :
-                    return jsonify({"message":"Email already exist!"})
-            else :
-                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year, password=password)
-                db.session.add(student)
-                db.session.commit()
-                return jsonify({"message":"User registered successfully!"})
-    @app.route('/api/model',methods=['POST','GET'])
-    def model():
-        if request.method == 'GET' :
-            all_ideas = Project.query
-            # how to get the new idea? 
-
-            this_year = str(datetime.now().year)
-            old_ideas = all_ideas.filter_by(year=this_year)
-            old_ideas_json = []
-            for idea in old_ideas :
-                old_ideas_json.append({
-                    'Name':idea.name,
-                    'Description' : idea.description
-                })
-            return jsonify(old_ideas_json)
-            
-        else :
-            data = request.json()
-            similar_idea = data.get('similar_idea')
-            # loop if there is more then one
-    @app.route('/api/account/<string:id>',methods=['GET'])
-    def api_account(id):
-        if request.method == 'GET':
-                if id.startswith('s') or id.startswith('a') :
-                    supervisor = Supervisor.query.get_or_404(int(id[1:]))
-                    return jsonify({
-                    "id": supervisor.sid,
-                    "name": supervisor.name,
-                    "email": supervisor.email,
-                    "phone": supervisor.phone,
-                    "image": supervisor.image,
-                    "role": supervisor.role,
-                    "department": supervisor.department,
-                    "specialties": supervisor.specialty, 
-                    "linkedin_url": supervisor.linkedin_url,
-                    "github_url": supervisor.github_url,
-                    "supervisedProjects": [3, 5],
-                    "assistantProjects": [4],
-                    "years_of_experience": 10,
-                    "research_areas": ["AI", "NLP"],
-                    "office_hours": "Sundays 10 AM - 12 PM"
+        elif role in ('Doctor', 'Assistant'):
+            sup = Supervisor.query.get(session['sid'])
+            if not sup:
+                return api_not_found("Supervisor")
+            return jsonify({
+                "sid": sup.sid,
+                "name": sup.name,
+                "email": sup.email,
+                "phone": sup.phone,
+                "specialty": sup.specialty,
+                "department": sup.department,
+                "image": sup.image,
+                "role": sup.role,
+                "projects_limit": sup.projects_limit,
+                "linkedin_url": sup.linkedin_url,
+                "github_url": sup.github_url
             })
-                else : 
-                    student = Student.query.get_or_404(int(id))
-                    return jsonify({
-                        "id": student.pid,
-                        "name": student.name,
-                        "email": student.email,
-                        "phone": student.phone,
-                        "image": student.image,
-                        "year": student.year,
-                        "department": student.department,
-                        "specialties": student.specialties, 
-                        "in_team": student.in_team, 
-                        "project_id": student.project_id, 
-                        "linkedin_url": student.linkedin_url,
-                        "github_url": student.github_url
-                    })
-                
-    @app.route('/api/library',methods=['GET'])
-    def api_library():
-        projects = Project.query.all()
-        all_projects = []
-        for project in projects :
-            if project.year != datetime.now().year : 
-                all_projects.append({
-                    'name':project.name,
-                    'description':project.description,
-                    'members': [member.name for member in project.members],
-                    'doctor' : project.doctor,
-                    'assistant' : project.assistent,
-                    'special': project.special,
-                    'year': project.year,
-                    'fields':project.get_fields()
-                })
-        return jsonify(all_projects)
+        return api_bad_request("Unknown role")
 
-    @app.route('/api/ideas',methods=['GET'])
+    @app.route('/api/v2/account/<string:public_id>', methods=['GET'])
+    def api_account_public(public_id):
+        """Get public profile by public_id (e.g., s1, d2, a3)"""
+        if public_id.startswith('s'):
+            pid = int(public_id[1:])
+            student = Student.query.get(pid)
+            if not student:
+                return api_not_found("Student")
+            return jsonify({
+                "pid": student.pid,
+                "name": student.name,
+                "email": student.email,
+                "phone": student.phone,
+                "specialties": student.specialties,
+                "year": student.year,
+                "department": student.department,
+                "image": student.image,
+                "in_team": student.in_team,
+                "linkedin_url": student.linkedin_url,
+                "github_url": student.github_url
+            })
+        elif public_id.startswith('d') or public_id.startswith('a'):
+            sid = int(public_id[1:])
+            sup = Supervisor.query.get(sid)
+            if not sup:
+                return api_not_found("Supervisor")
+            return jsonify({
+                "sid": sup.sid,
+                "name": sup.name,
+                "email": sup.email,
+                "phone": sup.phone,
+                "specialty": sup.specialty,
+                "department": sup.department,
+                "image": sup.image,
+                "role": sup.role
+            })
+        return api_bad_request("Invalid public ID format")
+
+    @app.route('/api/v2/edit/user/data', methods=['PUT'])
+    def api_edit_user_data():
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON")
+        student = Student.query.get(session['pid'])
+        if not student:
+            return api_not_found("Student")
+        # Update fields if provided
+        if 'name' in data:
+            student.name = data['name']
+            session['name'] = data['name']
+        if 'phone' in data:
+            student.phone = data['phone']
+            session['phone'] = data['phone']
+        if 'email' in data:
+            # Check email uniqueness
+            existing = Student.query.filter(Student.email == data['email'], Student.pid != student.pid).first()
+            if existing:
+                return jsonify({"error": "Email already in use"}), 400
+            student.email = data['email']
+            session['email'] = data['email']
+        if 'specialties' in data:
+            student.specialties = data['specialties']
+            session['specialty'] = data['specialties']
+        if 'year' in data:
+            student.year = data['year']
+            session['year'] = data['year']
+        if 'department' in data:
+            student.department = data['department']
+            session['department'] = data['department']
+        if 'password' in data:
+            student.password = data['password']
+            session['password'] = data['password']
+        if 'linkedin' in data:
+            student.linkedin_url = data['linkedin']
+        if 'github' in data:
+            student.github_url = data['github']
+            db.session.commit()
+        return jsonify({"message": "Profile updated successfully"})
+
+    # ----------------------------------------------------------------------
+    # Projects (ideas, library, detail, creation, editing)
+    @app.route('/api/v2/ideas', methods=['GET'])
     def api_ideas():
-        projects = Project.query.all()
-        all_projects = []
-        for project in projects :
-            if project.year == datetime.now().year : 
-                all_projects.append({
-                    'name':project.name,
-                    'description':project.description,
-                    'members': [member.name for member in project.members],
-                    'doctor' : project.doctor,
-                    'assistant' : project.assistent,
-                    'special': project.special,
-                    'year': project.year,
-                    'fields':project.get_fields()
-                })
-        return jsonify(all_projects)
+        """Current year projects, optional filter by field and featured"""
+        this_year = str(datetime.now().year)
+        query = Project.query.filter_by(year=this_year)
+        field = request.args.get('field')
+        featured = request.args.get('featured') == 'true'
+        if field and field != 'all':
+            # Filtering by field requires checking the JSON field list
+            projects = [p for p in query.all() if field in p.get_fields()]
+        else:
+            projects = query.all()
+        if featured:
+            projects = [p for p in projects if p.special]
+        return jsonify([{
+            "pid": p.pid,
+            "name": p.name,
+            "description": p.description,
+            "fields": p.get_fields(),
+            "special": p.special,
+            "leader": p.leader,
+            "members_count": p.members.count(),
+            "has_doctor": p.doctor is not None,
+            "has_assistant": p.assistent is not None
+        } for p in projects])
+
+    @app.route('/api/v2/projects', methods=['GET'])
+    def api_projects():
+        """Past projects (year < current) with filtering"""
+        this_year = str(datetime.now().year)
+        query = Project.query.filter(Project.year < this_year)
+        field = request.args.get('field')
+        year = request.args.get('year')
+        featured = request.args.get('featured') == 'true'
+        if field and field != 'all':
+            projects = [p for p in query.all() if field in p.get_fields()]
+        else:
+            projects = query.all()
+        if year and year != 'all':
+            projects = [p for p in projects if p.year == year]
+        if featured:
+            projects = [p for p in projects if p.special]
+        return jsonify([{
+            "pid": p.pid,
+            "name": p.name,
+            "description": p.description,
+            "year": p.year,
+            "fields": p.get_fields(),
+            "special": p.special
+        } for p in projects])
+
+    @app.route('/api/v2/project/<int:pid>', methods=['GET'])
+    def api_project_detail(pid):
+        """Full project details including members, supervisors, attachments, messages"""
+        project = Project.query.get(pid)
+        if not project:
+            return api_not_found("Project")
+        doctor = Supervisor.query.get(project.doctor) if project.doctor else None
+        assistant = Supervisor.query.get(project.assistent) if project.assistent else None
+        members = [{"pid": m.pid, "name": m.name} for m in project.members]
+        messages = Message.query.filter_by(project_id=pid).all()
+        return jsonify({
+            "pid": project.pid,
+            "name": project.name,
+            "description": project.description,
+            "year": project.year,
+            "fields": project.get_fields(),
+            "statue": project.statue,
+            "special": project.special,
+            "leader": project.leader,
+            "doctor": {
+                "sid": doctor.sid,
+                "name": doctor.name
+            } if doctor else None,
+            "assistant": {
+                "sid": assistant.sid,
+                "name": assistant.name
+            } if assistant else None,
+            "members": members,
+            "attachments": project.get_attachment(),
+            "messages": [{
+                "mid": m.mid,
+                "direction": m.direction,
+                "content": m.content,
+                "message_type": m.message_type,
+                "supervisor_id": m.supervisor_id,
+                "timestamp": m.mid  # you may add a timestamp column if needed
+            } for m in messages]
+        })
+
+    @app.route('/api/v2/new_project', methods=['POST'])
+    def api_create_project():
+        """Create a new project (student only)"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON")
+        name = data.get('name')
+        description = data.get('description')
+        fields = data.get('fields', [])
+        if not name or not description:
+            return api_bad_request("Name and description required")
+        year = datetime.now().year
+        project = Project(name=name, description=description, year=year, leader=session['pid'])
+        project.set_fields(fields)
+        db.session.add(project)
+        db.session.commit()
+        # Add creator as first member
+        members = [session['pid']]
+        project.set_members(members)
+        # Update student
+        student = Student.query.get(session['pid'])
+        if student.project_id:
+            # Leave old project
+            old_project = Project.query.get(student.project_id)
+            if old_project:
+                old_members = old_project.get_members()
+                if len(old_members) > 1:
+                    old_project.leader = old_members[1]
+                    old_members.remove(student.pid)
+                    old_project.set_members(old_members)
+                else:
+                    db.session.delete(old_project)
+        student.project_id = project.pid
+        student.in_team = True
+        session['project_id'] = project.pid
+        session['in_team'] = True
+        db.session.commit()
+        return jsonify({"message": "Project created", "pid": project.pid}), 201
+
+    @app.route('/api/v2/project/<int:pid>', methods=['PUT'])
+    def api_edit_project(pid):
+        """Edit project (only leader)"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        project = Project.query.get(pid)
+        if not project:
+            return api_not_found("Project")
+        if project.leader != session['pid']:
+            return jsonify({"error": "Only team leader can edit project"}), 403
+        data = request.get_json()
+        if 'name' in data:
+            project.name = data['name']
+        if 'description' in data:
+            project.description = data['description']
+        if 'fields' in data:
+            project.set_fields(data['fields'])
+        db.session.commit()
+        return jsonify({"message": "Project updated"})
+
+    # ----------------------------------------------------------------------
+    # Team management (join, leave, kick, requests)
+    @app.route('/api/v2/join/<int:project_id>', methods=['POST'])
+    def api_request_join(project_id):
+        """Student requests to join a project"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        project = Project.query.get(project_id)
+        if not project:
+            return api_not_found("Project")
+        if session['in_team']:
+            return jsonify({"error": "You are already in a team"}), 400
+        # Check duplicate request
+        existing = Notification.query.filter_by(action='join', _from_id=session['pid'],
+                                                student_id=project.leader, project_id=project_id).first()
+        if existing:
+            return jsonify({"error": "Request already sent"}), 400
+        notif = Notification(action='join', _from_id=session['pid'], _from_name=session['name'],
+                            student_id=project.leader, project_id=project_id)
+        db.session.add(notif)
+        db.session.commit()
+        return jsonify({"message": "Join request sent"})
+
+    @app.route('/api/v2/team/requests', methods=['GET'])
+    def api_get_team_requests():
+        """Get pending join requests for the leader's project"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        project_id = session.get('project_id')
+        if not project_id:
+            return jsonify({"requests": []})
+        project = Project.query.get(project_id)
+        if not project or project.leader != session['pid']:
+            return jsonify({"error": "Not the team leader"}), 403
+        requests = Notification.query.filter_by(action='join', student_id=session['pid']).all()
+        return jsonify([{
+            "nid": r.nid,
+            "from_id": r._from_id,
+            "from_name": r._from_name,
+            "project_id": r.project_id
+        } for r in requests])
+
+    @app.route('/api/v2/team/respond_join/<int:nid>/<string:action>', methods=['POST'])
+    def api_respond_join(nid, action):
+        """Leader accepts/rejects join request (action = 'accept' or 'reject')"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        notif = Notification.query.get(nid)
+        if not notif or notif.action != 'join' or notif.student_id != session['pid']:
+            return api_not_found("Request")
+        project = Project.query.get(session['project_id'])
+        if not project:
+            return api_not_found("Project")
+        if action == 'accept':
+            members = project.get_members()
+            if len(members) >= 6:
+                return jsonify({"error": "Team is full"}), 400
+            members.append(notif._from_id)
+            project.set_members(members)
+            student = Student.query.get(notif._from_id)
+            if student:
+                student.in_team = True
+                student.project_id = session['project_id']
+            db.session.commit()
+        db.session.delete(notif)
+        db.session.commit()
+        return jsonify({"message": f"Request {action}ed"})
+
+    @app.route('/api/v2/exit_team', methods=['POST'])
+    def api_exit_team():
+        """Current student leaves their team"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        student = Student.query.get(session['pid'])
+        if not student.project_id:
+            return jsonify({"error": "Not in a team"}), 400
+        project = Project.query.get(student.project_id)
+        if project:
+            members = project.get_members()
+            if len(members) > 1:
+                if student.pid == project.leader:
+                    project.leader = members[1]
+                members.remove(student.pid)
+                project.set_members(members)
+            else:
+                db.session.delete(project)
+        student.project_id = None
+        student.in_team = False
+        session['project_id'] = None
+        session['in_team'] = False
+        db.session.commit()
+        return jsonify({"message": "Left team successfully"})
+
+    @app.route('/api/v2/kick/<int:project_id>/<int:student_id>', methods=['POST'])
+    def api_kick_member(project_id, student_id):
+        """Team leader kicks a member"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        project = Project.query.get(project_id)
+        if not project:
+            return api_not_found("Project")
+        if project.leader != session['pid']:
+            return jsonify({"error": "Only leader can kick members"}), 403
+        if student_id == project.leader:
+            return jsonify({"error": "Cannot kick leader"}), 400
+        student = Student.query.get(student_id)
+        if not student or student.project_id != project_id:
+            return jsonify({"error": "Student not in this team"}), 404
+        members = project.get_members()
+        if student_id in members:
+            members.remove(student_id)
+            project.set_members(members)
+        student.project_id = None
+        student.in_team = False
+        db.session.commit()
+        return jsonify({"message": "Member kicked"})
+
+    # ----------------------------------------------------------------------
+    # Friends (students list with filters)
+    @app.route('/api/v2/friends', methods=['GET'])
+    def api_friends():
+        """List students with optional specialty filter and 'not in team' filter"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        specialty = request.args.get('specialty')
+        not_in_team = request.args.get('not_in_team') == 'true'
+        query = Student.query
+        if specialty:
+            query = query.filter(Student.specialties == specialty)
+        if not_in_team:
+            query = query.filter(Student.in_team == False)
+        students = query.all()
+        return jsonify([{
+            "pid": s.pid,
+            "name": s.name,
+            "specialties": s.specialties,
+            "in_team": s.in_team,
+            "year": s.year,
+            "department": s.department,
+            "image": s.image
+        } for s in students])
+
+    @app.route('/api/v2/req_to_add/<int:student_id>', methods=['POST'])
+    def api_req_to_add(student_id):
+        """Send request to a student to join your team (as leader)"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        if not session.get('in_team') or not session.get('project_id'):
+            return jsonify({"error": "You must be in a team to add members"}), 400
+        project = Project.query.get(session['project_id'])
+        if project.leader != session['pid']:
+            return jsonify({"error": "Only leader can send invites"}), 403
+        target = Student.query.get(student_id)
+        if not target:
+            return api_not_found("Student")
+        if target.in_team:
+            return jsonify({"error": "Student is already in a team"}), 400
+        existing = Notification.query.filter_by(action='add', _from_id=session['pid'],
+                                                student_id=student_id).first()
+        if existing:
+            return jsonify({"error": "Request already sent"}), 400
+        notif = Notification(action='add', _from_id=session['pid'], _from_name=session['name'],
+                            student_id=student_id, project_id=session['project_id'])
+        db.session.add(notif)
+        db.session.commit()
+        return jsonify({"message": "Invitation sent"})
+
+    # ----------------------------------------------------------------------
+    # Supervisor related (list, request supervision, respond)
+    @app.route('/api/v2/supervisors', methods=['GET'])
+    def api_supervisors():
+        """List all supervisors (optionally filter by department?)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        supervisors = Supervisor.query.all()
+        return jsonify([{
+            "sid": s.sid,
+            "name": s.name,
+            "email": s.email,
+            "role": s.role,
+            "department": s.department,
+            "specialty": s.specialty,
+            "image": s.image
+        } for s in supervisors])
+
+    @app.route('/api/v2/req_to_supervise/<int:supervisor_id>', methods=['POST'])
+    def api_req_to_supervise(supervisor_id):
+        """Student requests supervision from a specific supervisor"""
+        if 'logged' not in session or session.get('role') != 'Student':
+            return api_unauthorized()
+        if not session.get('in_team'):
+            return jsonify({"error": "You must be in a team to request supervision"}), 400
+        sup = Supervisor.query.get(supervisor_id)
+        if not sup:
+            return api_not_found("Supervisor")
+        existing = Supervisor_notification.query.filter_by(_from_id=session['pid'],
+                                                        supervisor_id=supervisor_id,
+                                                        action='supervise').first()
+        if existing:
+            return jsonify({"error": "Request already sent"}), 400
+        notif = Supervisor_notification(_from_id=session['pid'], action='supervise',
+                                        _from_name=session['name'], supervisor_id=supervisor_id,
+                                        project_id=session['project_id'])
+        db.session.add(notif)
+        db.session.commit()
+        return jsonify({"message": "Supervision request sent"})
+
+    @app.route('/api/v2/supervisor/notifications', methods=['GET'])
+    def api_supervisor_notifications():
+        """Get pending supervision requests for the logged-in supervisor"""
+        if 'logged' not in session or session.get('role') not in ('Doctor', 'Assistant'):
+            return api_unauthorized()
+        notifs = Supervisor_notification.query.filter_by(supervisor_id=session['sid']).all()
+        return jsonify([{
+            "nid": n.nid,
+            "from_id": n._from_id,
+            "from_name": n._from_name,
+            "action": n.action,
+            "project_id": n.project_id
+        } for n in notifs])
+
+    @app.route('/api/v2/supervisor/respond/<int:nid>/<string:action>', methods=['POST'])
+    def api_supervisor_respond(nid, action):
+        """Supervisor accepts/rejects supervision request"""
+        if 'logged' not in session or session.get('role') not in ('Doctor', 'Assistant'):
+            return api_unauthorized()
+        notif = Supervisor_notification.query.get(nid)
+        if not notif or notif.supervisor_id != session['sid']:
+            return api_not_found("Notification")
+        project = Project.query.get(notif.project_id)
+        if not project:
+            return api_not_found("Project")
+        if action == 'accept':
+            # Check if already has same role
+            if session['role'] == 'Doctor' and project.doctor:
+                return jsonify({"error": "Project already has a Doctor"}), 400
+            if session['role'] == 'Assistant' and project.assistent:
+                return jsonify({"error": "Project already has an Assistant"}), 400
+            if session['role'] == 'Doctor':
+                project.doctor = session['sid']
+            else:
+                project.assistent = session['sid']
+            sup = Supervisor.query.get(session['sid'])
+            sup.projects.append(project)
+            db.session.commit()
+        db.session.delete(notif)
+        db.session.commit()
+        return jsonify({"message": f"Request {action}ed"})
+
+    # ----------------------------------------------------------------------
+    # Tasks (TODO)
+    @app.route('/api/v2/tasks', methods=['GET'])
+    def api_get_tasks():
+        """Get tasks for the current student or for a specific project (if supervisor)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        role = session.get('role')
+        if role == 'Student':
+            if not session.get('in_team'):
+                return jsonify({"error": "Not in a team"}), 400
+            tasks = Task.query.filter_by(student_id=session['pid']).all()
+        else:  # supervisor
+            project_id = request.args.get('project_id')
+            if not project_id:
+                return api_bad_request("Missing project_id for supervisor")
+            # Verify supervisor is assigned to that project
+            project = Project.query.get(project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized for this project"}), 403
+            # Tasks of all members
+            tasks = Task.query.filter(Task.project_id == project_id).all()
+        return jsonify([{
+            "tid": t.tid,
+            "description": t.description,
+            "status": t.status,
+            "deadline": t.deadline.isoformat() if t.deadline else None,
+            "student_id": t.student_id
+        } for t in tasks])
+
+    @app.route('/api/v2/tasks', methods=['POST'])
+    def api_create_task():
+        """Create a new task (student for self, or supervisor for team member)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        data = request.get_json()
+        if not data:
+            return api_bad_request("Missing JSON")
+        description = data.get('description')
+        deadline_str = data.get('deadline')
+        assigned_to = data.get('assigned_to')
+        project_id = data.get('project_id')
+        if not description or not deadline_str:
+            return api_bad_request("Description and deadline required")
+        deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+        role = session.get('role')
+        if role == 'Student':
+            if not session.get('in_team'):
+                return jsonify({"error": "Not in a team"}), 400
+            student_id = session['pid']
+            project_id = session['project_id']
+        else:
+            # Supervisor must provide assigned_to and project_id
+            if not assigned_to or not project_id:
+                return api_bad_request("assigned_to and project_id required for supervisor")
+            # Verify authorization
+            project = Project.query.get(project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized"}), 403
+            student_id = assigned_to
+        task = Task(description=description, deadline=deadline, student_id=student_id, project_id=project_id)
+        db.session.add(task)
+        db.session.commit()
+        return jsonify({"message": "Task created", "tid": task.tid}), 201
+
+    @app.route('/api/v2/tasks/<int:tid>/status', methods=['PUT'])
+    def api_change_task_status(tid):
+        """Mark task as done"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        task = Task.query.get(tid)
+        if not task:
+            return api_not_found("Task")
+        # Authorization: student can change own tasks, supervisor can change any in their project
+        if session.get('role') == 'Student':
+            if task.student_id != session['pid']:
+                return jsonify({"error": "Not authorized"}), 403
+        else:
+            project = Project.query.get(task.project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized"}), 403
+        task.status = "Done"
+        db.session.commit()
+        return jsonify({"message": "Task marked done"})
+
+    @app.route('/api/v2/tasks/<int:tid>', methods=['DELETE'])
+    def api_delete_task(tid):
+        """Delete a task (same auth as change status)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        task = Task.query.get(tid)
+        if not task:
+            return api_not_found("Task")
+        if session.get('role') == 'Student':
+            if task.student_id != session['pid']:
+                return jsonify({"error": "Not authorized"}), 403
+        else:
+            project = Project.query.get(task.project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized"}), 403
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"message": "Task deleted"})
+
+    # ----------------------------------------------------------------------
+    # Meetings (schedule, list)
+    @app.route('/api/v2/meetings', methods=['GET'])
+    def api_get_meetings():
+        """List meetings (supervisor sees all, student sees own project meetings)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        role = session.get('role')
+        if role in ('Doctor', 'Assistant'):
+            meetings = Meeting.query.all()
+        else:
+            if not session.get('project_id'):
+                return jsonify({"meetings": []})
+            meetings = Meeting.query.filter_by(project_id=session['project_id']).all()
+        return jsonify([{
+            "mid": m.mid,
+            "title": m.title,
+            "notes": m.notes,
+            "date": m.date.isoformat(),
+            "time": m.time.isoformat(),
+            "place": m.place,
+            "location": m.location,
+            "link": m.link,
+            "project_id": m.project_id
+        } for m in meetings])
+
+    @app.route('/api/v2/meetings', methods=['POST'])
+    def api_schedule_meeting():
+        """Schedule a meeting (supervisor only, for their project)"""
+        if 'logged' not in session or session.get('role') not in ('Doctor', 'Assistant'):
+            return api_unauthorized()
+        data = request.get_json()
+        required = ['title', 'date', 'time', 'place', 'project_id']
+        if not data or not all(k in data for k in required):
+            return api_bad_request(f"Missing required fields: {required}")
+        project = Project.query.get(data['project_id'])
+        if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+            return jsonify({"error": "Not authorized for this project"}), 403
+        meeting = Meeting(
+            title=data['title'],
+            notes=data.get('notes'),
+            date=datetime.strptime(data['date'], "%Y-%m-%d").date(),
+            time=datetime.strptime(data['time'], "%H:%M").time(),
+            place=data['place'],
+            location=data.get('location'),
+            link=data.get('link'),
+            project_id=data['project_id'],
+            supervisor=session['sid']
+        )
+        db.session.add(meeting)
+        db.session.commit()
+        return jsonify({"message": "Meeting scheduled", "mid": meeting.mid}), 201
+
+    # ----------------------------------------------------------------------
+    # Notifications (student and supervisor)
+    @app.route('/api/v2/notifications', methods=['GET'])
+    def api_get_notifications():
+        """Get all notifications for current user (student or supervisor)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        role = session.get('role')
+        if role == 'Student':
+            notifs = Notification.query.filter_by(student_id=session['pid']).all()
+            return jsonify([{
+                "nid": n.nid,
+                "action": n.action,
+                "from_id": n._from_id,
+                "from_name": n._from_name,
+                "project_id": n.project_id,
+                "read": n.read
+            } for n in notifs])
+        else:
+            notifs = Supervisor_notification.query.filter_by(supervisor_id=session['sid']).all()
+            return jsonify([{
+                "nid": n.nid,
+                "action": n.action,
+                "from_id": n._from_id,
+                "from_name": n._from_name,
+                "read": n.read
+            } for n in notifs])
+
+    # ----------------------------------------------------------------------
+    # Messages
+    @app.route('/api/v2/messages', methods=['POST'])
+    def api_send_message():
+        """Send a message between student and supervisor"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        data = request.get_json()
+        content = data.get('content')
+        project_id = data.get('project_id')
+        if not content or not project_id:
+            return api_bad_request("content and project_id required")
+        role = session.get('role')
+        if role == 'Student':
+            supervisor_id = data.get('supervisor_id')
+            if not supervisor_id:
+                return api_bad_request("supervisor_id required")
+            # Verify student belongs to project
+            if session.get('project_id') != project_id:
+                return jsonify({"error": "You are not a member of this project"}), 403
+            direction = 1
+            sup = Supervisor.query.get(supervisor_id)
+            if not sup:
+                return api_not_found("Supervisor")
+            msg = Message(direction=direction, project_id=project_id, content=content,
+                        supervisor_id=supervisor_id)
+        else:
+            # Supervisor
+            direction = 2
+            # Verify supervisor is assigned to project
+            project = Project.query.get(project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized for this project"}), 403
+            msg = Message(direction=direction, project_id=project_id, content=content,
+                        supervisor_id=session['sid'])
+        db.session.add(msg)
+        db.session.commit()
+        return jsonify({"message": "Message sent", "mid": msg.mid}), 201
+
+    @app.route('/api/v2/messages/<int:project_id>', methods=['GET'])
+    def api_get_messages(project_id):
+        """Get all messages for a project (members and supervisors)"""
+        if 'logged' not in session:
+            return api_unauthorized()
+        role = session.get('role')
+        if role == 'Student':
+            if session.get('project_id') != project_id:
+                return jsonify({"error": "Not a member of this project"}), 403
+        else:
+            project = Project.query.get(project_id)
+            if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
+                return jsonify({"error": "Not authorized"}), 403
+        messages = Message.query.filter_by(project_id=project_id).order_by(Message.mid).all()
+        return jsonify([{
+            "mid": m.mid,
+            "direction": m.direction,
+            "content": m.content,
+            "supervisor_id": m.supervisor_id,
+            "message_type": m.message_type
+        } for m in messages])
+    @app.route('/api/v2/console', methods=['GET'])
+    def api_console():
+        return render_template('console.html')
