@@ -4,139 +4,16 @@ from models import Student,Task,Project,Supervisor,Notification,Supervisor_notif
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime,time, date
-# ========== SIMILARITY SYSTEM INTEGRATION ==========
-import logging
-import re
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+from graduation_similarity_system import EmbeddingModel, SimilaritySystem, build_project_text
+import pandas as pd
 
-# Suppress verbose logs from transformers
-logging.getLogger("transformers").setLevel(logging.ERROR)
-logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+_embedding_model = None
 
-class ProjectSimilarityEngine:
-    """
-    Loads all projects from the database, computes embeddings once,
-    and provides a method to compare a new project description.
-    """
-    def __init__(self, model_name="all-MiniLM-L6-v2"):
-        self.model_name = model_name
-        self.model = None
-        self.projects = []          # list of (project_id, name, description, combined_text)
-        self.embeddings = None      # numpy array of embeddings
-        self._load_model()
-    
-    def _load_model(self):
-        """Load the SentenceTransformer model (downloads first time)."""
-        try:
-            self.model = SentenceTransformer(self.model_name)
-        except Exception as e:
-            raise RuntimeError(f"Failed to load model '{self.model_name}': {e}")
-    
-    def _clean_text(self, text):
-        """Clean text: remove newlines, collapse spaces."""
-        if not text:
-            return ""
-        text = str(text).replace("\r", " ").replace("\n", " ")
-        text = re.sub(r"\s+", " ", text).strip()
-        return text
-    
-    def _build_project_text(self, name, description):
-        """Combine name and description into one string."""
-        name_clean = self._clean_text(name)
-        desc_clean = self._clean_text(description)
-        if name_clean and desc_clean:
-            return f"{name_clean}. {desc_clean}"
-        return name_clean or desc_clean or ""
-    
-    def refresh_projects(self, db_project_query=None):
-        """
-        Fetch projects from DB, compute embeddings, and cache them.
-        Call this after any project creation/deletion to keep cache in sync.
-        """
-        if db_project_query is None:
-            # Default: all projects in the database
-            from models import Project
-            projects_db = Project.query.all()
-        else:
-            projects_db = db_project_query
-        
-        self.projects = []
-        texts = []
-        for proj in projects_db:
-            combined = self._build_project_text(proj.name, proj.description)
-            if not combined:
-                continue
-            self.projects.append({
-                "pid": proj.pid,
-                "name": proj.name,
-                "description": proj.description,
-                "text": combined
-            })
-            texts.append(combined)
-        
-        if not texts:
-            self.embeddings = np.array([])
-            return
-        
-        # Encode all texts (normalized embeddings)
-        self.embeddings = self.model.encode(
-            texts,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False
-        )
-    
-    def find_similar(self, name, description, threshold=0.5, top_k=5):
-        """
-        Compare a new project (name + description) against cached DB projects.
-        Returns list of dicts: {pid, name, score}
-        """
-        if self.embeddings is None or len(self.projects) == 0:
-            return []
-        
-        # Build query text
-        query_text = self._build_project_text(name, description)
-        if not query_text:
-            return []
-        
-        # Encode query
-        query_emb = self.model.encode(
-            [query_text],
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False
-        )[0]
-        
-        # Compute cosine similarities
-        scores = cosine_similarity([query_emb], self.embeddings)[0]
-        
-        # Pair scores with projects
-        results = []
-        for i, proj in enumerate(self.projects):
-            score = float(scores[i])
-            if score >= threshold:
-                results.append({
-                    "pid": proj["pid"],
-                    "name": proj["name"],
-                    "score": round(score, 3)
-                })
-        
-        # Sort by score descending and take top_k
-        results.sort(key=lambda x: x["score"], reverse=True)
-        return results[:top_k]
-
-# Create a global instance (will be initialized after app context is ready)
-similarity_engine = None
-
-def init_similarity_engine(app):
-    """Call this inside register_routes after app is created."""
-    global similarity_engine
-    with app.app_context():
-        similarity_engine = ProjectSimilarityEngine()
-        similarity_engine.refresh_projects()
-
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = EmbeddingModel()
+    return _embedding_model
 
 def register_routes(app,db):
 
@@ -1807,45 +1684,68 @@ def register_routes(app,db):
     @app.route('/api/v2/console', methods=['GET'])
     def api_console():
         return render_template('console.html')
-    # ========== SIMILARITY API ==========
-    @app.route('/api/similarity', methods=['POST'])
-    def project_similarity():
-        """
-        Compare a new project against all existing projects in the database.
-        Expects JSON: {"name": "Project Name", "description": "Project description"}
-        Optional: {"threshold": 0.6, "top_k": 5}
-        Returns JSON: {"similar_projects": [{"pid": 1, "name": "...", "score": 0.92}, ...]}
-        """
-        global similarity_engine
-        if similarity_engine is None:
-            init_similarity_engine(app)
-        
+
+#============== AI Model =================
+
+    @app.route('/api/check-similarity', methods=['POST'])
+    def check_similarity():
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Missing JSON body"}), 400
-        
-        name = data.get('name', '').strip()
-        description = data.get('description', '').strip()
-        if not name and not description:
-            return jsonify({"error": "At least name or description is required"}), 400
-        
-        threshold = float(data.get('threshold', 0.5))
-        top_k = int(data.get('top_k', 5))
-        
-        # Optional: refresh cache if needed (e.g., after DB changes)
-        if data.get('refresh', False):
-            similarity_engine.refresh_projects()
-        
-        similar = similarity_engine.find_similar(name, description, threshold=threshold, top_k=top_k)
-        
+            return jsonify({"error": "Request body must be JSON"}), 400
+
+        project_name = data.get("project_name", "").strip()
+        description  = data.get("description", "").strip()
+
+        if not project_name and not description:
+            return jsonify({"error": "Provide at least project_name or description"}), 400
+
+        db_projects = Project.query.all()
+
+        if not db_projects:
+            return jsonify({"is_similar": False, "similar_projects": []})
+
+        rows = []
+        for p in db_projects:
+            rows.append({
+                "project_name": p.name        or "",
+                "description":  p.description or "",
+            })
+
+        projects_df = pd.DataFrame(rows)
+
+        # Build the combined "project_name. description" text column
+        projects_df["input_text"] = projects_df.apply(
+            lambda row: build_project_text(row["project_name"], row["description"]),
+            axis=1,
+        )
+
+        # Drop rows where both name and description were empty
+        projects_df = projects_df[projects_df["input_text"].astype(bool)].reset_index(drop=True)
+
+        if projects_df.empty:
+            return jsonify({"is_similar": False, "similar_projects": []})
+
+        # Build the text for the NEW project
+        new_project_text = build_project_text(project_name, description)
+
+        # Run the similarity check
+        model = get_embedding_model()
+
+        similarity_system = SimilaritySystem(
+            projects=projects_df,
+            model=model,
+        )
+
+        result = similarity_system.find_similar_projects(new_project_text)
+        similar_projects = result["similar_projects"]
+
+        # is_similar = True if ANY match is above the 0.7 threshold
+        # (SimilaritySystem already filters by threshold internally;
+        #  if nothing passes, it returns the single closest match with a low score)
+        THRESHOLD = 0.7
+        is_similar = any(m["score"] >= THRESHOLD for m in similar_projects)
+
         return jsonify({
-            "input": {"name": name, "description": description},
-            "similar_projects": similar,
-            "threshold_used": threshold,
-            "top_k_used": top_k
+            "is_similar": is_similar,
+            "similar_projects": similar_projects,
         })
-
-        from routes import init_similarity_engine
-
-        # ... after register_routes(app, db)
-        init_similarity_engine(app)

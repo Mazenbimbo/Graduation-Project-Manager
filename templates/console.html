@@ -226,7 +226,8 @@
         { method: "POST", path: "/api/v2/meetings", desc: "Schedule meeting (supervisor)", bodyExample: {title:"Meeting", date:"2025-12-01", time:"10:00", place:"online", project_id:10} },
         { method: "GET", path: "/api/v2/notifications", desc: "Get notifications" },
         { method: "POST", path: "/api/v2/messages", desc: "Send message", bodyExample: {content:"Hello", project_id:10, supervisor_id:5} },
-        { method: "GET", path: "/api/v2/messages/{project_id}", desc: "Get messages for project", pathParams: ["project_id"] }
+        { method: "GET", path: "/api/v2/messages/{project_id}", desc: "Get messages for project", pathParams: ["project_id"] },
+        { method: "POST", path: "/api/check-similarity", desc: "Check similarity", bodyExample: {project_name: "My New Project",description: "A system that does X, Y, Z..."} }
     ];
 
     // Build the left sidebar
