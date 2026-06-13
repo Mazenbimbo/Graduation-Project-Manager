@@ -1,194 +1,400 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>API Console</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Console - Graduation Project Hub</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        h1 { color: #333; }
-        .container { display: flex; gap: 20px; }
-        .endpoints { width: 30%; background: white; padding: 10px; border-radius: 8px; overflow-y: auto; max-height: 90vh; }
-        .tester { width: 70%; background: white; padding: 10px; border-radius: 8px; }
-        .endpoint { padding: 8px; margin: 5px 0; cursor: pointer; background: #e9ecef; border-radius: 4px; }
-        .endpoint:hover { background: #dee2e6; }
-        .endpoint.selected { background: #007bff; color: white; }
-        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
-        input, textarea, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .status { font-weight: bold; margin-top: 10px; }
-        .response { background: #f1f3f5; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
-        .login-panel { background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
-        .login-panel input { width: auto; display: inline-block; margin-right: 10px; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fb;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 20px 0;
+        }
+        .two-columns {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .endpoints-list {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            height: fit-content;
+        }
+        .endpoints-list h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+        .endpoint-item {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .endpoint-item:hover {
+            background: #f0f7ff;
+            padding-left: 5px;
+        }
+        .method {
+            display: inline-block;
+            width: 70px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .method.GET { background: #28a745; color: white; }
+        .method.POST { background: #007bff; color: white; }
+        .method.PUT { background: #fd7e14; color: white; }
+        .method.DELETE { background: #dc3545; color: white; }
+        .path {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .right-panel {
+            flex: 2;
+            min-width: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .request-area, .response-area {
+            margin-bottom: 25px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        textarea {
+            height: 120px;
+            font-family: monospace;
+        }
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #1e2b38;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .loading {
+            color: #007bff;
+        }
+        hr {
+            margin: 20px 0;
+        }
+        .param-group {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .badge {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
-<h1>📡 API Console (v2)</h1>
-<div class="login-panel">
-    <strong>🔐 Authentication:</strong> Login as Student or Supervisor first (session will be stored).
-    <div style="margin-top: 10px;">
-        <input type="text" id="loginEmail" placeholder="Email" value="student@example.com">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button onclick="login('student')">Login as Student</button>
-        <button onclick="login('supervisor')">Login as Supervisor</button>
-        <button onclick="logout()">Logout</button>
-        <span id="loginStatus" style="margin-left: 10px;"></span>
-    </div>
-</div>
 <div class="container">
-    <div class="endpoints">
-        <h3>Endpoints</h3>
-        <div id="endpointsList"></div>
+    <h1>📡 API Console (v2)</h1>
+    <div class="note">
+        ⚠️ All requests share the <strong>same session</strong> as your web login. First, <strong>log in</strong> using the forms below (or use the web login).<br>
+        ✅ Responses are shown in real time. Use this console to test any endpoint without Postman.
     </div>
-    <div class="tester">
-        <h3>Request Tester</h3>
-        <div><strong>Method:</strong> <span id="selectedMethod">-</span> &nbsp; <strong>Path:</strong> <span id="selectedPath">-</span></div>
-        <div><strong>Query Params (optional):</strong><br><input type="text" id="queryParams" placeholder="?key=value&another=2" style="width: 100%;"></div>
-        <div><strong>Request Body (JSON):</strong><br><textarea id="requestBody" rows="5" placeholder='{"key": "value"}'></textarea></div>
-        <button onclick="sendRequest()">Send Request</button>
-        <div class="status" id="responseStatus"></div>
-        <div><strong>Response:</strong></div>
-        <pre id="responseBody" class="response"></pre>
+
+    <!-- Login / Logout quick actions -->
+    <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <strong>🔐 Session actions:</strong>
+        <button onclick="quickLogin()" style="background:#28a745; margin-right:10px;">Student Sign-in (demo)</button>
+        <button onclick="quickSupervisorLogin()" style="background:#17a2b8; margin-right:10px;">Supervisor Sign-in (demo)</button>
+        <button onclick="logout()" style="background:#dc3545;">Logout</button>
+        <span id="sessionStatus" style="margin-left: 15px;"></span>
+    </div>
+
+    <div class="two-columns">
+        <!-- Left: List of endpoints -->
+        <div class="endpoints-list">
+            <h2>📋 Endpoints</h2>
+            <div id="endpointsList"></div>
+            <p style="font-size:0.8rem; color:#666;">Click any endpoint to load it in the request panel.</p>
+        </div>
+
+        <!-- Right: Request & Response -->
+        <div class="right-panel">
+            <div class="request-area">
+                <h3>📤 Request</h3>
+                <label>Method</label>
+                <input type="text" id="reqMethod" readonly style="background:#e9ecef; width:100px;">
+                <label>URL</label>
+                <input type="text" id="reqUrl" readonly style="background:#e9ecef;">
+                <div id="dynamicParams"></div>
+                <button id="sendBtn">🚀 Send Request</button>
+            </div>
+            <div class="response-area">
+                <h3>📥 Response</h3>
+                <div id="responseStatus" class="status"></div>
+                <pre id="responseBody">{}</pre>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
-    // ----- Define all API endpoints (method, path, example body)
+    // ------------------------------
+    //  API Endpoints Definition (matches /api/v2)
+    // ------------------------------
     const endpoints = [
-        { method: "GET", path: "/api/v2/account/me", desc: "Get own profile" },
-        { method: "GET", path: "/api/v2/account/s{pid}", desc: "Get student public profile" },
-        { method: "PUT", path: "/api/v2/edit/user/data", body: '{"name":"New Name","phone":"123"}' },
-        { method: "GET", path: "/api/v2/ideas", desc: "Current year projects (field, featured)" },
-        { method: "GET", path: "/api/v2/projects", desc: "Past projects (field, year, featured)" },
-        { method: "GET", path: "/api/v2/project/{pid}", desc: "Project details" },
-        { method: "POST", path: "/api/v2/new_project", body: '{"name":"AI App","description":"Cool","fields":["AI"]}' },
-        { method: "PUT", path: "/api/v2/project/{pid}", body: '{"name":"Updated"}' },
-        { method: "POST", path: "/api/v2/join/{project_id}", desc: "Request to join" },
-        { method: "GET", path: "/api/v2/team/requests", desc: "Leader: pending join requests" },
-        { method: "POST", path: "/api/v2/team/respond_join/{nid}/accept", desc: "Leader: accept join" },
-        { method: "POST", path: "/api/v2/exit_team", desc: "Leave current team" },
-        { method: "POST", path: "/api/v2/kick/{project_id}/{student_id}", desc: "Kick member" },
-        { method: "POST", path: "/api/v2/req_to_add/{student_id}", desc: "Leader: invite student" },
-        { method: "GET", path: "/api/v2/friends", desc: "List students (?specialty=AI&not_in_team=true)" },
-        { method: "GET", path: "/api/v2/supervisors", desc: "List all supervisors" },
-        { method: "POST", path: "/api/v2/req_to_supervise/{supervisor_id}", desc: "Request supervision" },
-        { method: "GET", path: "/api/v2/supervisor/notifications", desc: "Supervisor: pending requests" },
-        { method: "POST", path: "/api/v2/supervisor/respond/{nid}/accept", desc: "Supervisor: accept request" },
-        { method: "GET", path: "/api/v2/tasks", desc: "Student: my tasks; Supervisor: ?project_id=..." },
-        { method: "POST", path: "/api/v2/tasks", body: '{"description":"Task","deadline":"2025-12-31","assigned_to":42,"project_id":10}' },
-        { method: "PUT", path: "/api/v2/tasks/{tid}/status", desc: "Mark task as done" },
-        { method: "DELETE", path: "/api/v2/tasks/{tid}", desc: "Delete task" },
+        { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"j@e.com", specialties:"AI", year:2025, department:"CS", password:"secret"} },
+        { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"j@e.com", password:"secret"} },
+        { method: "POST", path: "/api/v2/supervisor/sign-in", desc: "Supervisor sign-in", bodyExample: {email:"dr@uni.edu", password:"pass"} },
+        { method: "POST", path: "/api/v2/logout", desc: "Logout", bodyExample: null },
+        { method: "GET", path: "/api/v2/account/me", desc: "Get own profile", bodyExample: null },
+        { method: "PUT", path: "/api/v2/edit/user/data", desc: "Edit student profile", bodyExample: {name:"New Name", phone:"111", email:"new@e.com"} },
+        { method: "GET", path: "/api/v2/ideas", desc: "Current year projects", queryParams: ["field", "featured"] },
+        { method: "GET", path: "/api/v2/projects", desc: "Past projects", queryParams: ["field", "year", "featured"] },
+        { method: "GET", path: "/api/v2/project/{pid}", desc: "Project details", pathParams: ["pid"] },
+        { method: "POST", path: "/api/v2/new_project", desc: "Create project (student)", bodyExample: {name:"My Project", description:"Cool", fields:["AI"]} },
+        { method: "PUT", path: "/api/v2/project/{pid}", desc: "Edit project (leader)", pathParams: ["pid"], bodyExample: {name:"Updated", description:"New desc"} },
+        { method: "POST", path: "/api/v2/join/{project_id}", desc: "Request to join", pathParams: ["project_id"] },
+        { method: "GET", path: "/api/v2/team/requests", desc: "Get pending join requests (leader)" },
+        { method: "POST", path: "/api/v2/team/respond_join/{nid}/{action}", desc: "Accept/reject join", pathParams: ["nid", "action"] },
+        { method: "POST", path: "/api/v2/exit_team", desc: "Leave team" },
+        { method: "POST", path: "/api/v2/kick/{project_id}/{student_id}", desc: "Kick member (leader)", pathParams: ["project_id", "student_id"] },
+        { method: "POST", path: "/api/v2/req_to_add/{student_id}", desc: "Invite friend to team", pathParams: ["student_id"] },
+        { method: "GET", path: "/api/v2/friends", desc: "List students", queryParams: ["specialty", "not_in_team"] },
+        { method: "GET", path: "/api/v2/supervisors", desc: "List supervisors" },
+        { method: "POST", path: "/api/v2/req_to_supervise/{supervisor_id}", desc: "Request supervision", pathParams: ["supervisor_id"] },
+        { method: "GET", path: "/api/v2/supervisor/notifications", desc: "Supervisor pending requests" },
+        { method: "POST", path: "/api/v2/supervisor/respond/{nid}/{action}", desc: "Accept/reject supervision", pathParams: ["nid", "action"] },
+        { method: "GET", path: "/api/v2/tasks", desc: "Get tasks (student: my tasks; supervisor: ?project_id=...)", queryParams: ["project_id"] },
+        { method: "POST", path: "/api/v2/tasks", desc: "Create task", bodyExample: {description:"Write report", deadline:"2025-12-31", assigned_to:42, project_id:10} },
+        { method: "PUT", path: "/api/v2/tasks/{tid}/status", desc: "Mark task done", pathParams: ["tid"] },
+        { method: "DELETE", path: "/api/v2/tasks/{tid}", desc: "Delete task", pathParams: ["tid"] },
         { method: "GET", path: "/api/v2/meetings", desc: "List meetings" },
-        { method: "POST", path: "/api/v2/meetings", body: '{"title":"Meeting","date":"2025-06-01","time":"14:00","place":"online","project_id":10}' },
+        { method: "POST", path: "/api/v2/meetings", desc: "Schedule meeting (supervisor)", bodyExample: {title:"Meeting", date:"2025-12-01", time:"10:00", place:"online", project_id:10} },
         { method: "GET", path: "/api/v2/notifications", desc: "Get notifications" },
-        { method: "POST", path: "/api/v2/messages", body: '{"content":"Hello","project_id":10,"supervisor_id":5}' },
-        { method: "GET", path: "/api/v2/messages/{project_id}", desc: "Get messages for project" }
+        { method: "POST", path: "/api/v2/messages", desc: "Send message", bodyExample: {content:"Hello", project_id:10, supervisor_id:5} },
+        { method: "GET", path: "/api/v2/messages/{project_id}", desc: "Get messages for project", pathParams: ["project_id"] }
     ];
 
-    function renderEndpoints() {
-        const container = document.getElementById('endpointsList');
-        container.innerHTML = '';
-        endpoints.forEach(ep => {
-            const div = document.createElement('div');
-            div.className = 'endpoint';
-            div.innerHTML = `<strong>${ep.method}</strong> ${ep.path}<br><small>${ep.desc || ''}</small>`;
-            div.onclick = () => selectEndpoint(ep);
-            container.appendChild(div);
-        });
+    // Build the left sidebar
+    const container = document.getElementById('endpointsList');
+    endpoints.forEach(ep => {
+        const div = document.createElement('div');
+        div.className = 'endpoint-item';
+        div.innerHTML = `<span class="method ${ep.method}">${ep.method}</span> <span class="path">${ep.path}</span> <span class="badge">${ep.desc}</span>`;
+        div.onclick = () => loadEndpoint(ep);
+        container.appendChild(div);
+    });
+
+    // Current loaded endpoint
+    let currentEndpoint = null;
+
+    function loadEndpoint(ep) {
+        currentEndpoint = ep;
+        document.getElementById('reqMethod').value = ep.method;
+        let url = ep.path;
+        // Replace path params with input fields
+        let paramHtml = '';
+        if (ep.pathParams) {
+            paramHtml += `<div class="param-group"><strong>Path parameters</strong><br>`;
+            ep.pathParams.forEach(p => {
+                paramHtml += `<label>${p}</label><input type="text" id="path_${p}" placeholder="value for {${p}}">`;
+            });
+            paramHtml += `</div>`;
+        }
+        if (ep.queryParams) {
+            paramHtml += `<div class="param-group"><strong>Query parameters (optional)</strong><br>`;
+            ep.queryParams.forEach(q => {
+                paramHtml += `<label>${q}</label><input type="text" id="query_${q}" placeholder="value">`;
+            });
+            paramHtml += `</div>`;
+        }
+        if (ep.bodyExample) {
+            paramHtml += `<div class="param-group"><strong>JSON Body (edit as needed)</strong><br>`;
+            paramHtml += `<textarea id="bodyJson">${JSON.stringify(ep.bodyExample, null, 2)}</textarea>`;
+            paramHtml += `</div>`;
+        } else {
+            paramHtml += `<textarea id="bodyJson" style="display:none;"></textarea>`;
+        }
+        document.getElementById('dynamicParams').innerHTML = paramHtml;
+        // Set URL preview without values
+        let displayUrl = window.location.origin + url;
+        document.getElementById('reqUrl').value = displayUrl;
     }
 
-    function selectEndpoint(ep) {
-        document.getElementById('selectedMethod').innerText = ep.method;
-        document.getElementById('selectedPath').innerText = ep.path;
-        document.getElementById('requestBody').value = ep.body ? JSON.stringify(ep.body, null, 2) : '';
-        window.selectedEndpoint = ep;
-    }
-
-    async function sendRequest() {
-        if (!window.selectedEndpoint) {
-            alert('Select an endpoint first');
+    // Build final URL and send request
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+        if (!currentEndpoint) {
+            alert('Please select an endpoint from the left.');
             return;
         }
-        let path = window.selectedEndpoint.path;
-        // Replace path parameters with user input (simple prompt)
-        let matches = path.match(/\\{[^}]+\\}/g);
-        if (matches) {
-            for (let match of matches) {
-                let paramName = match.slice(1, -1);
-                let value = prompt(`Enter value for ${paramName}:`);
-                if (!value) return;
-                path = path.replace(match, value);
-            }
-        }
-        // Add query parameters
-        const query = document.getElementById('queryParams').value;
-        if (query) {
-            path += (path.includes('?') ? '&' : '?') + query.replace(/^\\?/, '');
-        }
-        const method = window.selectedEndpoint.method;
-        let body = null;
-        if (method !== 'GET') {
-            const bodyText = document.getElementById('requestBody').value;
-            if (bodyText) {
-                try {
-                    body = JSON.parse(bodyText);
-                } catch(e) {
-                    alert('Invalid JSON body');
+        let url = currentEndpoint.path;
+        // Replace path params
+        if (currentEndpoint.pathParams) {
+            for (let p of currentEndpoint.pathParams) {
+                const input = document.getElementById(`path_${p}`);
+                if (input && input.value) {
+                    url = url.replace(`{${p}}`, input.value);
+                } else {
+                    alert(`Missing path parameter: ${p}`);
                     return;
                 }
             }
         }
-        const url = path; // relative URL, will use same origin
-        const options = {
-            method: method,
-            credentials: 'include',  // important for session cookie
-            headers: {
-                'Content-Type': 'application/json'
+        // Add query params
+        const queryParams = [];
+        if (currentEndpoint.queryParams) {
+            for (let q of currentEndpoint.queryParams) {
+                const input = document.getElementById(`query_${q}`);
+                if (input && input.value) {
+                    queryParams.push(`${encodeURIComponent(q)}=${encodeURIComponent(input.value)}`);
+                }
             }
-        };
-        if (body) options.body = JSON.stringify(body);
+        }
+        if (queryParams.length) url += '?' + queryParams.join('&');
+
+        const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+        const method = currentEndpoint.method;
+        let body = null;
+        if (currentEndpoint.bodyExample) {
+            const bodyText = document.getElementById('bodyJson').value;
+            try {
+                body = JSON.parse(bodyText);
+            } catch(e) {
+                alert('Invalid JSON in body');
+                return;
+            }
+        }
+
+        // Show loading
+        const respStatusDiv = document.getElementById('responseStatus');
+        const respBodyPre = document.getElementById('responseBody');
+        respStatusDiv.innerHTML = '<span class="loading">⏳ Sending request...</span>';
+        respBodyPre.textContent = 'Waiting...';
+
         try {
-            const response = await fetch(url, options);
-            const responseStatus = `${response.status} ${response.statusText}`;
-            document.getElementById('responseStatus').innerText = responseStatus;
-            const responseData = await response.json();
-            document.getElementById('responseBody').innerText = JSON.stringify(responseData, null, 2);
-        } catch(err) {
-            document.getElementById('responseStatus').innerText = 'Error';
-            document.getElementById('responseBody').innerText = err.toString();
+            const response = await fetch(fullUrl, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include', // important for session cookies
+                body: body ? JSON.stringify(body) : undefined
+            });
+            const data = await response.json();
+            respStatusDiv.innerHTML = `<span>✅ Status: ${response.status} ${response.statusText}</span>`;
+            respBodyPre.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+            respStatusDiv.innerHTML = `<span style="color:red;">❌ Error: ${err.message}</span>`;
+            respBodyPre.textContent = err.stack;
+        }
+    });
+
+    // Helper: quick login functions (use demo credentials or fill your own)
+    async function quickLogin() {
+        const demoStudent = {
+            email: "student@demo.com",
+            password: "demo123"
+        };
+        // You can either prompt user to enter real credentials
+        const email = prompt("Student email:", demoStudent.email);
+        const password = prompt("Password:", demoStudent.password);
+        if (!email || !password) return;
+        const res = await fetch('/api/v2/sign-in', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('sessionStatus').innerHTML = `✅ Logged in as ${data.name} (${data.role})`;
+            alert("Login successful");
+        } else {
+            alert("Login failed: " + (data.error || "Unknown"));
         }
     }
 
-    async function login(role) {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        let endpoint = role === 'student' ? '/api/v2/sign-in' : '/api/v2/supervisor/sign-in';
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-            const data = await res.json();
-            if (res.ok) {
-                document.getElementById('loginStatus').innerText = `✅ Logged in as ${data.name || data.email}`;
-                document.getElementById('loginStatus').style.color = 'green';
-            } else {
-                document.getElementById('loginStatus').innerText = `❌ Login failed: ${data.error}`;
-                document.getElementById('loginStatus').style.color = 'red';
-            }
-        } catch(e) {
-            document.getElementById('loginStatus').innerText = 'Error logging in';
+    async function quickSupervisorLogin() {
+        const email = prompt("Supervisor email:");
+        const password = prompt("Password:");
+        if (!email || !password) return;
+        const res = await fetch('/api/v2/supervisor/sign-in', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('sessionStatus').innerHTML = `✅ Logged in as ${data.name} (${data.role})`;
+            alert("Login successful");
+        } else {
+            alert("Login failed: " + (data.error || "Unknown"));
         }
     }
 
     async function logout() {
         await fetch('/api/v2/logout', {method: 'POST', credentials: 'include'});
-        document.getElementById('loginStatus').innerText = 'Logged out';
+        document.getElementById('sessionStatus').innerHTML = '🔓 Logged out';
+        alert("Logged out");
     }
 
-    renderEndpoints();
+    // Load first endpoint by default
+    if (endpoints.length) loadEndpoint(endpoints[0]);
 </script>
 </body>
 </html>
