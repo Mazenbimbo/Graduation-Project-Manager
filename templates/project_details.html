@@ -256,7 +256,7 @@
                   <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ 'bg-yellow-900/30 text-yellow-300 border-yellow-500/30' if is_dark else 'bg-yellow-100 text-yellow-700 border-yellow-300' }}">Leader</span>
                 {% endif %}
               </a>
-              {% if session.pid == project.leader and member_id != project.leader %}
+              {% if session.pid == project.leader and member.pid != project.leader %}
                 <form action="{{ url_for('kick_member', project_id=project.pid, student_id=member.pid) }}" method="post"
                   onsubmit="return confirm('Are you sure you want to remove {{ name }} from the team?');">
                   <button type="submit" class="text-sm flex items-center {{ 'text-red-400 hover:text-red-300' if is_dark else 'text-red-600 hover:text-red-800' }}">

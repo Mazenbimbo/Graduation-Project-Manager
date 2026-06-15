@@ -197,11 +197,11 @@
     // ------------------------------
     const endpoints = [
         { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"j@e.com", specialties:"AI", year:2025, department:"CS", password:"secret"} },
-        { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"j@e.com", password:"secret"} },
+        { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"admin@gmail.com", password:"a"} },
         { method: "POST", path: "/api/v2/supervisor/sign-in", desc: "Supervisor sign-in", bodyExample: {email:"dr@uni.edu", password:"pass"} },
         { method: "POST", path: "/api/v2/logout", desc: "Logout", bodyExample: null },
         { method: "GET", path: "/api/v2/account/me", desc: "Get own profile", bodyExample: null },
-        { method: "PUT", path: "/api/v2/edit/user/data", desc: "Edit student profile", bodyExample: {name:"New Name", phone:"111", email:"new@e.com"} },
+        { method: "PUT", path: "/api/v2/edit/user/data", desc: "Edit student profile", bodyExample: {name:"New Name", specialty:"AI", phone:"0123456789", skills:["Node.js","SQL","Linux"],linkedin:"...",github:"..."} },
         { method: "GET", path: "/api/v2/ideas", desc: "Current year projects", queryParams: ["field", "featured"] },
         { method: "GET", path: "/api/v2/projects", desc: "Past projects", queryParams: ["field", "year", "featured"] },
         { method: "GET", path: "/api/v2/project/{pid}", desc: "Project details", pathParams: ["pid"] },

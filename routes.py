@@ -3,9 +3,12 @@ from markupsafe import escape
 from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting,Message
 from werkzeug.utils import secure_filename
 import os
+import requests
 from datetime import datetime,time, date
 from graduation_similarity_system import EmbeddingModel, SimilaritySystem, build_project_text
 import pandas as pd
+
+domain = '127.0.0.1:5001'
 
 _embedding_model = None
 
@@ -49,15 +52,18 @@ def register_routes(app,db):
                 image = session['image'] if 'image' in session.keys() else '/static/uploads/my_photo.jpg'
                 phone = session['phone']
                 email = session['email']
+                linkedin = session['linkedin']
+                github = session['github']
                 if session['role'] in ['Doctor','Assistant'] :
                     role = session['role']
                     projects = session['projects']
-                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, department=department, projects=projects, role=role, image=image,data=session)
+                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, department=department, projects=projects, role=role, image=image,linkedin=linkedin,github=github,data=session)
                 else : 
                     year = session['year']
                     in_team = session['in_team']
                     project_id = session['project_id']
-                    return render_template('account.html',specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team, image=image,data=session) 
+                    skills = session['skills']
+                    return render_template('account.html',skills=skills,specialty=specialty, phone=phone, name=name, email=email, year=year, department=department, project_id=project_id, in_team=in_team,linkedin=linkedin,github=github, image=image,data=session) 
             else :
                 if id.startswith('d') or id.startswith('a') : 
                     id = int(id[1:])
@@ -80,7 +86,10 @@ def register_routes(app,db):
                 year = session['year']
                 email = session['email']
                 password = session['password']
-                return render_template('edit_info.html',name=name, phone=phone, email=email, password=password, specialties=specialties)
+                skills = session['skills']
+                linkedin = session['linkedin']
+                github = session['github']
+                return render_template('edit_info.html',name=name, phone=phone, email=email, password=password, specialties=specialties,skills=skills,linkedin=linkedin,github=github)
             elif request.method == 'POST':
                 name = request.form.get('name')
                 phone = request.form.get('phone')
@@ -88,6 +97,9 @@ def register_routes(app,db):
                 year = request.form.get('year')
                 department = request.form.get('department')
                 specialties = request.form.get('specialties')
+                skills = request.form.get('skills') if request.form.get('skills') else []
+                linkedin = request.form.get('linkedin')
+                github = request.form.get('github')
                 password = request.form.get('password')
 
                 p = Student.query.get_or_404(session['pid'])
@@ -103,6 +115,10 @@ def register_routes(app,db):
                 session['department'] = department
                 session['year'] = year
                 session['password'] = password
+                session['skills'] = skills
+                session['linkedin'] = github
+                session['github'] = github
+
 
                 
                 p.name = name 
@@ -112,6 +128,9 @@ def register_routes(app,db):
                 p.year = year
                 p.department = department
                 p.password = password
+                p.set_skills(skills)
+                p.linkedin_url = linkedin
+                p.github_url = github
                 db.session.commit()
 
                 return redirect('/account/me')
@@ -129,12 +148,14 @@ def register_routes(app,db):
             specialties = request.form.get('specialty')
             year = request.form.get('year')
             department = request.form.get('department')
+            skills = request.form.get('skills') if request.form.get('skills') else []
             password = request.form.get('password')
             if Student.query.filter_by(email=email).count()> 0 :
                     flash("email already exist!","error")
                     return render_template('sign_up.html')
             else :
                 student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year, password=password)
+                student.set_skills(skills)
                 db.session.add(student)
                 db.session.commit()
 
@@ -163,6 +184,9 @@ def register_routes(app,db):
                     session['in_team'] = student.in_team
                     session['role'] = 'Student'
                     session['public_id'] = student.public_id
+                    session['skills'] = student.get_skills()
+                    session['linkedin'] = student.linkedin_url,
+                    session['github'] = student.github_url
                     return redirect('/home')
                 else :
                     flash("Wrong email or password!","error")
@@ -411,6 +435,16 @@ def register_routes(app,db):
             else : 
                 name = request.form.get('name')
                 description = request.form.get('description')
+                data = requests.post(f'http://{domain}/api/check-similarity',json={"project_name":name,"description":description})
+                res = data.json() 
+                if res['is_similar'] and res['is_similar']==True : 
+                    return f"Your idea is to similar with this idea(s) : {[p['project'] for p in res["similar_projects"]]}"
+
+                similar_ideas = []
+                for project in res["similar_projects"]:
+                    if project["score"] > 0.50:
+                        similar_ideas.append(project["project"])
+
                 available_fields = ['AI','Network','Embedded','Web','Cyber Security','Desktop','IT','Mobile']
                 fields = []
 
@@ -423,6 +457,7 @@ def register_routes(app,db):
                     p = Project.query.get_or_404(session['project_id'])
                     p.name =  request.form.get('name')
                     p.description = request.form.get('description')
+                    p.set_similar_ideas(similar_ideas)
                     p.set_fields(fields)
                     db.session.commit()
 
@@ -433,6 +468,7 @@ def register_routes(app,db):
                 year = datetime.now().year
                 project = Project(name=name, description=description, year=year,leader=session['pid'])
                 project.set_fields(fields)
+                project.set_similar_ideas(similar_ideas)
                 db.session.add(project)
                 db.session.commit()
 
@@ -644,7 +680,10 @@ def register_routes(app,db):
         if Supervisor_notification.query.filter_by(_from_id=_from_id,action='supervise',_from_name=student.name,supervisor_id=sid,project_id=student.project_id).count()<1:
             new_notification = Supervisor_notification(_from_id=_from_id,action='supervise',_from_name=student.name,supervisor_id=sid,project_id=student.project_id)
             db.session.add(new_notification)
+            project = Project.query.get_or_404(student.project_id)
+            project.under_review = True
             db.session.commit()
+
             flash('Request sent successfully!','success')
         else : 
             flash('Request already sent!','error')
@@ -826,6 +865,7 @@ def register_routes(app,db):
         phone = data.get('phone')
         email = data.get('email')
         specialties = data.get('specialties')
+        skills = data.get('skills')
         year = data.get('year')
         department = data.get('department')
         password = data.get('password')
@@ -835,6 +875,7 @@ def register_routes(app,db):
             return jsonify({"error": "Email already exists"}), 400
         student = Student(name=name, specialties=specialties, phone=phone, email=email,
                         department=department, year=year, password=password)
+        student.set_skills(skills)
         db.session.add(student)
         db.session.commit()
         return jsonify({"message": "Student created successfully", "pid": student.pid}), 201
@@ -854,6 +895,7 @@ def register_routes(app,db):
         session['pid'] = student.pid
         session['name'] = student.name
         session['specialty'] = student.specialties
+        session['skills'] = student.get_skills()
         session['phone'] = student.phone
         session['email'] = student.email
         session['year'] = student.year
@@ -864,6 +906,22 @@ def register_routes(app,db):
         session['in_team'] = student.in_team
         session['role'] = 'Student'
         session['public_id'] = student.public_id
+        # ------- status --------
+        
+        if not student.in_team :
+            session['status'] = "No Idea"
+        if student.in_team and student.project.leader == student.pid : 
+            session['status'] = "IdeaOwner"
+        if student.in_team and student.project.leader != student.pid :
+            session['status'] = "IdeaMember"
+        if student.in_team and student.project.under_review == True :
+            session['status'] = "UnderReview"
+        if student.in_team and student.project.doctor :
+            session['status'] = "ActiveProject"
+        if student.in_team and student.project.completed == True :
+            session['status'] = "Completed"
+
+        #----------------------
         return jsonify({
             "message": "Login successful",
             "pid": student.pid,
@@ -871,7 +929,9 @@ def register_routes(app,db):
             "email": student.email,
             "role": "Student",
             "in_team": student.in_team,
-            "project_id": student.project_id
+            "project_id": student.project_id,
+            "skills":student.get_skills(),
+            "status" : session['status']
         })
 
     # Supervisor sign-in
@@ -926,6 +986,7 @@ def register_routes(app,db):
                 "email": student.email,
                 "phone": student.phone,
                 "specialties": student.specialties,
+                "skills": student.get_skills(),
                 "year": student.year,
                 "department": student.department,
                 "image": student.image,
@@ -967,6 +1028,7 @@ def register_routes(app,db):
                 "email": student.email,
                 "phone": student.phone,
                 "specialties": student.specialties,
+                "skills":student.get_skills(),
                 "year": student.year,
                 "department": student.department,
                 "image": student.image,
@@ -1008,22 +1070,12 @@ def register_routes(app,db):
         if 'phone' in data:
             student.phone = data['phone']
             session['phone'] = data['phone']
-        if 'email' in data:
-            # Check email uniqueness
-            existing = Student.query.filter(Student.email == data['email'], Student.pid != student.pid).first()
-            if existing:
-                return jsonify({"error": "Email already in use"}), 400
-            student.email = data['email']
-            session['email'] = data['email']
-        if 'specialties' in data:
-            student.specialties = data['specialties']
-            session['specialty'] = data['specialties']
-        if 'year' in data:
-            student.year = data['year']
-            session['year'] = data['year']
-        if 'department' in data:
-            student.department = data['department']
-            session['department'] = data['department']
+        if 'specialty' in data:
+            student.specialties = data['specialty']
+            session['specialty'] = data['specialty']
+        if 'skills' in data:
+            student.set_skills(data['skills']) 
+            session['skills'] = data['skills']
         if 'password' in data:
             student.password = data['password']
             session['password'] = data['password']
@@ -1031,8 +1083,24 @@ def register_routes(app,db):
             student.linkedin_url = data['linkedin']
         if 'github' in data:
             student.github_url = data['github']
-            db.session.commit()
-        return jsonify({"message": "Profile updated successfully"})
+        db.session.commit()
+        return jsonify({
+        "message": "Profile updated successfully",
+        "user": {
+            "pid": student.pid,
+            "name": student.name,
+            "email": student.email,
+            "phone": student.phone,
+            "specialty": student.specialties,
+            "year": student.year,
+            "department": student.department,
+            "image": student.image,
+            "in_team": student.in_team,
+            "project_id": student.project_id,
+            "linkedin_url": student.linkedin_url,
+            "github_url": student.github_url,
+            "skills":student.get_skills()
+        } })
 
     # ----------------------------------------------------------------------
     # Projects (ideas, library, detail, creation, editing)
@@ -1057,9 +1125,11 @@ def register_routes(app,db):
             "fields": p.get_fields(),
             "special": p.special,
             "leader": p.leader,
-            "members_count": p.members.count(),
-            "has_doctor": p.doctor is not None,
-            "has_assistant": p.assistent is not None
+            "members_id":[m.pid for m in p.members],
+            "members_name":[m.name for m in p.members],
+            "similar_ideas": p.get_similar_ideas() if hasattr(p, 'get_similar_ideas') else [],
+            "doctor": p.doctor or "no doctor",
+            "assistant": p.assistent or "no assistant"
         } for p in projects])
 
     @app.route('/api/v2/projects', methods=['GET'])
@@ -1084,7 +1154,12 @@ def register_routes(app,db):
             "description": p.description,
             "year": p.year,
             "fields": p.get_fields(),
-            "special": p.special
+            "leader": p.leader,
+            "members_id":[m.pid for m in p.members],
+            "members_name":[m.name for m in p.members],
+            "special": p.special is not None,
+            "doctor": p.doctor or "no doctor",
+            "assistant": p.assistent or "no assistant"
         } for p in projects])
 
     @app.route('/api/v2/project/<int:pid>', methods=['GET'])
@@ -1105,7 +1180,7 @@ def register_routes(app,db):
             "fields": project.get_fields(),
             "statue": project.statue,
             "special": project.special,
-            "leader": project.leader,
+            "leader_id": project.leader,
             "doctor": {
                 "sid": doctor.sid,
                 "name": doctor.name
@@ -1323,6 +1398,7 @@ def register_routes(app,db):
             "pid": s.pid,
             "name": s.name,
             "specialties": s.specialties,
+            "skills":s.get_skills(),
             "in_team": s.in_team,
             "year": s.year,
             "department": s.department,

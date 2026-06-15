@@ -34,6 +34,11 @@
           <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Specialty</p>
           <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ specialty }}</p>
         </div>
+        <!-- skills -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">skills</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ skills }}</p>
+        </div>
         <!-- department card -->
         <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
           <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Department</p>
@@ -52,12 +57,12 @@
         <!-- LinkedIn -->
         <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
           <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">LinkedIn</p>
-          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ github_url or '-'}}</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{  linkedin or '-'}}</p>
         </div>
         <!-- Github -->
         <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
           <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Github</p>
-          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ linkedin_url or '-'}}</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ github or '-'}}</p>
         </div>
         {% if role %}
           <!-- role card -->
@@ -125,6 +130,11 @@
         <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
           <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Specialty</p>
           <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.specialties }}</p>
+        </div>
+        <!-- skills -->
+        <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">
+          <p class="text-xs uppercase tracking-wide mb-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">skills</p>
+          <p class="font-medium {{ 'text-gray-200' if is_dark else 'text-gray-800' }}">{{ student.get_skills() }}</p>
         </div>
         <!-- department -->
         <div class="rounded-lg p-4 shadow-sm {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}">

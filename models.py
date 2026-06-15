@@ -15,6 +15,7 @@ class Student(db.Model):
     email = db.Column(db.Text)
     phone = db.Column(db.Text)
     specialties = db.Column(db.Text)
+    skills = db.Column(db.Text,nullable=True)
     password = db.Column(db.Text, nullable = False)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
     in_team = db.Column(db.Boolean,default=False,nullable=False)
@@ -26,6 +27,12 @@ class Student(db.Model):
     linkedin_url = db.Column(db.Text,nullable=True)
     github_url = db.Column(db.Text,nullable=True)
 
+
+    def get_skills(self):
+        return json.loads(self.skills) if self.skills else []
+    
+    def set_skills(self, new_skills):
+        self.skills = json.dumps(new_skills)
 
     @property
     def public_id(self):
@@ -60,10 +67,13 @@ class Project(db.Model):
     leader = db.Column(db.Integer,nullable=False)
     team_members = db.Column(db.Text(200)) # old
     attachments = db.Column(db.Text(200))
+    similar_ideas = db.Column(db.Text)
     special = db.Column(db.Boolean,default=False)
     members = db.relationship('Student',backref='project',lazy='dynamic')
     messages = db.relationship('Message',backref='project',lazy='dynamic')
     notifications = db.relationship('Notification',backref='project',lazy='dynamic')
+    under_review = db.Column(db.Boolean,default=False)
+    completed = db.Column(db.Boolean,default=False)
 
     doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
     assistant_supervisor = db.relationship('Supervisor', foreign_keys=[assistent], lazy=True)
@@ -89,6 +99,12 @@ class Project(db.Model):
 
     def get_fields(self):
         return json.loads(self.fields)
+
+    def set_similar_ideas(self,similar_ideas_list): 
+        self.similar_ideas = json.dumps(similar_ideas_list)
+
+    def get_similar_ideas(self):
+        return json.loads(self.similar_ideas) if self.similar_ideas else []
 
     def __repr__(self):
         return f'project name : {self.name}!'
