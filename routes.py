@@ -77,65 +77,80 @@ def register_routes(app,db):
             return redirect('/sign-in')
     @app.route('/edit/user/data', methods=['POST','GET'])
     def edit_user_data():
-        if 'logged' in session.keys() :
-            if request.method == 'GET':
-                name = session['name']
-                phone = session['phone']
-                specialties = session['specialty']
-                department = session['department']
-                year = session['year']
-                email = session['email']
-                password = session['password']
-                skills = session['skills']
-                linkedin = session['linkedin']
-                github = session['github']
-                return render_template('edit_info.html',name=name, phone=phone, email=email, password=password, specialties=specialties,skills=skills,linkedin=linkedin,github=github)
-            elif request.method == 'POST':
-                name = request.form.get('name')
-                phone = request.form.get('phone')
-                email = request.form.get('email')
-                year = request.form.get('year')
-                department = request.form.get('department')
-                specialties = request.form.get('specialties')
-                skills = request.form.get('skills') if request.form.get('skills') else []
-                linkedin = request.form.get('linkedin')
-                github = request.form.get('github')
-                password = request.form.get('password')
-
-                p = Student.query.get_or_404(session['pid'])
-
-                if Student.query.filter_by(email=email).count() > 0 and  p.email != email:
-                    flash("email already exist!","error")
-                    return render_template('edit_info.html') 
-
-                session['name'] = name
-                session['specialty'] = specialties
-                session['phone'] = phone
-                session['email'] = email
-                session['department'] = department
-                session['year'] = year
-                session['password'] = password
-                session['skills'] = skills
-                session['linkedin'] = github
-                session['github'] = github
-
-
-                
-                p.name = name 
-                p.phone = phone
-                p.email = email
-                p.specialties = specialties
-                p.year = year
-                p.department = department
-                p.password = password
-                p.set_skills(skills)
-                p.linkedin_url = linkedin
-                p.github_url = github
-                db.session.commit()
-
-                return redirect('/account/me')
-        else:
+        if 'logged' not in session:
             return redirect('/sign-in')
+
+        student = Student.query.get_or_404(session['pid'])
+
+        if request.method == 'GET':
+            name = student.name
+            phone = student.phone or ''
+            specialties = student.specialties or ''
+            year = student.year or ''
+            password = '' 
+            # skills stored as list -> convert to comma string for JS
+            skills = ','.join(student.get_skills()) if student.get_skills() else ''
+            linkedin = student.linkedin_url or ''
+            github = student.github_url or ''
+            profile_image = student.image or '' 
+
+            return render_template('edit_info.html',
+                                name=name, phone=phone, year=year,
+                                password=password, specialties=specialties,
+                                skills=skills, linkedin=linkedin, github=github,
+                                profile_image=profile_image)
+
+
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        year = request.form.get('year')
+        specialties = request.form.get('specialties')
+        linkedin = request.form.get('linkedin')
+        github = request.form.get('github')
+        password = request.form.get('password')
+        
+
+        skills_str = request.form.get('skills', '')
+        skills_list = [s.strip() for s in skills_str.split(',') if s.strip()]
+
+        student.name = name
+        student.phone = phone
+        student.specialties = specialties
+        student.year = year
+        student.linkedin_url = linkedin
+        student.github_url = github
+        if password: 
+            student.password = password
+        student.set_skills(skills_list) 
+
+        # 2. Profile picture upload
+        file = request.files.get('profile_picture')
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                original = secure_filename(file.filename)
+                unique_name = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{original}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                file.save(file_path)
+                student.image = f"/static/uploads/{unique_name}"
+                session['image'] = student.image
+            else:
+                flash('Image format not allowed (use PNG, JPG, JPEG, GIF)', 'error')
+                return redirect(request.url)
+
+        db.session.commit()
+
+        # Update session values to keep them consistent
+        session['name'] = student.name
+        session['specialty'] = student.specialties
+        session['phone'] = student.phone
+        session['year'] = student.year
+        session['password'] = student.password  # be careful with plain text
+        session['skills'] = skills_list
+        session['linkedin'] = student.linkedin_url
+        session['github'] = student.github_url
+        session['image'] = student.image
+
+        return redirect('/account/me')
 
     @app.route('/sign-up', methods=['POST','GET'])
     def sign_up():
