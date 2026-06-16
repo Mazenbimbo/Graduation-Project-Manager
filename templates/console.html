@@ -206,7 +206,7 @@
         { method: "GET", path: "/api/v2/projects", desc: "Past projects", queryParams: ["field", "year", "featured"] },
         { method: "GET", path: "/api/v2/project/{pid}", desc: "Project details", pathParams: ["pid"] },
         { method: "POST", path: "/api/v2/new_project", desc: "Create project (student)", bodyExample: {name:"My Project", description:"Cool", fields:["AI"]} },
-        { method: "PUT", path: "/api/v2/project/{pid}", desc: "Edit project (leader)", pathParams: ["pid"], bodyExample: {name:"Updated", description:"New desc"} },
+        { method: "PUT", path: "/api/v2/project/{pid}", desc: "Edit project (leader)", pathParams: ["pid"], bodyExample: {name:"Updated", description:"New desc", intended_team_size: "3"} },
         { method: "POST", path: "/api/v2/join/{project_id}", desc: "Request to join", pathParams: ["project_id"] },
         { method: "GET", path: "/api/v2/team/requests", desc: "Get pending join requests (leader)" },
         { method: "POST", path: "/api/v2/team/respond_join/{nid}/{action}", desc: "Accept/reject join", pathParams: ["nid", "action"] },

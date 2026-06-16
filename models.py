@@ -61,7 +61,7 @@ class Project(db.Model):
     description = db.Column(db.Text(200), nullable=False)
     year = db.Column(db.Text(200), nullable=False)
     fields = db.Column(db.Text)
-    statue = db.Column(db.Text(200))
+    status = db.Column(db.Text(200),default="Open")
     doctor = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=True)
     assistent = db.Column(db.Integer, db.ForeignKey('supervisor.sid'), nullable=True)
     leader = db.Column(db.Integer,nullable=False)
@@ -74,6 +74,8 @@ class Project(db.Model):
     notifications = db.relationship('Notification',backref='project',lazy='dynamic')
     under_review = db.Column(db.Boolean,default=False)
     completed = db.Column(db.Boolean,default=False)
+    intended_team_size = db.Column(db.Integer,default=3)
+
 
     doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
     assistant_supervisor = db.relationship('Supervisor', foreign_keys=[assistent], lazy=True)
@@ -162,6 +164,7 @@ class Supervisor_notification(db.Model):
     _from_id = db.Column(db.Integer,nullable=True)
     _from_name = db.Column(db.String,nullable=True)
     supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
     read = db.Column(db.Boolean,default=False,nullable=False)
 
     def __repr__(self):

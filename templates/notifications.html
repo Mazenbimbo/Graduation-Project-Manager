@@ -22,16 +22,18 @@
           {% if notification.action == 'add' %}
             {{ notification._from_name|title }} wants to add you to their team!
           {% elif notification.action == 'join' %}
-            {{ notification._from_name|title }} wants to join your team!
+            <a href='/account/s{{notification._from_id}}'>{{ notification._from_name|title }} wants to join your team!</a>
           {% elif notification.action == 'supervise' %}
             {{ notification._from_name|title }} wants to add you as a supervisor to his project!
           {% endif %}
         </span>
 
         <!-- View Project link -->
-        <a href="{{notification}}" class="font-medium ml-4 flex-shrink-0 transition {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
+         {% if notification.action in ['add', 'supervise']%}
+        <a href="/project/{{notification.project_id}}" class="font-medium ml-4 flex-shrink-0 transition {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
           View Project
         </a>
+        {% endif %}
 
         <!-- Actions -->
         <span class="flex gap-2 flex-shrink-0">

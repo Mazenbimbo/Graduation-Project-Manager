@@ -8,7 +8,11 @@ from datetime import datetime,time, date
 from graduation_similarity_system import EmbeddingModel, SimilaritySystem, build_project_text
 import pandas as pd
 
-domain = '127.0.0.1:5001'
+domain = 'http://127.0.0.1:5001'
+oldest_compare = 10
+cutoff_year = datetime.now().year
+years_range = cutoff_year - oldest_compare
+maximum_team_size = 6
 
 _embedding_model = None
 
@@ -364,8 +368,8 @@ def register_routes(app,db):
 
     @app.route('/req_to_add/<int:id>',methods=['POST'])
     def req_to_add(id):
-        if Notification.query.filter_by(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id).count()< 1:
-            new_notification = Notification(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id)
+        if Notification.query.filter_by(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id,project_id=session['project_id']).count()< 1:
+            new_notification = Notification(action='add',_from_id=session['pid'],_from_name=session['name'],student_id=id,project_id=session['project_id'])
             db.session.add(new_notification)
             db.session.commit()
             flash("Request sent!","info")
@@ -378,7 +382,7 @@ def register_routes(app,db):
             new_member = Student.query.get_or_404(session['pid'])
             project_id = Student.query.get_or_404(id).project_id
             project = Project.query.get_or_404(project_id)
-            members = project.get_members()
+            members = project.get_members() 
             if len(members) < 6 : 
                 members.append(session['pid'])
                 project.set_members(members)
@@ -386,6 +390,8 @@ def register_routes(app,db):
                 new_member.project_id = project_id
                 session['project_id'] = project_id
                 session['in_team'] = True
+                if len(members) == project.intended_team_size : 
+                    project.status = "TeamComplete"
             else :
                 flash('Team is full!','error')
         deleted_notification = Notification.query.get_or_404(nid) 
@@ -417,13 +423,17 @@ def register_routes(app,db):
         if action == 'accept':
             project = Project.query.get_or_404(session['project_id'])
             members = project.get_members()
-            members.append(from_id)
-            project.set_members(members)
+            if len(members) < 6 : 
+                members.append(from_id)
+                project.set_members(members)
 
-            student = Student.query.get_or_404(from_id)
-            student.in_team = True
-            student.project_id = session['project_id']
-        
+                student = Student.query.get_or_404(from_id)
+                student.in_team = True
+                student.project_id = session['project_id']
+                if len(members) == project.intended_team_size : 
+                    project.status = "TeamComplete"
+            else :
+                flash('Team is full!','error')
         notification = Notification.query.get_or_404(nid)
         db.session.delete(notification)
         db.session.commit()
@@ -450,15 +460,16 @@ def register_routes(app,db):
             else : 
                 name = request.form.get('name')
                 description = request.form.get('description')
-                data = requests.post(f'http://{domain}/api/check-similarity',json={"project_name":name,"description":description})
+                data = requests.post(f'{domain}/api/check-similarity',json={"project_name":name,"description":description})
                 res = data.json() 
                 if res['is_similar'] and res['is_similar']==True : 
-                    return f"Your idea is to similar with this idea(s) : {[p['project'] for p in res["similar_projects"]]}"
+                    flash(f"Your idea is to similar with this idea(s) :\n {[[p['project'],p['score']] for p in res["similar_projects"]]}","error")
+                    return redirect(url_for('new_project',action='edit'))
 
                 similar_ideas = []
                 for project in res["similar_projects"]:
-                    if project["score"] > 0.50:
-                        similar_ideas.append(project["project"])
+                    if project["score"] > 0.60:
+                        similar_ideas.append([project["project"],float(project["score"])*100])
 
                 available_fields = ['AI','Network','Embedded','Web','Cyber Security','Desktop','IT','Mobile']
                 fields = []
@@ -589,23 +600,20 @@ def register_routes(app,db):
 
     @app.route('/project/<id>')
     def project_detail(id):
-        if 'logged' in session.keys():
-            project = Project.query.get_or_404(id)
-            s = Supervisor.query
-            doctor = s.get_or_404(project.doctor) if project.doctor else None
-            assistant = s.get_or_404(project.assistent) if project.assistent else None 
-            messages = Message.query.filter_by(project_id=id)
-            return render_template(
-                'project_details.html',
-                data=session, 
-                project=project,
-                fields=project.get_fields(),
-                attachments = project.get_attachment(),
-                doctor=doctor,
-                assistant=assistant,
-                messages=messages)
-        else:
-            return redirect('/sign-in')
+        project = Project.query.get_or_404(id)
+        s = Supervisor.query
+        doctor = s.get_or_404(project.doctor) if project.doctor else None
+        assistant = s.get_or_404(project.assistent) if project.assistent else None 
+        messages = Message.query.filter_by(project_id=id)
+        return render_template(
+            'project_details.html',
+            data=session if session else "", 
+            project=project,
+            fields=project.get_fields(),
+            attachments = project.get_attachment(),
+            doctor=doctor,
+            assistant=assistant,
+            messages=messages)
 
     @app.route('/supervisor_register_0x1F', methods=['GET', 'POST'])
     def supervisor_signup():
@@ -697,6 +705,7 @@ def register_routes(app,db):
             db.session.add(new_notification)
             project = Project.query.get_or_404(student.project_id)
             project.under_review = True
+            project.status = "UnderReview"
             db.session.commit()
 
             flash('Request sent successfully!','success')
@@ -706,9 +715,10 @@ def register_routes(app,db):
 
     @app.route('/res_to_supervision/<int:nid>/<int:_from_id>/<string:action>',methods=['POST'])
     def res_to_supervision(nid,action,_from_id):
+        project_id = Student.query.get_or_404(_from_id).project_id
+        project = Project.query.get_or_404(project_id)
         if action== 'accept':
-            project_id = Student.query.get_or_404(_from_id).project_id
-            project = Project.query.get_or_404(project_id)
+            project.status = "Approved"
             doctor,assistant = False,False
             for supervisor in project.supervisors : 
                 if supervisor.role == 'Doctor': 
@@ -726,6 +736,8 @@ def register_routes(app,db):
                 db.session.commit()
                 return redirect('/notifications')
             Supervisor.query.get_or_404(session['sid']).projects.append(project)
+        else :
+            project.status = "Rejected"
         n = Supervisor_notification.query.get_or_404(nid)
         db.session.delete(n)
         db.session.commit()
@@ -925,16 +937,17 @@ def register_routes(app,db):
         
         if not student.in_team :
             session['status'] = "No Idea"
-        if student.in_team and student.project.leader == student.pid : 
-            session['status'] = "IdeaOwner"
-        if student.in_team and student.project.leader != student.pid :
-            session['status'] = "IdeaMember"
-        if student.in_team and student.project.under_review == True :
-            session['status'] = "UnderReview"
-        if student.in_team and student.project.doctor :
-            session['status'] = "ActiveProject"
-        if student.in_team and student.project.completed == True :
-            session['status'] = "Completed"
+        if student.in_team : 
+            if student.in_team and student.project.leader == student.pid : 
+                session['status'] = "IdeaOwner"
+            if student.in_team and student.project.leader != student.pid :
+                session['status'] = "IdeaMember"
+            if student.in_team and student.project.under_review == True :
+                session['status'] = "UnderReview"
+            if student.in_team and student.project.doctor :
+                session['status'] = "ActiveProject"
+            if student.in_team and student.project.completed == True :
+                session['status'] = "Completed"
 
         #----------------------
         return jsonify({
@@ -1143,8 +1156,10 @@ def register_routes(app,db):
             "members_id":[m.pid for m in p.members],
             "members_name":[m.name for m in p.members],
             "similar_ideas": p.get_similar_ideas() if hasattr(p, 'get_similar_ideas') else [],
-            "doctor": p.doctor or "no doctor",
-            "assistant": p.assistent or "no assistant"
+            "doctor_id": p.doctor or "no doctor",
+            "assistant_id": p.assistent or "no assistant",
+            "idea status":p.status or "",
+            "Maximum team size": maximum_team_size
         } for p in projects])
 
     @app.route('/api/v2/projects', methods=['GET'])
@@ -1193,9 +1208,10 @@ def register_routes(app,db):
             "description": project.description,
             "year": project.year,
             "fields": project.get_fields(),
-            "statue": project.statue,
+            "status": project.status,
             "special": project.special,
             "leader_id": project.leader,
+            "intended team size" :project.intended_team_size,
             "doctor": {
                 "sid": doctor.sid,
                 "name": doctor.name
@@ -1226,12 +1242,24 @@ def register_routes(app,db):
             return api_bad_request("Missing JSON")
         name = data.get('name')
         description = data.get('description')
+        AI_data = requests.post(f'{domain}/api/check-similarity',json={"project_name":name,"description":description})
+        res = AI_data.json() 
+        if res['is_similar'] and res['is_similar']==True : 
+            return jsonify({"Error": "Your idea is too similar with these idea(s):","similar_projects": [{"project": p['project'],"similarity_score": p['score']} 
+        for p in res["similar_projects"]]})
+
+        similar_ideas = []
+        for project in res["similar_projects"]:
+            if project["score"] > 0.60:
+                similar_ideas.append([project["project"],float(project["score"])*100])
+
         fields = data.get('fields', [])
         if not name or not description:
             return api_bad_request("Name and description required")
         year = datetime.now().year
         project = Project(name=name, description=description, year=year, leader=session['pid'])
         project.set_fields(fields)
+        project.set_similar_ideas(similar_ideas)
         db.session.add(project)
         db.session.commit()
         # Add creator as first member
@@ -1268,12 +1296,29 @@ def register_routes(app,db):
         if project.leader != session['pid']:
             return jsonify({"error": "Only team leader can edit project"}), 403
         data = request.get_json()
-        if 'name' in data:
-            project.name = data['name']
-        if 'description' in data:
-            project.description = data['description']
+        if 'name' in data or 'description' in data : 
+            name = data['name'] if data['name'] else project.name
+            description = data['description'] if data['description'] else project.description
+
+            data = requests.post(f'{domain}/api/check-similarity',json={"project_name":name,"description":description})
+            res = data.json() 
+            if res['is_similar'] and res['is_similar']==True : 
+                return jsonify({"Error": "Your idea is too similar with these idea(s):","similar_projects": [{"project": p['project'],"similarity_score": p['score']} 
+            for p in res["similar_projects"]]})
+
+            similar_ideas = []
+            for project in res["similar_projects"]:
+                if project["score"] > 0.60:
+                    similar_ideas.append([project["project"],float(project["score"])*100])
+            project.set_similar_ideas(similar_ideas)
+            if 'name' in data:
+                project.name = data['name']
+            if 'description' in data:
+                project.description = data['description']
         if 'fields' in data:
             project.set_fields(data['fields'])
+        if 'intended_team_size' in data:
+            project.intended_team_size = data['intended_team_size']
         db.session.commit()
         return jsonify({"message": "Project updated"})
 
@@ -1481,6 +1526,9 @@ def register_routes(app,db):
         notif = Supervisor_notification(_from_id=session['pid'], action='supervise',
                                         _from_name=session['name'], supervisor_id=supervisor_id,
                                         project_id=session['project_id'])
+        project = Project.query.get_or_404(session['project_id'])
+        project.under_review = True
+        project.status = "UnderReview"
         db.session.add(notif)
         db.session.commit()
         return jsonify({"message": "Supervision request sent"})
@@ -1520,9 +1568,12 @@ def register_routes(app,db):
                 project.doctor = session['sid']
             else:
                 project.assistent = session['sid']
+            project.status = "Approved"
             sup = Supervisor.query.get(session['sid'])
             sup.projects.append(project)
             db.session.commit()
+        else :
+            project.status = "Rejected"
         db.session.delete(notif)
         db.session.commit()
         return jsonify({"message": f"Request {action}ed"})
@@ -1790,7 +1841,7 @@ def register_routes(app,db):
         if not project_name and not description:
             return jsonify({"error": "Provide at least project_name or description"}), 400
 
-        db_projects = Project.query.all()
+        db_projects = Project.query.filter(Project.name!=project_name,Project.description!=description).all()
 
         if not db_projects:
             return jsonify({"is_similar": False, "similar_projects": []})
