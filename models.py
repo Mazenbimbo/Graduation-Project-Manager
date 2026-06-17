@@ -72,9 +72,13 @@ class Project(db.Model):
     members = db.relationship('Student',backref='project',lazy='dynamic')
     messages = db.relationship('Message',backref='project',lazy='dynamic')
     notifications = db.relationship('Notification',backref='project',lazy='dynamic')
+
+    # Mobile API data
     under_review = db.Column(db.Boolean,default=False)
     completed = db.Column(db.Boolean,default=False)
     intended_team_size = db.Column(db.Integer,default=3)
+    publish_without_team = db.Column(db.Boolean,default=False)
+    selected_members = db.Column(db.Text,nullable=True)
 
 
     doctor_supervisor = db.relationship('Supervisor', foreign_keys=[doctor], lazy=True)
@@ -89,6 +93,12 @@ class Project(db.Model):
 
     def get_attachment(self):
         return json.loads(self.attachments) if self.attachments else []
+
+    def set_selected_members(self,selected_members):
+        self.selected_members = json.dumps(selected_members)
+
+    def get_selected_members(self):
+        return json.loads(self.selected_members) if self.selected_members else []
 
     def set_members(self,members):
         self.team_members = json.dumps(members)

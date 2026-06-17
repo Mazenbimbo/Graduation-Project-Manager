@@ -492,6 +492,9 @@ def register_routes(app,db):
 
 
                 year = datetime.now().year
+                if Project.query.filter_by(name=name, description=description).count()>0:
+                    flash("Project already exist!","error")
+                    return redirect('/new_project')
                 project = Project(name=name, description=description, year=year,leader=session['pid'])
                 project.set_fields(fields)
                 project.set_similar_ideas(similar_ideas)
@@ -842,7 +845,17 @@ def register_routes(app,db):
         
         return redirect('/ideas')
 
-    @app.route('/disscutions',methods=['POST','GET'])
+    @app.route('/first-disscutions/<int:project_id>',methods=['POST','GET'])
+    def first_disscutions():
+        if response.method == 'GET' : 
+            return 'coming soon'
+        
+
+    @app.route('/second-disscutions',methods=['POST','GET'])
+    def second_disscutions():
+        return 'coming soon'
+
+    @app.route('/admin-page',methods=['POST','GET'])
     def disscutions():
         return 'coming soon'
 
@@ -1208,6 +1221,7 @@ def register_routes(app,db):
             "description": project.description,
             "year": project.year,
             "fields": project.get_fields(),
+            "similar ideas": project.get_similar_ideas(),
             "status": project.status,
             "special": project.special,
             "leader_id": project.leader,
@@ -1257,9 +1271,16 @@ def register_routes(app,db):
         if not name or not description:
             return api_bad_request("Name and description required")
         year = datetime.now().year
-        project = Project(name=name, description=description, year=year, leader=session['pid'])
+
+        intended_team_size = data.get('max_team_size')
+        publish_without_team = data.get('publish_without_team')
+        selected_members = data.get('selected_members')
+        if Project.query.filter_by(name=name, description=description).count()>0:
+            return jsonify({"Error":"Project already exist!"})
+        project = Project(name=name, description=description, year=year, leader=session['pid'],intended_team_size=intended_team_size,publish_without_team=publish_without_team)
         project.set_fields(fields)
         project.set_similar_ideas(similar_ideas)
+        project.set_selected_members(selected_members)
         db.session.add(project)
         db.session.commit()
         # Add creator as first member
@@ -1282,8 +1303,22 @@ def register_routes(app,db):
         student.in_team = True
         session['project_id'] = project.pid
         session['in_team'] = True
+        res = jsonify({"message": "Project created", "pid": project.pid,
+            "name": project.name,
+            "description": project.description,
+            "year": project.year,
+            "fields": project.get_fields(),            
+            "leader": project.leader,
+            "members_id":[m.pid for m in project.members],
+            "members_name":[m.name for m in project.members],
+            "max_teams_size" : project.intended_team_size,
+            "status":project.status,
+            "special": project.special is not None,
+            "doctor": project.doctor or "no doctor",
+            "assistant": project.assistent or "no assistant",
+            "similar_ideas":project.get_similar_ideas()})
         db.session.commit()
-        return jsonify({"message": "Project created", "pid": project.pid}), 201
+        return res , 201
 
     @app.route('/api/v2/project/<int:pid>', methods=['PUT'])
     def api_edit_project(pid):

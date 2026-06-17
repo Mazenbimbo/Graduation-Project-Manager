@@ -1,0 +1,14 @@
+{% extends 'supervisor_base.html' %}
+
+{% block title %}First Disscutions{% endblock %}
+
+{% block body %}
+<h1>First descussion</h1>
+<form action="{{url_for('first_disscutions')}}" method="post">
+    {% for member in project.members %}
+        <span>{{member.name}}</span><input type="number" name="degree-for-{{member.pid}}">
+    {% endfor %}
+    <span>Feedback</span><textarea name="feedback1"></textarea>
+    <span>Recommnedations</span><textarea name="feedback2"></textarea>
+</form>
+{% endblock %}
