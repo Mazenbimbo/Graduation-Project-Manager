@@ -26,6 +26,9 @@ class Student(db.Model):
     notifications = db.relationship('Notification',backref='student',lazy=True)
     linkedin_url = db.Column(db.Text,nullable=True)
     github_url = db.Column(db.Text,nullable=True)
+    # first_descussion_result = db.Column(db.Integer,nullable=True)
+    # finel_project_degree = db.Column(db.Integer,nullable=True)
+
 
 
     def get_skills(self):
@@ -202,3 +205,19 @@ class Message(db.Model):
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     content = db.Column(db.Text(200),nullable=False)
     message_type = db.Column(db.Text(200),default='message') # message - feedback
+
+class Discussion(db.Model):
+    __tablename__ = 'discussion'
+    did = db.Column(db.Integer,primary_key=True)
+    date = db.Column(db.Date,nullable=False)
+    time = db.Column(db.Time,nullable=False)
+    location = db.Column(db.Text,nullable=False)
+    number = db.Column(db.Integer,nullable=False)
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True) # make relationship here
+    supervisors = db.Column(db.Text,nullable=False)
+
+    def set_supervisors(self,supervisors_list):
+        self.supervisors = json.dumps(supervisors_list)
+
+    def get_supervisors(self):
+        return json.loads(self.supervisors) if self.supervisors else []

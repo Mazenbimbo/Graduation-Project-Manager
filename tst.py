@@ -2,14 +2,26 @@
 # project :
 # message (feedback)
 
-# project = Project.query.get_or_404(project_id)
-# if session['sid'] != project.doctor :
-#   flash("You are not a supervisor in this project","error")
-#   return redirect('/project/project_id')
-# for member in project.members : 
-#    member.first_descussion_result = request.form.get(f'degree-for-{member.pid}')
-# message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
-# message2 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
-# db.session.save(message1)
-# db.session.save(message2)
+# if request.method == 'GET':
+#   projects = Project.query.all()
+#   supervisors = Supervisor.query.all()
+#   return render_template('new_discussion.html',projects=projects=supervisors=supervisors)
+# discussion_date = request.form.get('date')
+# discussion_time = request.form.get('time')
+# location = request.form.get('location').strip() or None
+
+# discussion_date = date.fromisoformat(discussion_date)
+# discussion_time = time.fromisoformat(discussion_time)
+# supervisors = request.form.get('supervisors')
+# project_id = request.form.get('project')
+# number = request.form.get('number')
+# discussion = Discussion(number=number,project_id=project_id,time=discussion_time,date=discussion_date,location=location)
+# db.session.add(discussion)
 # db.session.commit()
+# discussion = Discussion.query.filter_by(number=number,project_id=project_id,time=discussion_time,date=discussion_date,location=location)
+# discussion.set_supervisors(supervisors)
+# content = f"The next discussion for this project will be in {discussion_date} {discussion_time} in {location}"
+# message =  Message(direction=2,project_id=project_id,content=content,supervisor_id=session['sid'],message_type='feedback')
+# db.session.commit()
+# flash("Created successfully!","info")
+# return "created"

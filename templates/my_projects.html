@@ -10,116 +10,289 @@
 <!-- Font Awesome CDN for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Filter using a select dropdown -->
-<div class="mb-8 flex justify-center p-2">
-  <div class="relative">
-    <select id="statusFilter" onchange="filterProjects(this.value)"
-      class="appearance-none rounded-lg px-5 py-3 pr-10 font-medium shadow-md focus:outline-none focus:ring-1 transition-colors cursor-pointer
-        {{ 'bg-blue-950 border-2 border-cyan-800 text-gray-200 focus:border-cyan-500' if is_dark 
-           else 'bg-white border-2 border-blue-200 text-gray-800 focus:border-blue-500 focus:ring-blue-500' }}">
-      <option value="all">📂 All Projects</option>
-      <option value="current">🔄 In Progress</option>
-      <option value="old">📜 Old</option>
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 {{ 'text-cyan-400' if is_dark else 'text-blue-500' }}">
-      <i class="fa-solid fa-chevron-down"></i>
+<!-- Main Container with padding -->
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold {% if is_dark %}text-white{% else %}text-gray-900{% endif %}">
+                <i class="fa-solid fa-folder-open mr-2 {% if is_dark %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
+                My Projects
+            </h1>
+            <p class="mt-1 {% if is_dark %}text-gray-400{% else %}text-gray-600{% endif %}">
+                {{ projects.count() }} project{{ 's' if projects.count() != 1 else '' }} total
+            </p>
+        </div>
+        
+        <!-- Filter -->
+        <div class="relative">
+            <select id="statusFilter" onchange="filterProjects(this.value)"
+                class="appearance-none rounded-lg px-5 py-3 pr-12 font-medium shadow-md focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer
+                    {% if is_dark %}
+                        bg-blue-950 border-2 border-cyan-800 text-gray-200 focus:border-cyan-500 focus:ring-cyan-400/20 hover:border-cyan-600
+                    {% else %}
+                        bg-white border-2 border-blue-200 text-gray-800 focus:border-blue-500 focus:ring-blue-500/20 hover:border-blue-400
+                    {% endif %}">
+                <option value="all">📂 All Projects</option>
+                <option value="current">🔄 In Progress</option>
+                <option value="current">🔄 Completed</option>
+                <option value="old">📜 Old</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}">
+                <i class="fa-solid fa-chevron-down text-sm"></i>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- Projects Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-  {% for project in projects %}
-    <div class="project-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col
-                {{ 'bg-blue-950 border border-cyan-800' if is_dark else 'bg-white border border-blue-200' }}"
-      data-status="{% if current_year == project.year %}current{% else %}old{% endif %}">
-      
-      <!-- Card header: project name & status badge -->
-      <div class="px-5 py-4 flex items-start justify-between gap-3 border-b {{ 'bg-blue-900/60 border-cyan-800' if is_dark else 'bg-blue-50 border-blue-200' }}">
-        <div class="flex items-start gap-2 min-w-0">
-          <i class="fa-solid fa-diagram-project mt-1 text-lg {{ 'text-cyan-400' if is_dark else 'text-blue-500' }}"></i>
-          <h3 class="font-bold text-lg truncate {{ 'text-gray-100' if is_dark else 'text-gray-800' }}" title="{{ project.name }}">{{ project.name }}</h3>
-        </div>
-        <span class="flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full
-          {% if current_year == project.year %}
-            {{ 'bg-cyan-900 text-cyan-200' if is_dark else 'bg-blue-100 text-blue-700' }}
-          {% else %}
-            {{ 'bg-gray-800 text-gray-400' if is_dark else 'bg-gray-100 text-gray-500' }}
-          {% endif %}">
-          {% if current_year == project.year %}In Progress{% else %}Old{% endif %}
-        </span>
-      </div>
-
-      <!-- Card body -->
-      <div class="p-5 space-y-4 flex-1">
-        <!-- Public ID -->
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-fingerprint text-sm w-5 {{ 'text-cyan-500' if is_dark else 'text-blue-500' }}"></i>
-          <span class="text-xs font-mono {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">{{ project.public_id }}</span>
-        </div>
-
-        <!-- Members -->
-        {% set ns = namespace(counter=0, tasks=0) %}
-        <div class="flex items-start gap-2">
-          <i class="fa-solid fa-users mt-0.5 w-5 {{ 'text-cyan-500' if is_dark else 'text-blue-500' }}"></i>
-          <div class="text-sm leading-5 {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">
+    <!-- Projects Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for project in projects %}
+            {% set ns = namespace(counter=0, tasks=0) %}
             {% for member in project.members %}
-              <a href='/account/{{ member.public_id }}' class="underline transition-colors {{ 'decoration-cyan-700 hover:text-cyan-300' if is_dark else 'decoration-blue-300 hover:text-blue-600' }}">{{ member.name }}</a>{% if not loop.last %}, {% endif %}
-              {% set ns.counter = ns.counter + 1 %}
-              {% for task in member.tasks %}
-                {% if task.status == 'Not Done' %}
-                  {% set ns.tasks = ns.tasks + 1 %}
-                {% endif %}
-              {% endfor %}
+                {% set ns.counter = ns.counter + 1 %}
+                {% for task in member.tasks %}
+                    {% if task.status == 'Not Done' %}
+                        {% set ns.tasks = ns.tasks + 1 %}
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
-          </div>
-        </div>
+            
+            <div class="project-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col
+                        {% if is_dark %}
+                            bg-blue-950 border border-cyan-800 hover:border-cyan-600
+                        {% else %}
+                            bg-white border border-blue-200 hover:border-blue-400
+                        {% endif %}"
+                data-status="{% if current_year == project.year %}current{% else %}old{% endif %}">
+                
+                <!-- Card Header -->
+                <div class="px-5 py-4 flex items-start justify-between gap-3 border-b 
+                            {% if is_dark %}bg-blue-900/40 border-cyan-800{% else %}bg-blue-50/80 border-blue-200{% endif %}">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="p-2 rounded-lg {% if is_dark %}bg-cyan-900/30{% else %}bg-blue-100{% endif %}">
+                            <i class="fa-solid fa-diagram-project {% if is_dark %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
+                        </div>
+                        <h3 class="font-bold text-lg truncate {% if is_dark %}text-white{% else %}text-gray-900{% endif %}" 
+                            title="{{ project.name }}">{{ project.name }}</h3>
+                    </div>
+                    <span class="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full
+                        {% if current_year == project.year %}
+                            {% if is_dark %}bg-cyan-900/50 text-cyan-300 border border-cyan-700{% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}
+                        {% else %}
+                            {% if is_dark %}bg-gray-800 text-gray-400 border border-gray-700{% else %}bg-gray-100 text-gray-500 border border-gray-300{% endif %}
+                        {% endif %}">
+                        {% if current_year == project.year %}
+                          {%if project.status == 'Approved'%}
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> In Progress
+                          {% else %}
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Completed
+                          {% endif %}
+                        {% else %}
+                            <i class="fa-solid fa-check mr-1"></i> Old
+                        {% endif %}
+                    </span>
+                </div>
 
-        <!-- Stats row: members count & not completed tasks -->
-        <div class="grid grid-cols-2 gap-3">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-user-group w-5 {{ 'text-cyan-500' if is_dark else 'text-blue-500' }}"></i>
-            <span class="text-sm {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">{{ ns.counter }} member{% if ns.counter != 1 %}s{% endif %}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-clock w-5 {{ 'text-cyan-500' if is_dark else 'text-blue-500' }}"></i>
-            <span class="text-sm {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">{{ ns.tasks }} pending</span>
-          </div>
-        </div>
+                <!-- Card Body -->
+                <div class="p-5 space-y-4 flex-1">
+                    <!-- Project ID -->
+                    <div class="flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-fingerprint w-5 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                        <span class="font-mono {% if is_dark %}text-gray-400{% else %}text-gray-500{% endif %}">{{ project.public_id }}</span>
+                    </div>
 
-        <!-- Assistant -->
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-user-tie w-5 {{ 'text-cyan-500' if is_dark else 'text-blue-500' }}"></i>
-          <span class="text-sm {{ 'text-gray-400' if is_dark else 'text-gray-600' }}">
-            {% if project.assistant %}{{ project.assistant }}{% else %}No assistant yet{% endif %}
-          </span>
-        </div>
-      </div>
+                    <!-- Members -->
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-users mt-1 w-5 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                        <div class="text-sm leading-relaxed {% if is_dark %}text-gray-300{% else %}text-gray-700{% endif %}">
+                            {% if project.members %}
+                                {% for member in project.members %}
+                                    <a href='/account/{{ member.public_id }}' 
+                                       class="inline-block px-2 py-0.5 rounded transition-colors
+                                              {% if is_dark %}hover:bg-cyan-900/30 hover:text-cyan-300{% else %}hover:bg-blue-50 hover:text-blue-600{% endif %}">
+                                        {{ member.name }}
+                                    </a>{% if not loop.last %}<span class="{% if is_dark %}text-gray-600{% else %}text-gray-400{% endif %}">,</span>{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <span class="{% if is_dark %}text-gray-500{% else %}text-gray-400{% endif %}">No members yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
 
-      <!-- Card footer: view details button -->
-      <div class="px-5 py-4 border-t {{ 'border-cyan-800 bg-blue-900/30' if is_dark else 'border-blue-200 bg-gray-50' }}">
-        <a href="/project/{{ project.pid }}"
-          class="w-full inline-flex items-center justify-center gap-2 font-medium py-2.5 rounded-lg transition-colors shadow-md
-            {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-          <i class="fa-solid fa-arrow-right"></i> View Details
-        </a>
-      </div>
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="flex items-center gap-3 p-2 rounded-lg {% if is_dark %}bg-gray-800/50{% else %}bg-gray-50{% endif %}">
+                            <i class="fa-solid fa-user-group w-5 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                            <div>
+                                <div class="text-sm font-semibold {% if is_dark %}text-white{% else %}text-gray-900{% endif %}">{{ ns.counter }}</div>
+                                <div class="text-xs {% if is_dark %}text-gray-400{% else %}text-gray-500{% endif %}">Member{{ 's' if ns.counter != 1 else '' }}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 rounded-lg {% if is_dark %}bg-gray-800/50{% else %}bg-gray-50{% endif %}">
+                            <i class="fa-solid fa-clock w-5 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                            <div>
+                                <div class="text-sm font-semibold {% if is_dark %}text-white{% else %}text-gray-900{% endif %}">{{ ns.tasks }}</div>
+                                <div class="text-xs {% if is_dark %}text-gray-400{% else %}text-gray-500{% endif %}">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assistant -->
+                    <div class="flex items-center gap-3 pt-1">
+                        <i class="fa-solid fa-user-tie w-5 {% if is_dark %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                        <span class="text-sm {% if is_dark %}text-gray-300{% else %}text-gray-700{% endif %}">
+                            {% if project.assistant_supervisor %}
+                                <a href="/account/a{{project.assistant_supervisor.sid}}" class="font-medium">{{ project.assistant_supervisor.name }}</a>
+                            {% else %}
+                                <span class="{% if is_dark %}text-gray-500{% else %}text-gray-400{% endif %}">No assistant assigned</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="px-5 py-4 border-t {% if is_dark %}border-cyan-800 bg-blue-900/20{% else %}border-blue-200 bg-gray-50/80{% endif %}">
+                    <a href="/project/{{ project.pid }}"
+                       class="w-full inline-flex items-center justify-center gap-2 font-medium py-2.5 rounded-lg transition-all duration-200
+                              {% if is_dark %}
+                                  bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/30 hover:shadow-cyan-900/50
+                              {% else %}
+                                  bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30
+                              {% endif %}">
+                        <i class="fa-solid fa-eye"></i> View Details
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
     </div>
-  {% endfor %}
+
+    <!-- Empty State -->
+    {% if projects.count() == 0 %}
+    <div class="text-center py-20">
+        <div class="text-6xl mb-4 {% if is_dark %}text-gray-700{% else %}text-gray-300{% endif %}">
+            <i class="fa-regular fa-folder-open"></i>
+        </div>
+        <h3 class="text-2xl font-semibold {% if is_dark %}text-gray-300{% else %}text-gray-700{% endif %}">No Projects Yet</h3>
+        <p class="mt-2 {% if is_dark %}text-gray-500{% else %}text-gray-400{% endif %}">You haven't created or been assigned to any projects</p>
+    </div>
+    {% endif %}
 </div>
 
-<!-- Filter script -->
+<!-- Filter Script -->
 <script>
-  function filterProjects(value) {
-    const cards = document.querySelectorAll('.project-card');
-    cards.forEach(card => {
-      if (value === 'all' || card.dataset.status === value) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
-      }
-    });
-  }
+    function filterProjects(value) {
+        const cards = document.querySelectorAll('.project-card');
+        let visibleCount = 0;
+        
+        cards.forEach(card => {
+            if (value === 'all' || card.dataset.status === value) {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+        
+        // Update the count in the header
+        const countElement = document.querySelector('.mt-1');
+        if (countElement) {
+            const totalText = countElement.textContent;
+            const match = totalText.match(/\d+/);
+            if (match) {
+                const total = parseInt(match[0]);
+                if (!isNaN(total)) {
+                    countElement.textContent = visibleCount + ' project' + (visibleCount !== 1 ? 's' : '') + ' shown';
+                }
+            }
+        }
+    }
 </script>
+
+<style>
+    /* Main container padding fix */
+    .container {
+        max-width: 100%;
+    }
+    
+    /* Smooth hover animations */
+    .project-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .project-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    /* Custom select styling */
+    select {
+        cursor: pointer;
+    }
+    
+    select:focus {
+        outline: none;
+    }
+    
+    /* Scrollable members list */
+    .members-list {
+        max-height: 80px;
+        overflow-y: auto;
+    }
+    
+    .members-list::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .members-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .members-list::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-color, #374151);
+        border-radius: 2px;
+    }
+    
+    /* Dark theme scrollbar */
+    .dark-theme .members-list::-webkit-scrollbar-thumb {
+        background: #4B5563;
+    }
+    
+    /* Light theme scrollbar */
+    .light-theme .members-list::-webkit-scrollbar-thumb {
+        background: #D1D5DB;
+    }
+    
+    /* Badge animations */
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Fix for container padding on all screen sizes */
+    @media (max-width: 640px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .container {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    }
+    
+    @media (min-width: 1025px) {
+        .container {
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
+</style>
 
 {% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'supervisor_base.html' %}
+
+{% block title %}New Discussion{% endblock %}
+
+{% block body %}
+<div class="{% if theme == 'dark' %}dark-theme{% else %}light-theme{% endif %}">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl font-bold mb-8 {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
+                <i class="fas fa-calendar-plus mr-2 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
+                Create New Discussion
+            </h1>
+            
+            <form action="{{ url_for('new_discussion') }}" method="post" 
+                  class="{% if theme == 'dark' %}bg-blue-950{% else %}bg-white{% endif %} 
+                         rounded-xl shadow-lg p-8 space-y-6">
+                
+                <!-- Project Selection -->
+                <div class="space-y-2">
+                    <label for="project" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-project-diagram mr-1"></i> Project
+                    </label>
+                    <select name="project" id="project" required
+                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
+                                   {% if theme == 'dark' %}
+                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                   {% else %}
+                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                   {% endif %}">
+                        <option value="">Select a project...</option>
+                        {% for project in projects %}
+                            <option value="{{ project.pid }}">{{ project.name }} (ID: {{ project.pid }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Supervisor Selection -->
+                <div class="space-y-2">
+                    <label for="supervisors" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-user-tie mr-1"></i> Supervisor
+                    </label>
+                    <select name="supervisors" id="supervisors" required
+                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
+                                   {% if theme == 'dark' %}
+                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                   {% else %}
+                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                   {% endif %}">
+                        <option value="">Select a supervisor...</option>
+                        {% for supervisor in supervisors %}
+                            <option value="{{ supervisor.sid }}">{{ supervisor.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Discussion Number -->
+                <div class="space-y-2">
+                    <label for="number" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-hashtag mr-1"></i> Discussion Number
+                    </label>
+                    <select name="number" id="number" required
+                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
+                                   {% if theme == 'dark' %}
+                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                   {% else %}
+                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                   {% endif %}">
+                        <option value="">Select discussion number...</option>
+                        <option value="1">First Discussion</option>
+                        <option value="2">Second Discussion</option>
+                        <option value="3">Third Discussion</option>
+                    </select>
+                </div>
+
+                <!-- Date -->
+                <div class="space-y-2">
+                    <label for="date" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-calendar-day mr-1"></i> Date
+                    </label>
+                    <input type="date" 
+                           name="date" 
+                           id="date" 
+                           required
+                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+                                  {% if theme == 'dark' %}
+                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                  {% else %}
+                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                  {% endif %}">
+                </div>
+
+                <!-- Time -->
+                <div class="space-y-2">
+                    <label for="time" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-clock mr-1"></i> Time
+                    </label>
+                    <input type="time" 
+                           name="time" 
+                           id="time" 
+                           required
+                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+                                  {% if theme == 'dark' %}
+                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                  {% else %}
+                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                  {% endif %}">
+                </div>
+
+                <!-- Location -->
+                <div class="space-y-2">
+                    <label for="location" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Location
+                    </label>
+                    <input type="text" 
+                           name="location" 
+                           id="location" 
+                           placeholder="Enter the location (e.g., Room 101, Building A)"
+                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+                                  {% if theme == 'dark' %}
+                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400 placeholder-gray-500
+                                  {% else %}
+                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400
+                                  {% endif %}">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end gap-3 pt-4 border-t {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-200{% endif %}">
+                    <a href="{{ url_for('admin_page') }}"
+                       class="px-6 py-3 rounded-lg font-medium transition
+                              {% if theme == 'dark' %}
+                                 bg-gray-700 text-gray-300 hover:bg-gray-600
+                              {% else %}
+                                 bg-gray-200 text-gray-700 hover:bg-gray-300
+                              {% endif %}">
+                        <i class="fas fa-times mr-1"></i> Cancel
+                    </a>
+                    <button type="submit"
+                            class="px-8 py-3 rounded-lg font-semibold transition transform hover:scale-105
+                                   {% if theme == 'dark' %}
+                                      bg-cyan-400 text-gray-900 hover:bg-cyan-300
+                                   {% else %}
+                                      bg-blue-600 text-white hover:bg-blue-700
+                                   {% endif %}">
+                        <i class="fas fa-save mr-1"></i> Create Discussion
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Dark Theme Styles */
+    .dark-theme {
+        --bg-main: #111827;
+        --bg-card: #172554;
+        --bg-input: #1F2937;
+        --bg-discard: #374151;
+        --text-heading: #FFFFFF;
+        --text-subtitle: #D1D5DB;
+        --text-label: #9CA3AF;
+        --text-secondary: #6B7280;
+        --text-highlight: #22D3EE;
+        --border-main: #155E75;
+        --border-hover: #06B6D4;
+        --accent-divider: #0E7490;
+        --accent-focus: #22D3EE;
+        background-color: #111827;
+        min-height: 100vh;
+    }
+
+    /* Light Theme Styles */
+    .light-theme {
+        --bg-main: #EFF6FF;
+        --bg-card: #FFFFFF;
+        --bg-input: #F9FAFB;
+        --text-heading: #111827;
+        --text-subtitle: #1F2937;
+        --text-label: #374151;
+        --text-secondary: #4B5563;
+        --text-description: #6B7280;
+        --text-minor: #9CA3AF;
+        --text-highlight: #2563EB;
+        --border-main: #BFDBFE;
+        --border-divider: #93C5FD;
+        --border-hover: #60A5FA;
+        --border-focus: #3B82F6;
+        --btn-modify: #2563EB;
+        --btn-modify-hover: #1D4ED8;
+        --btn-update: #16A34A;
+        --btn-update-hover: #15803D;
+        --btn-discard: #DC2626;
+        --btn-discard-hover: #B91C1C;
+        --divider-line: #93C5FD;
+        background-color: #EFF6FF;
+        min-height: 100vh;
+    }
+
+    /* Smooth transitions */
+    .dark-theme *,
+    .light-theme * {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Custom select styling */
+    select {
+        cursor: pointer;
+    }
+
+    select:focus {
+        outline: none;
+    }
+
+    /* Remove default select arrow in IE */
+    select::-ms-expand {
+        display: none;
+    }
+
+    /* Custom scrollbar for textareas */
+    textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    textarea::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    textarea::-webkit-scrollbar-thumb {
+        background: var(--border-main);
+        border-radius: 4px;
+    }
+    
+    textarea::-webkit-scrollbar-thumb:hover {
+        background: var(--border-hover);
+    }
+
+    /* Input number arrows styling */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 1;
+        height: 30px;
+    }
+
+    /* Remove number input arrows for Firefox */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    /* Date and Time input styling */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: {% if theme == 'dark' %}invert(1){% else %}invert(0){% endif %};
+        opacity: 0.6;
+        cursor: pointer;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator:hover,
+    input[type="time"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+    }
+
+    /* Focus ring for all inputs */
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+    }
+
+    /* Icon spacing */
+    .fas, .far {
+        margin-right: 4px;
+    }
+</style>
+
+{% endblock %}

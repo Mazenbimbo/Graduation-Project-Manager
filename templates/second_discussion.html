@@ -1,0 +1,467 @@
+{% extends 'supervisor_base.html' %}
+
+{% block title %}Second Discussion{% endblock %}
+
+{% block body %}
+<div class="{% if theme == 'dark' %}dark-theme{% else %}light-theme{% endif %}">
+    <div class="max-w-6xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-8 {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
+            Second Discussion
+        </h1>
+        
+        <form action="/second-discussion/{{ project.pid }}" method="post" 
+              class="{% if theme == 'dark' %}bg-blue-950{% else %}bg-white{% endif %} 
+                     rounded-xl shadow-lg p-8 space-y-6">
+            
+            <!-- Project Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6 border-b {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-300{% endif %}">
+                <div class="space-y-1">
+                    <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Project ID</label>
+                    <p class="text-lg font-semibold {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}">
+                        #{{ project.pid }}
+                    </p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Project Name</label>
+                    <p class="text-lg font-semibold {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
+                        {{ project.name }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Discussion Details -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-6 border-b {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-300{% endif %}">
+                <div class="space-y-1">
+                    <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Location</label>
+                    <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        {# discussion.location #}
+                    </p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Date</label>
+                    <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        {# discussion.date #}
+                    </p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Time</label>
+                    <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        {# discussion.time #}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Special Project Button -->
+            <div class="flex items-center gap-3 pb-6 border-b {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-300{% endif %}">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" 
+                           name="special" 
+                           value="True"
+                           {% if project.special %}checked{% endif %}
+                           class="w-5 h-5 rounded transition
+                                  {% if theme == 'dark' %}
+                                     bg-gray-800 border-cyan-800 text-cyan-400 focus:ring-cyan-400 focus:ring-2
+                                  {% else %}
+                                     bg-gray-50 border-blue-200 text-blue-600 focus:ring-blue-500 focus:ring-2
+                                  {% endif %}">
+                    <span class="text-lg font-semibold {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                        ⭐ Special Project
+                    </span>
+                </label>
+                <span class="text-sm {% if theme == 'dark' %}text-gray-500{% else %}text-gray-500{% endif %}">
+                    (Mark this project as special)
+                </span>
+            </div>
+
+            <!-- Team Members Grades -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold {% if theme == 'dark' %}text-gray-300{% else %}text-gray-800{% endif %}">
+                    Team Members Grades
+                </h2>
+                
+                {% for member in project.members %}
+                <div class="p-4 {% if theme == 'dark' %}bg-gray-800{% else %}bg-gray-50{% endif %} rounded-lg" data-member="{{ member.pid }}">
+                    <div class="flex items-center gap-4 mb-3">
+                        <span class="text-lg font-semibold {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
+                            {{ member.name }}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                        <!-- First Discussion (Pre-set, read-only) -->
+                        <div class="space-y-1">
+                            <label class="text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">First Discussion (80)</label>
+                            <input type="number" 
+                                   name="first-degree-{{ member.pid }}" 
+                                   value="{{ member.first_discussion_result or 0 }}"
+                                   readonly
+                                   class="first-input w-full px-3 py-2 border rounded-lg bg-opacity-50 cursor-not-allowed
+                                          {% if theme == 'dark' %}
+                                             bg-gray-700 text-gray-300 border-gray-600
+                                          {% else %}
+                                             bg-gray-100 text-gray-600 border-gray-300
+                                          {% endif %}">
+                        </div>
+                        
+                        <!-- Documentation Degree -->
+                        <div class="space-y-1">
+                            <label class="text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Documentation (20)</label>
+                            <input type="number" 
+                                   name="doc-degree-{{ member.pid }}" 
+                                   min="0" 
+                                   max="20"
+                                   value="{{ member.documentation_degree or 0 }}"
+                                   class="degree-input doc-input w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition
+                                          {% if theme == 'dark' %}
+                                             bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                          {% else %}
+                                             bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                          {% endif %}">
+                        </div>
+                        
+                        <!-- Second Discussion Degree -->
+                        <div class="space-y-1">
+                            <label class="text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Second Discussion (80)</label>
+                            <input type="number" 
+                                   name="second-degree-{{ member.pid }}" 
+                                   min="0" 
+                                   max="80"
+                                   value="{{ member.second_discussion_result or 0 }}"
+                                   class="degree-input second-input w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition
+                                          {% if theme == 'dark' %}
+                                             bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                          {% else %}
+                                             bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                          {% endif %}">
+                        </div>
+                        
+                        <!-- Total & Percentage -->
+                        <div class="space-y-1">
+                            <label class="text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Total</label>
+                            <div class="flex items-center gap-2">
+                                <span class="total-score text-xl font-bold {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}">
+                                    {{ (member.first_discussion_result or 0) + (member.documentation_degree or 0) + (member.second_discussion_result or 0) }}
+                                </span>
+                                <input type="number" name="finel-project-degree-for-{{member.pid}}" value="{{(member.first_discussion_result or 0) + (member.documentation_degree or 0) + (member.second_discussion_result or 0)}}" hidden>
+                                <span class="text-sm {% if theme == 'dark' %}text-gray-500{% else %}text-gray-500{% endif %}">/ 180</span>
+                            </div>
+                            <div class="percentage-display text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">
+                                {{ "%.1f"|format(((member.first_discussion_result or 0) + (member.documentation_degree or 0) + (member.second_discussion_result or 0)) / 180 * 100) }}%
+                            </div>
+                        </div>
+                        
+                        <!-- Grade Letter -->
+                        <div class="space-y-1">
+                            <label class="text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Grade</label>
+                            <div class="grade-display text-2xl font-bold text-center p-2 rounded-lg
+                                      {% set total = (member.first_discussion_result or 0) + (member.documentation_degree or 0) + (member.second_discussion_result or 0) %}
+                                      {% set percentage = (total / 180 * 100) if total > 0 else 0 %}
+                                      {% if percentage >= 88 %}bg-green-500 text-white
+                                      {% elif percentage >= 76 %}bg-blue-400 text-white
+                                      {% elif percentage >= 64 %}bg-yellow-500 text-white
+                                      {% elif percentage >= 50 %}bg-orange-500 text-white
+                                      {% else %}bg-red-500 text-white{% endif %}">
+                                {% if percentage >= 96 %}A+
+                                {% elif percentage >= 82 %}A
+                                {% elif percentage >= 88 %}A-
+                                {% elif percentage >= 84 %}B+
+                                {% elif percentage >= 80 %}B
+                                {% elif percentage >= 76 %}B-
+                                {% elif percentage >= 72 %}C+
+                                {% elif percentage >= 68 %}C
+                                {% elif percentage >= 64 %}C-
+                                {% elif percentage >= 60 %}D+
+                                {% elif percentage >= 55 %}D
+                                {% elif percentage >= 50 %}D-
+                                {% else %}F{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="space-y-4 pt-4 border-t {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-300{% endif %}">
+                <div class="space-y-2">
+                    <label class="block {% if theme == 'dark' %}text-gray-400{% else %}text-gray-700{% endif %} font-medium">
+                        Feedback
+                    </label>
+                    <textarea name="feedback1" 
+                              rows="4"
+                              class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none
+                                     {% if theme == 'dark' %}
+                                        bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                     {% else %}
+                                        bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                     {% endif %}">{{ feedback1 or '' }}</textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block {% if theme == 'dark' %}text-gray-400{% else %}text-gray-700{% endif %} font-medium">
+                        Recommendations
+                    </label>
+                    <textarea name="feedback2" 
+                              rows="4"
+                              class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none
+                                     {% if theme == 'dark' %}
+                                        bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+                                     {% else %}
+                                        bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+                                     {% endif %}">{{ feedback2 or '' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end pt-4">
+                <button type="submit"
+                        class="px-8 py-3 rounded-lg font-semibold transition transform hover:scale-105
+                               {% if theme == 'dark' %}
+                                  bg-cyan-400 text-gray-900 hover:bg-cyan-300
+                               {% else %}
+                                  bg-blue-600 text-white hover:bg-blue-700
+                               {% endif %}">
+                    Save Grades
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all degree inputs
+    const degreeInputs = document.querySelectorAll('.degree-input');
+    
+    // Function to calculate and update totals and grades
+    function updateCalculations() {
+        // Group inputs by member
+        const memberGroups = {};
+        degreeInputs.forEach(input => {
+            const name = input.name;
+            const memberId = name.split('-').pop();
+            if (!memberGroups[memberId]) {
+                memberGroups[memberId] = {};
+            }
+            if (name.startsWith('doc-degree-')) {
+                memberGroups[memberId].doc = input;
+            } else if (name.startsWith('second-degree-')) {
+                memberGroups[memberId].second = input;
+            }
+        });
+        
+        // Also get first discussion values (read-only)
+        document.querySelectorAll('.first-input').forEach(input => {
+            const name = input.name;
+            const memberId = name.split('-').pop();
+            if (!memberGroups[memberId]) {
+                memberGroups[memberId] = {};
+            }
+            memberGroups[memberId].first = input;
+        });
+        
+        // Update each member's calculations
+        Object.keys(memberGroups).forEach(memberId => {
+            const group = memberGroups[memberId];
+            if (group.first && group.doc && group.second) {
+                const firstVal = parseFloat(group.first.value) || 0;
+                const docVal = parseFloat(group.doc.value) || 0;
+                const secondVal = parseFloat(group.second.value) || 0;
+                const total = firstVal + docVal + secondVal;
+                const percentage = total > 0 ? (total / 180 * 100) : 0;
+                
+                // Find the parent container
+                const container = group.first.closest('[data-member]') || group.first.closest('.grid');
+                if (container) {
+                    // Update total
+                    const totalSpan = container.querySelector('.total-score');
+                    if (totalSpan) {
+                        totalSpan.textContent = total;
+                    }
+                    
+                    // Update percentage
+                    const percentageDisplay = container.querySelector('.percentage-display');
+                    if (percentageDisplay) {
+                        percentageDisplay.textContent = percentage.toFixed(1) + '%';
+                    }
+                    
+                    // Update grade
+                    const gradeDisplay = container.querySelector('.grade-display');
+                    if (gradeDisplay) {
+                        let grade, colorClass;
+                        
+                        if (percentage >= 90) {
+                            grade = 'A+';
+                            colorClass = 'bg-green-500 text-white';
+                        } else if (percentage >= 80) {
+                            grade = 'A';
+                            colorClass = 'bg-blue-500 text-white';
+                        } else if (percentage >= 70) {
+                            grade = 'B';
+                            colorClass = 'bg-cyan-500 text-white';
+                        } else if (percentage >= 60) {
+                            grade = 'C';
+                            colorClass = 'bg-yellow-500 text-white';
+                        } else if (percentage >= 50) {
+                            grade = 'D';
+                            colorClass = 'bg-orange-500 text-white';
+                        } else {
+                            grade = 'F';
+                            colorClass = 'bg-red-500 text-white';
+                        }
+                        
+                        gradeDisplay.textContent = grade;
+                        gradeDisplay.className = 'grade-display text-2xl font-bold text-center p-2 rounded-lg ' + colorClass;
+                    }
+                }
+            }
+        });
+    }
+    
+    // Add event listeners to all degree inputs with multiple events
+    degreeInputs.forEach(input => {
+        // Trigger on input (as user types)
+        input.addEventListener('input', function() {
+            // Validate min/max
+            const min = parseInt(this.getAttribute('min'));
+            const max = parseInt(this.getAttribute('max'));
+            let value = parseFloat(this.value);
+            
+            if (!isNaN(value)) {
+                if (min !== undefined && value < min) {
+                    this.value = min;
+                } else if (max !== undefined && value > max) {
+                    this.value = max;
+                }
+            }
+            
+            updateCalculations();
+        });
+        
+        // Also trigger on change (for when user leaves the field)
+        input.addEventListener('change', function() {
+            // Ensure value is within bounds
+            const min = parseInt(this.getAttribute('min'));
+            const max = parseInt(this.getAttribute('max'));
+            let value = parseFloat(this.value);
+            
+            if (!isNaN(value)) {
+                if (min !== undefined && value < min) {
+                    this.value = min;
+                } else if (max !== undefined && value > max) {
+                    this.value = max;
+                }
+            } else {
+                // If empty or invalid, set to 0
+                this.value = 0;
+            }
+            
+            updateCalculations();
+        });
+        
+        // Trigger on keyup for immediate feedback
+        input.addEventListener('keyup', function() {
+            updateCalculations();
+        });
+    });
+    
+    // Initial calculation
+    updateCalculations();
+});
+</script>
+
+<style>
+    /* Dark Theme Styles */
+    .dark-theme {
+        --bg-main: #111827;
+        --bg-card: #172554;
+        --bg-input: #1F2937;
+        --bg-discard: #374151;
+        --text-heading: #FFFFFF;
+        --text-subtitle: #D1D5DB;
+        --text-label: #9CA3AF;
+        --text-secondary: #6B7280;
+        --text-highlight: #22D3EE;
+        --border-main: #155E75;
+        --border-hover: #06B6D4;
+        --accent-divider: #0E7490;
+        --accent-focus: #22D3EE;
+        background-color: #111827;
+        min-height: 100vh;
+    }
+
+    /* Light Theme Styles */
+    .light-theme {
+        --bg-main: #EFF6FF;
+        --bg-card: #FFFFFF;
+        --bg-input: #F9FAFB;
+        --text-heading: #111827;
+        --text-subtitle: #1F2937;
+        --text-label: #374151;
+        --text-secondary: #4B5563;
+        --text-description: #6B7280;
+        --text-minor: #9CA3AF;
+        --text-highlight: #2563EB;
+        --border-main: #BFDBFE;
+        --border-divider: #93C5FD;
+        --border-hover: #60A5FA;
+        --border-focus: #3B82F6;
+        --btn-modify: #2563EB;
+        --btn-modify-hover: #1D4ED8;
+        --btn-update: #16A34A;
+        --btn-update-hover: #15803D;
+        --btn-discard: #DC2626;
+        --btn-discard-hover: #B91C1C;
+        --divider-line: #93C5FD;
+        background-color: #EFF6FF;
+        min-height: 100vh;
+    }
+
+    /* Smooth transitions */
+    .dark-theme *,
+    .light-theme * {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Custom scrollbar for textareas */
+    textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    textarea::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    textarea::-webkit-scrollbar-thumb {
+        background: var(--border-main);
+        border-radius: 4px;
+    }
+    
+    textarea::-webkit-scrollbar-thumb:hover {
+        background: var(--border-hover);
+    }
+
+    /* Input number arrows styling */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 1;
+        height: 30px;
+    }
+
+    /* Gold star checkbox styling */
+    input[name="special"]:checked {
+        background-color: #F59E0B !important;
+        border-color: #F59E0B !important;
+    }
+
+    /* Read-only input styling */
+    input[readonly] {
+        opacity: 0.8;
+    }
+
+    /* Remove number input arrows for Firefox */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+</style>
+{% endblock %}
