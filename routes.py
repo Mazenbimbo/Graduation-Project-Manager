@@ -13,6 +13,10 @@ oldest_compare = 10
 cutoff_year = datetime.now().year
 years_range = cutoff_year - oldest_compare
 maximum_team_size = 6
+minimum_team_size = 3
+turn_ideas_to_projects_data = 'x'
+final_date_for_doc = 'x'
+show_project_degrees_date = 'x'
 
 _embedding_model = None
 
@@ -166,6 +170,7 @@ def register_routes(app,db):
             email = request.form.get('email')
             specialties = request.form.get('specialty')
             year = request.form.get('year')
+            skills = request.form.get('skills')
             department = request.form.get('department')
             skills = request.form.get('skills') if request.form.get('skills') else []
             password = request.form.get('password')
@@ -173,7 +178,7 @@ def register_routes(app,db):
                     flash("email already exist!","error")
                     return render_template('sign_up.html')
             else :
-                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year, password=password)
+                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year,skills=skills, password=password)
                 student.set_skills(skills)
                 db.session.add(student)
                 db.session.commit()
@@ -667,6 +672,8 @@ def register_routes(app,db):
                     session['department'] = supervisor.department
                     session['password'] = supervisor.password
                     session['image'] = supervisor.image
+                    session['linkedin'] = supervisor.linkedin_url
+                    session['github'] = supervisor.github_url
                     session['logged'] = True
                     session['role'] = supervisor.role
                     session['projects'] = [project.pid for project in supervisor.projects]
@@ -975,7 +982,7 @@ def register_routes(app,db):
         if Student.query.filter_by(email=email).count() > 0:
             return jsonify({"error": "Email already exists"}), 400
         student = Student(name=name, specialties=specialties, phone=phone, email=email,
-                        department=department, year=year, password=password)
+                        department=department, year=year,status="No Idea", password=password)
         student.set_skills(skills)
         db.session.add(student)
         db.session.commit()
@@ -1007,23 +1014,7 @@ def register_routes(app,db):
         session['in_team'] = student.in_team
         session['role'] = 'Student'
         session['public_id'] = student.public_id
-        # ------- status --------
-        
-        if not student.in_team :
-            session['status'] = "No Idea"
-        if student.in_team : 
-            if student.in_team and student.project.leader == student.pid : 
-                session['status'] = "IdeaOwner"
-            if student.in_team and student.project.leader != student.pid :
-                session['status'] = "IdeaMember"
-            if student.in_team and student.project.under_review == True :
-                session['status'] = "UnderReview"
-            if student.in_team and student.project.doctor :
-                session['status'] = "ActiveProject"
-            if student.in_team and student.project.completed == True :
-                session['status'] = "Completed"
-
-        #----------------------
+        session['status'] = student.status
         return jsonify({
             "message": "Login successful",
             "pid": student.pid,
@@ -1227,6 +1218,7 @@ def register_routes(app,db):
             "fields": p.get_fields(),
             "special": p.special,
             "leader": p.leader,
+            "status": p.status,
             "members_id":[m.pid for m in p.members],
             "members_name":[m.name for m in p.members],
             "similar_ideas": p.get_similar_ideas() if hasattr(p, 'get_similar_ideas') else [],
@@ -1284,7 +1276,7 @@ def register_routes(app,db):
             "fields": project.get_fields(),
             "similar ideas": project.get_similar_ideas(),
             "status": project.status,
-            "special": project.special,
+            "is_special": project.special or "",
             "leader_id": project.leader,
             "intended team size" :project.intended_team_size,
             "doctor": {
@@ -1558,7 +1550,8 @@ def register_routes(app,db):
             "in_team": s.in_team,
             "year": s.year,
             "department": s.department,
-            "image": s.image
+            "image": s.image,
+            "status": s.status
         } for s in students])
 
     @app.route('/api/v2/req_to_add/<int:student_id>', methods=['POST'])
@@ -1669,10 +1662,13 @@ def register_routes(app,db):
             project.status = "Approved"
             sup = Supervisor.query.get(session['sid'])
             sup.projects.append(project)
-            db.session.commit()
         else :
             project.status = "Rejected"
         db.session.delete(notif)
+        data = request.get_json()
+        if data.get('optional_comment') and data.get('optional_comment')!= "":
+            message = Message(content=data.get('optional_comment'),direction=2,message_type='feedback',project_id=notif.project_id,supervisor_id=session['sid']) 
+            db.session.add(message)
         db.session.commit()
         return jsonify({"message": f"Request {action}ed"})
 
@@ -1924,7 +1920,34 @@ def register_routes(app,db):
     @app.route('/api/v2/console', methods=['GET'])
     def api_console():
         return render_template('console.html')
+    
+    @app.route('/api/v2/student_status', methods=['PUT'])
+    def student_status():
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Request body must be JSON"}), 400
 
+        student_id = data.get("student_id", "")
+        student_status  = data.get("status", "")
+
+        Student.query.get_or_404(student_id).status = student_status
+
+        db.session.commit()
+        return jsonify({"message": "Status updated"})
+
+    @app.route('/api/v2/project_status', methods=['PUT'])
+    def project_status():
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Request body must be JSON"}), 400
+
+        project_id = data.get("project_id", "").strip()
+        project_status  = data.get("project_status", "").strip()
+
+        Project.query.get_or_404(project_id).status = project_status
+
+        db.session.commit()
+        return jsonify({"message": "Status updated"})
 #============== AI Model =================
 
     @app.route('/api/check-similarity', methods=['POST'])

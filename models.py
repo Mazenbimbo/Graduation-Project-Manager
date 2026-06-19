@@ -26,8 +26,9 @@ class Student(db.Model):
     notifications = db.relationship('Notification',backref='student',lazy=True)
     linkedin_url = db.Column(db.Text,nullable=True)
     github_url = db.Column(db.Text,nullable=True)
-    # first_descussion_result = db.Column(db.Integer,nullable=True)
-    # finel_project_degree = db.Column(db.Integer,nullable=True)
+    status = db.Column(db.Text,nullable=True)
+    first_descussion_result = db.Column(db.Integer,nullable=True)
+    finel_project_degree = db.Column(db.Integer,nullable=True)
 
 
 

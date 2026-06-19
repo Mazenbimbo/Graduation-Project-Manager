@@ -196,9 +196,9 @@
     //  API Endpoints Definition (matches /api/v2)
     // ------------------------------
     const endpoints = [
-        { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"j@e.com", specialties:"AI", year:2025, department:"CS", password:"secret"} },
-        { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"admin@gmail.com", password:"a"} },
-        { method: "POST", path: "/api/v2/supervisor/sign-in", desc: "Supervisor sign-in", bodyExample: {email:"dr@uni.edu", password:"pass"} },
+        { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"student@gmail.com", specialties:"AI", year:2025, department:"CS", password:"aaaaaaaa"} },
+        { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"student@gmail.com", password:"aaaaaaaa"} },
+        { method: "POST", path: "/api/v2/supervisor/sign-in", desc: "Supervisor sign-in", bodyExample: {email:"doctor@gmail.com", password:"aaaaaaaa"} },
         { method: "POST", path: "/api/v2/logout", desc: "Logout", bodyExample: null },
         { method: "GET", path: "/api/v2/account/me", desc: "Get own profile", bodyExample: null },
         { method: "PUT", path: "/api/v2/edit/user/data", desc: "Edit student profile", bodyExample: {name:"New Name", specialty:"AI", phone:"0123456789", skills:["Node.js","SQL","Linux"],linkedin:"...",github:"..."} },
@@ -207,6 +207,8 @@
         { method: "GET", path: "/api/v2/project/{pid}", desc: "Project details", pathParams: ["pid"] },
         { method: "POST", path: "/api/v2/new_project", desc: "Create project (student)", bodyExample: {name:"My Project", description:"Cool", fields:["AI"],max_team_size:3,publish_without_team:false,selected_members:[]} },
         { method: "PUT", path: "/api/v2/project/{pid}", desc: "Edit project (leader)", pathParams: ["pid"], bodyExample: {name:"Updated", description:"New desc", intended_team_size: "3"} },
+        { method: "PUT", path: "/api/v2/project_status", desc: "Edit project status", bodyExample: {project_id:1, status:"Open"} },
+        { method: "PUT", path: "/api/v2/student_status", desc: "Edit student status", bodyExample: {student_id:1, status:"No Idea"} },
         { method: "POST", path: "/api/v2/join/{project_id}", desc: "Request to join", pathParams: ["project_id"] },
         { method: "GET", path: "/api/v2/team/requests", desc: "Get pending join requests (leader)" },
         { method: "POST", path: "/api/v2/team/respond_join/{nid}/{action}", desc: "Accept/reject join", pathParams: ["nid", "action"] },
@@ -217,7 +219,7 @@
         { method: "GET", path: "/api/v2/supervisors", desc: "List supervisors" },
         { method: "POST", path: "/api/v2/req_to_supervise/{supervisor_id}", desc: "Request supervision", pathParams: ["supervisor_id"] },
         { method: "GET", path: "/api/v2/supervisor/notifications", desc: "Supervisor pending requests" },
-        { method: "POST", path: "/api/v2/supervisor/respond/{nid}/{action}", desc: "Accept/reject supervision", pathParams: ["nid", "action"] },
+        { method: "POST", path: "/api/v2/supervisor/respond/{nid}/{action}", desc: "Accept/reject supervision", pathParams: ["nid", "action"] , bodyExample: {optional_comment:""}},
         { method: "GET", path: "/api/v2/tasks", desc: "Get tasks (student: my tasks; supervisor: ?project_id=...)", queryParams: ["project_id"] },
         { method: "POST", path: "/api/v2/tasks", desc: "Create task", bodyExample: {description:"Write report", deadline:"2025-12-31", assigned_to:42, project_id:10} },
         { method: "PUT", path: "/api/v2/tasks/{tid}/status", desc: "Mark task done", pathParams: ["tid"] },

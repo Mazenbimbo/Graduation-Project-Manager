@@ -94,7 +94,7 @@
                                 {% set skill_list = skills %}
                             {% endif %}
                             {% for skill in skill_list %}
-                                <span class="px-2 py-1 rounded-full text-xs font-medium {{ skill_bg }} {{ skill_text }}">{{ skill|trim }}</span>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium {{ skill_bg }} {{ skill_text }}">{{ skill|trim|replace('"', '')|replace('[', '')|replace(']', '') }}</span>
                             {% endfor %}
                         {% else %}
                             <span class="text-sm {{ text_secondary }}">—</span>
