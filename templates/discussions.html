@@ -1,0 +1,258 @@
+{% extends 'supervisor_base.html' %}
+
+{% block title %}All Discussions{% endblock %}
+
+{% block body %}
+
+<div class="{% if theme == 'dark' %}dark-theme{% else %}light-theme{% endif %}">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
+          <i class="fas fa-comments mr-2 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
+          All Discussions
+          <span class="text-sm font-normal ml-2 {% if theme == 'dark' %}text-gray-400{% else %}text-gray-500{% endif %}">
+            ({{ discussions|length }} total)
+          </span>
+        </h1>
+        <a href="{{ url_for('new_discussion') }}" 
+           class="px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105
+           {% if theme == 'dark' %}
+             bg-cyan-400 text-gray-900 hover:bg-cyan-300
+           {% else %}
+             bg-blue-600 text-white hover:bg-blue-700
+           {% endif %}">
+          <i class="fas fa-plus mr-2"></i> New Discussion
+        </a>
+      </div>
+
+      <!-- Discussions List -->
+      {% if discussions %}
+        <div class="space-y-3">
+          {% for discussion in discussions %}
+            <div class="rounded-xl p-4 shadow-lg border transition-all hover:shadow-xl hover:scale-[1.002]
+                {% if theme == 'dark' %}
+                  bg-blue-950 border-cyan-800
+                {% else %}
+                  bg-white border-blue-200
+                {% endif %}">
+              
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- Discussion Info -->
+                <div class="flex items-center space-x-4 flex-wrap">
+                  <!-- ID -->
+                  <span class="px-2 py-1 rounded text-xs font-medium
+                    {% if theme == 'dark' %}
+                      bg-cyan-900/30 text-cyan-300 border border-cyan-700
+                    {% else %}
+                      bg-blue-100 text-blue-700 border border-blue-300
+                    {% endif %}">
+                    Project ID : #{{ discussion.project_id }}
+                  </span>
+                  
+                  <!-- Project -->
+                  <span class="text-sm {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                    <i class="fas fa-project-diagram mr-1 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                    {{ discussion.project_name }}
+                  </span>
+
+                  <!-- Date & Time -->
+                  <span class="text-sm {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                    <i class="fas fa-calendar-day mr-1 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                    {{ discussion.date.strftime('%b %d, %Y') }}
+                    <i class="fas fa-clock ml-2 mr-1 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                    {{ discussion.time.strftime('%I:%M %p') }}
+                  </span>
+
+                  <!-- Location -->
+                  <span class="text-sm {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+                    <i class="fas fa-map-marker-alt mr-1 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-500{% endif %}"></i>
+                    {{ discussion.location }}
+                  </span>
+
+                  <!-- Supervisors -->
+                  <div class="flex flex-wrap items-center gap-1">
+                    <i class="fas fa-user-tie text-xs {% if theme == 'dark' %}text-gray-400{% else %}text-gray-500{% endif %}"></i>
+                    {% if discussion.supervisor_names %}
+                      {% for name in discussion.supervisor_names.split(', ') %}
+                        <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                          {% if theme == 'dark' %}
+                            bg-cyan-900/30 text-cyan-300 border border-cyan-700
+                          {% else %}
+                            bg-blue-100 text-blue-700 border border-blue-300
+                          {% endif %}">
+                          {{ name }}
+                        </span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="text-xs {% if theme == 'dark' %}text-gray-500{% else %}text-gray-400{% endif %}">
+                        No supervisors
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex space-x-2">
+                  <a href="#" 
+                     class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                     {% if theme == 'dark' %}
+                       bg-cyan-700 hover:bg-cyan-600 text-white
+                     {% else %}
+                       bg-blue-600 hover:bg-blue-700 text-white
+                     {% endif %}">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button onclick="deleteDiscussion({{ discussion.did }})" 
+                          class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if theme == 'dark' %}
+                            bg-red-700 hover:bg-red-600 text-white
+                          {% else %}
+                            bg-red-600 hover:bg-red-700 text-white
+                          {% endif %}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination (if needed) -->
+        {% if discussions|length > 20 %}
+        <div class="flex justify-center mt-8 space-x-2">
+          <button class="px-4 py-2 rounded-lg transition text-sm font-medium
+            {% if theme == 'dark' %}
+              bg-gray-800 text-gray-300 hover:bg-gray-700
+            {% else %}
+              bg-gray-200 text-gray-700 hover:bg-gray-300
+            {% endif %}">
+            Previous
+          </button>
+          <button class="px-4 py-2 rounded-lg transition text-sm font-medium
+            {% if theme == 'dark' %}
+              bg-cyan-700 text-white
+            {% else %}
+              bg-blue-600 text-white
+            {% endif %}">
+            1
+          </button>
+          <button class="px-4 py-2 rounded-lg transition text-sm font-medium
+            {% if theme == 'dark' %}
+              bg-gray-800 text-gray-300 hover:bg-gray-700
+            {% else %}
+              bg-gray-200 text-gray-700 hover:bg-gray-300
+            {% endif %}">
+            2
+          </button>
+          <button class="px-4 py-2 rounded-lg transition text-sm font-medium
+            {% if theme == 'dark' %}
+              bg-gray-800 text-gray-300 hover:bg-gray-700
+            {% else %}
+              bg-gray-200 text-gray-700 hover:bg-gray-300
+            {% endif %}">
+            Next
+          </button>
+        </div>
+        {% endif %}
+
+      {% else %}
+        <!-- No discussions -->
+        <div class="text-center py-16 rounded-xl border-2 border-dashed
+            {% if theme == 'dark' %}
+              border-cyan-800 bg-blue-950
+            {% else %}
+              border-blue-200 bg-white
+            {% endif %}">
+          <div class="text-6xl mb-4 {% if theme == 'dark' %}text-gray-700{% else %}text-gray-300{% endif %}">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h3 class="text-2xl font-semibold mb-2 {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+            No Discussions Yet
+          </h3>
+          <p class="mb-6 {% if theme == 'dark' %}text-gray-400{% else %}text-gray-500{% endif %}">
+            Start by creating your first discussion.
+          </p>
+          <a href="{{ url_for('new_discussion') }}" 
+             class="px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 inline-block
+             {% if theme == 'dark' %}
+               bg-cyan-400 text-gray-900 hover:bg-cyan-300
+             {% else %}
+               bg-blue-600 text-white hover:bg-blue-700
+             {% endif %}">
+            <i class="fas fa-plus mr-2"></i> Create Discussion
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete JavaScript -->
+<script>
+function deleteDiscussion(did) {
+  if (confirm('Are you sure you want to delete this discussion?')) {
+    // You can implement delete functionality here
+    // fetch(`/discussion/${did}/delete`, { method: 'POST' })
+    //   .then(response => window.location.reload())
+    //   .catch(error => alert('Error deleting discussion'));
+    alert('Delete functionality to be implemented');
+  }
+}
+</script>
+
+<style>
+/* Dark Theme Styles */
+.dark-theme {
+  --bg-main: #111827;
+  --bg-card: #172554;
+  --bg-input: #1F2937;
+  background-color: #111827;
+  min-height: 100vh;
+}
+
+/* Light Theme Styles */
+.light-theme {
+  --bg-main: #EFF6FF;
+  --bg-card: #FFFFFF;
+  background-color: #EFF6FF;
+  min-height: 100vh;
+}
+
+/* Smooth transitions */
+.dark-theme *,
+.light-theme * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Card hover effect */
+.rounded-xl {
+  transition: all 0.2s ease;
+}
+
+.rounded-xl:hover {
+  transform: translateY(-2px) scale(1.002);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flex-wrap {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .flex-wrap > * {
+    margin-bottom: 0.5rem;
+  }
+  
+  .flex-wrap > .flex {
+    flex-wrap: wrap;
+    justify-content: flex-start !important;
+  }
+}
+</style>
+
+{% endblock %}

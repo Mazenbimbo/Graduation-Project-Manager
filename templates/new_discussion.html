@@ -1,273 +1,1089 @@
 {% extends 'supervisor_base.html' %}
 
+  
+
 {% block title %}New Discussion{% endblock %}
 
+  
+
 {% block body %}
+
 <div class="{% if theme == 'dark' %}dark-theme{% else %}light-theme{% endif %}">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="text-3xl font-bold mb-8 {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
-                <i class="fas fa-calendar-plus mr-2 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
-                Create New Discussion
-            </h1>
-            
-            <form action="{{ url_for('new_discussion') }}" method="post" 
-                  class="{% if theme == 'dark' %}bg-blue-950{% else %}bg-white{% endif %} 
-                         rounded-xl shadow-lg p-8 space-y-6">
-                
-                <!-- Project Selection -->
-                <div class="space-y-2">
-                    <label for="project" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-project-diagram mr-1"></i> Project
-                    </label>
-                    <select name="project" id="project" required
-                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
-                                   {% if theme == 'dark' %}
-                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
-                                   {% else %}
-                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
-                                   {% endif %}">
-                        <option value="">Select a project...</option>
-                        {% for project in projects %}
-                            <option value="{{ project.pid }}">{{ project.name }} (ID: {{ project.pid }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
 
-                <!-- Supervisor Selection -->
-                <div class="space-y-2">
-                    <label for="supervisors" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-user-tie mr-1"></i> Supervisor
-                    </label>
-                    <select name="supervisors" id="supervisors" required
-                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
-                                   {% if theme == 'dark' %}
-                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
-                                   {% else %}
-                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
-                                   {% endif %}">
-                        <option value="">Select a supervisor...</option>
-                        {% for supervisor in supervisors %}
-                            <option value="{{ supervisor.sid }}">{{ supervisor.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-                <!-- Discussion Number -->
-                <div class="space-y-2">
-                    <label for="number" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-hashtag mr-1"></i> Discussion Number
-                    </label>
-                    <select name="number" id="number" required
-                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
-                                   {% if theme == 'dark' %}
-                                      bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
-                                   {% else %}
-                                      bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
-                                   {% endif %}">
-                        <option value="">Select discussion number...</option>
-                        <option value="1">First Discussion</option>
-                        <option value="2">Second Discussion</option>
-                        <option value="3">Third Discussion</option>
-                    </select>
-                </div>
+<div class="max-w-3xl mx-auto">
 
-                <!-- Date -->
-                <div class="space-y-2">
-                    <label for="date" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-calendar-day mr-1"></i> Date
-                    </label>
-                    <input type="date" 
-                           name="date" 
-                           id="date" 
-                           required
-                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
-                                  {% if theme == 'dark' %}
-                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
-                                  {% else %}
-                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
-                                  {% endif %}">
-                </div>
+<h1 class="text-3xl font-bold mb-8 {% if theme == 'dark' %}text-white{% else %}text-gray-900{% endif %}">
 
-                <!-- Time -->
-                <div class="space-y-2">
-                    <label for="time" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-clock mr-1"></i> Time
-                    </label>
-                    <input type="time" 
-                           name="time" 
-                           id="time" 
-                           required
-                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
-                                  {% if theme == 'dark' %}
-                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
-                                  {% else %}
-                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
-                                  {% endif %}">
-                </div>
+<i class="fas fa-calendar-plus mr-2 {% if theme == 'dark' %}text-cyan-400{% else %}text-blue-600{% endif %}"></i>
 
-                <!-- Location -->
-                <div class="space-y-2">
-                    <label for="location" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        <i class="fas fa-map-marker-alt mr-1"></i> Location
-                    </label>
-                    <input type="text" 
-                           name="location" 
-                           id="location" 
-                           placeholder="Enter the location (e.g., Room 101, Building A)"
-                           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
-                                  {% if theme == 'dark' %}
-                                     bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400 placeholder-gray-500
-                                  {% else %}
-                                     bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400
-                                  {% endif %}">
-                </div>
+Create New Discussion
 
-                <!-- Submit Button -->
-                <div class="flex justify-end gap-3 pt-4 border-t {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-200{% endif %}">
-                    <a href="{{ url_for('admin_page') }}"
-                       class="px-6 py-3 rounded-lg font-medium transition
-                              {% if theme == 'dark' %}
-                                 bg-gray-700 text-gray-300 hover:bg-gray-600
-                              {% else %}
-                                 bg-gray-200 text-gray-700 hover:bg-gray-300
-                              {% endif %}">
-                        <i class="fas fa-times mr-1"></i> Cancel
-                    </a>
-                    <button type="submit"
-                            class="px-8 py-3 rounded-lg font-semibold transition transform hover:scale-105
-                                   {% if theme == 'dark' %}
-                                      bg-cyan-400 text-gray-900 hover:bg-cyan-300
-                                   {% else %}
-                                      bg-blue-600 text-white hover:bg-blue-700
-                                   {% endif %}">
-                        <i class="fas fa-save mr-1"></i> Create Discussion
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+</h1>
+
+<form action="{{ url_for('new_discussion') }}" method="post"
+
+class="{% if theme == 'dark' %}bg-blue-950{% else %}bg-white{% endif %}
+
+rounded-xl shadow-lg p-8 space-y-6">
+
+<!-- Project Selection -->
+
+<div class="space-y-2">
+
+<label for="project" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-project-diagram mr-1"></i> Project
+
+</label>
+
+<select name="project" id="project" required
+
+class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
+
+{% if theme == 'dark' %}
+
+bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+
+{% else %}
+
+bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+
+{% endif %}">
+
+<option value="">Select a project...</option>
+
+{% for project in projects %}
+
+<option value="{{ project.pid }}">
+
+{% if project.special %}
+
+(⭐ Special project) {{ project.name }} (ID: {{ project.pid }}) - (Dr: {% if project.doctor_supervisor %} {{project.doctor_supervisor.name}}{% else %} "No Doctor"{% endif %}) - (TA: {% if project.assistant_supervisor %} {{project.assistant_supervisor.name}}{% else %} "No Assistant"{% endif %})
+
+{% else %}
+
+{{ project.name }} (ID: {{ project.pid }}) - (Dr: {% if project.doctor_supervisor %} {{project.doctor_supervisor.name}}{% else %} "No Doctor"{% endif %}) - (TA: {% if project.assistant_supervisor %} {{project.assistant_supervisor.name}}{% else %} "No Assistant"{% endif %})
+
+{% endif %}
+
+</option>
+
+{% endfor %}
+
+</select>
+
 </div>
 
+<!-- Supervisor Selection - Tags Input -->
+
+<div class="space-y-2">
+
+<label for="supervisors" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-user-tie mr-1"></i> Supervisors
+
+</label>
+
+<div class="relative">
+
+<!-- Hidden input to store selected supervisor IDs -->
+
+<input type="hidden" name="supervisors" id="supervisors-hidden" value="">
+
+<!-- Tags container -->
+
+<div id="tags-container" 
+
+class="flex flex-wrap gap-2 p-3 min-h-[52px] border rounded-lg focus-within:ring-2 transition cursor-text
+
+{% if theme == 'dark' %}
+
+bg-gray-800 border-cyan-800 focus-within:border-cyan-500 focus-within:ring-cyan-400
+
+{% else %}
+
+bg-gray-50 border-blue-200 focus-within:border-blue-500 focus-within:ring-blue-500
+
+{% endif %}">
+
+<!-- Selected tags will appear here -->
+
+<div id="tags-list" class="flex flex-wrap gap-2 items-center"></div>
+
+<!-- Input for typing and searching -->
+
+<input type="text" 
+
+id="supervisor-search"
+
+placeholder="Type to search supervisors..."
+
+autocomplete="off"
+
+class="flex-1 min-w-[150px] bg-transparent outline-none text-sm
+
+{% if theme == 'dark' %}
+
+text-white placeholder-gray-500
+
+{% else %}
+
+text-gray-900 placeholder-gray-400
+
+{% endif %}">
+
+</div>
+
+<!-- Dropdown for suggestions -->
+
+<div id="supervisor-dropdown" 
+
+class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto hidden
+
+{% if theme == 'dark' %}
+
+bg-gray-800 border-cyan-800
+
+{% else %}
+
+bg-white border-blue-200
+
+{% endif %}">
+
+{% for supervisor in supervisors %}
+
+<div class="supervisor-option px-4 py-2 cursor-pointer text-sm transition
+
+{% if theme == 'dark' %}
+
+text-gray-300 hover:bg-cyan-900/30 hover:text-white
+
+{% else %}
+
+text-gray-700 hover:bg-blue-50 hover:text-blue-600
+
+{% endif %}"
+
+data-id="{{ supervisor.sid }}"
+
+data-name="{{ supervisor.name }}">
+
+{{ supervisor.name }}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<p class="text-xs mt-1 {% if theme == 'dark' %}text-gray-400{% else %}text-gray-500{% endif %}">
+
+Select one or more supervisors by clicking on them. Click on a tag to remove it.
+
+</p>
+
+</div>
+
+<!-- Discussion Number -->
+
+<div class="space-y-2">
+
+<label for="number" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-hashtag mr-1"></i> Discussion Number
+
+</label>
+
+<select name="number" id="number" required
+
+class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition appearance-none
+
+{% if theme == 'dark' %}
+
+bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+
+{% else %}
+
+bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+
+{% endif %}">
+
+<option value="">Select discussion number...</option>
+
+<option value="1">First Discussion</option>
+
+<option value="2">Second Discussion</option>
+
+<option value="3">Third Discussion</option>
+
+</select>
+
+</div>
+
+<!-- Date -->
+
+<div class="space-y-2">
+
+<label for="date" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-calendar-day mr-1"></i> Date
+
+</label>
+
+<input type="date"
+
+name="date"
+
+id="date"
+
+required
+
+class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+
+{% if theme == 'dark' %}
+
+bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+
+{% else %}
+
+bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+
+{% endif %}">
+
+</div>
+
+<!-- Time -->
+
+<div class="space-y-2">
+
+<label for="time" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-clock mr-1"></i> Time
+
+</label>
+
+<input type="time"
+
+name="time"
+
+id="time"
+
+required
+
+class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+
+{% if theme == 'dark' %}
+
+bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400
+
+{% else %}
+
+bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500
+
+{% endif %}">
+
+</div>
+
+<!-- Location -->
+
+<div class="space-y-2">
+
+<label for="location" class="block font-medium {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
+
+<i class="fas fa-map-marker-alt mr-1"></i> Location
+
+</label>
+
+<input type="text"
+
+name="location"
+
+id="location"
+
+placeholder="Enter the location (e.g., Room 101, Building A)"
+
+class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition
+
+{% if theme == 'dark' %}
+
+bg-gray-800 text-white border-cyan-800 focus:border-cyan-500 focus:ring-cyan-400 placeholder-gray-500
+
+{% else %}
+
+bg-gray-50 text-gray-900 border-blue-200 focus:border-blue-500 focus:ring-blue-500 placeholder-gray-400
+
+{% endif %}">
+
+</div>
+
+<!-- Submit Button -->
+
+<div class="flex justify-end gap-3 pt-4 border-t {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-200{% endif %}">
+
+<a href="{{ url_for('admin_page') }}"
+
+class="px-6 py-3 rounded-lg font-medium transition
+
+{% if theme == 'dark' %}
+
+bg-gray-700 text-gray-300 hover:bg-gray-600
+
+{% else %}
+
+bg-gray-200 text-gray-700 hover:bg-gray-300
+
+{% endif %}">
+
+<i class="fas fa-times mr-1"></i> Cancel
+
+</a>
+
+<button type="submit"
+
+class="px-8 py-3 rounded-lg font-semibold transition transform hover:scale-105
+
+{% if theme == 'dark' %}
+
+bg-cyan-400 text-gray-900 hover:bg-cyan-300
+
+{% else %}
+
+bg-blue-600 text-white hover:bg-blue-700
+
+{% endif %}">
+
+<i class="fas fa-save mr-1"></i> Create Discussion
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+const searchInput = document.getElementById('supervisor-search');
+
+const dropdown = document.getElementById('supervisor-dropdown');
+
+const tagsList = document.getElementById('tags-list');
+
+const hiddenInput = document.getElementById('supervisors-hidden');
+
+const allOptions = document.querySelectorAll('.supervisor-option');
+
+const tagsContainer = document.getElementById('tags-container');
+
+let selectedSupervisors = new Map(); // Store {id: name}
+
+// Initialize with any pre-selected supervisors
+
+function updateHiddenInput() {
+
+const ids = Array.from(selectedSupervisors.keys());
+
+hiddenInput.value = ids.join(',');
+
+}
+
+function renderTags() {
+
+tagsList.innerHTML = '';
+
+selectedSupervisors.forEach((name, id) => {
+
+const tag = document.createElement('span');
+
+tag.className = `inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition
+
+${theme === 'dark' 
+
+? 'bg-cyan-900/30 text-cyan-300 border border-cyan-700' 
+
+: 'bg-blue-100 text-blue-700 border border-blue-300'}`;
+
+tag.innerHTML = `
+
+${name}
+
+<button type="button" 
+
+class="ml-1 hover:${theme === 'dark' ? 'text-cyan-100' : 'text-blue-900'} focus:outline-none"
+
+data-id="${id}"
+
+data-action="remove">
+
+×
+
+</button>
+
+`;
+
+tag.querySelector('[data-action="remove"]').addEventListener('click', function(e) {
+
+e.stopPropagation();
+
+const id = parseInt(this.dataset.id);
+
+selectedSupervisors.delete(id);
+
+renderTags();
+
+updateHiddenInput();
+
+filterOptions();
+
+searchInput.focus();
+
+});
+
+tagsList.appendChild(tag);
+
+});
+
+}
+
+function filterOptions() {
+
+const query = searchInput.value.toLowerCase().trim();
+
+let hasVisible = false;
+
+allOptions.forEach(option => {
+
+const name = option.dataset.name.toLowerCase();
+
+const id = parseInt(option.dataset.id);
+
+const isSelected = selectedSupervisors.has(id);
+
+if (isSelected) {
+
+option.style.display = 'none';
+
+return;
+
+}
+
+if (query === '' || name.includes(query)) {
+
+option.style.display = 'block';
+
+hasVisible = true;
+
+} else {
+
+option.style.display = 'none';
+
+}
+
+});
+
+// Show dropdown if there are visible options or if search has text
+
+if ((query !== '' && hasVisible) || (query === '' && allOptions.length > selectedSupervisors.size)) {
+
+dropdown.classList.remove('hidden');
+
+} else {
+
+dropdown.classList.add('hidden');
+
+}
+
+}
+
+// Handle option click
+
+allOptions.forEach(option => {
+
+option.addEventListener('click', function() {
+
+const id = parseInt(this.dataset.id);
+
+const name = this.dataset.name;
+
+if (!selectedSupervisors.has(id)) {
+
+selectedSupervisors.set(id, name);
+
+renderTags();
+
+updateHiddenInput();
+
+searchInput.value = '';
+
+filterOptions();
+
+searchInput.focus();
+
+}
+
+});
+
+});
+
+// Handle search input
+
+searchInput.addEventListener('input', function() {
+
+filterOptions();
+
+if (this.value.trim() !== '') {
+
+dropdown.classList.remove('hidden');
+
+} else {
+
+// Show dropdown if there are available options
+
+const available = Array.from(allOptions).some(opt => 
+
+!selectedSupervisors.has(parseInt(opt.dataset.id))
+
+);
+
+if (available) {
+
+dropdown.classList.remove('hidden');
+
+} else {
+
+dropdown.classList.add('hidden');
+
+}
+
+}
+
+});
+
+// Show dropdown on focus
+
+searchInput.addEventListener('focus', function() {
+
+const available = Array.from(allOptions).some(opt => 
+
+!selectedSupervisors.has(parseInt(opt.dataset.id))
+
+);
+
+if (available || this.value.trim() !== '') {
+
+filterOptions();
+
+dropdown.classList.remove('hidden');
+
+}
+
+});
+
+// Hide dropdown on blur (with delay for click events)
+
+searchInput.addEventListener('blur', function() {
+
+setTimeout(() => {
+
+dropdown.classList.add('hidden');
+
+}, 200);
+
+});
+
+// Handle keyboard navigation
+
+searchInput.addEventListener('keydown', function(e) {
+
+const visibleOptions = Array.from(allOptions).filter(opt => opt.style.display !== 'none');
+
+if (visibleOptions.length === 0) return;
+
+if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+
+e.preventDefault();
+
+let currentIndex = visibleOptions.findIndex(opt => opt.classList.contains('active'));
+
+if (currentIndex !== -1) {
+
+visibleOptions[currentIndex].classList.remove('active');
+
+}
+
+if (e.key === 'ArrowDown') {
+
+currentIndex = Math.min(currentIndex + 1, visibleOptions.length - 1);
+
+} else {
+
+currentIndex = Math.max(currentIndex - 1, 0);
+
+}
+
+visibleOptions[currentIndex].classList.add('active');
+
+visibleOptions[currentIndex].scrollIntoView({ block: 'nearest' });
+
+} else if (e.key === 'Enter') {
+
+e.preventDefault();
+
+const activeOption = visibleOptions.find(opt => opt.classList.contains('active'));
+
+if (activeOption) {
+
+activeOption.click();
+
+} else if (visibleOptions.length > 0) {
+
+visibleOptions[0].click();
+
+}
+
+} else if (e.key === 'Escape') {
+
+dropdown.classList.add('hidden');
+
+searchInput.blur();
+
+}
+
+});
+
+// Click on container to focus search
+
+tagsContainer.addEventListener('click', function(e) {
+
+if (e.target === this || e.target === tagsList) {
+
+searchInput.focus();
+
+}
+
+});
+
+// Initial render
+
+renderTags();
+
+updateHiddenInput();
+
+// Store theme for JavaScript
+
+const theme = '{{ theme }}';
+
+// Initially show dropdown if there are available options
+
+const available = Array.from(allOptions).some(opt => 
+
+!selectedSupervisors.has(parseInt(opt.dataset.id))
+
+);
+
+if (available) {
+
+dropdown.classList.remove('hidden');
+
+} else {
+
+dropdown.classList.add('hidden');
+
+}
+
+// Close dropdown when clicking outside
+
+document.addEventListener('click', function(e) {
+
+if (!tagsContainer.contains(e.target) && !dropdown.contains(e.target)) {
+
+dropdown.classList.add('hidden');
+
+}
+
+});
+
+});
+
+</script>
+
 <style>
-    /* Dark Theme Styles */
-    .dark-theme {
-        --bg-main: #111827;
-        --bg-card: #172554;
-        --bg-input: #1F2937;
-        --bg-discard: #374151;
-        --text-heading: #FFFFFF;
-        --text-subtitle: #D1D5DB;
-        --text-label: #9CA3AF;
-        --text-secondary: #6B7280;
-        --text-highlight: #22D3EE;
-        --border-main: #155E75;
-        --border-hover: #06B6D4;
-        --accent-divider: #0E7490;
-        --accent-focus: #22D3EE;
-        background-color: #111827;
-        min-height: 100vh;
-    }
 
-    /* Light Theme Styles */
-    .light-theme {
-        --bg-main: #EFF6FF;
-        --bg-card: #FFFFFF;
-        --bg-input: #F9FAFB;
-        --text-heading: #111827;
-        --text-subtitle: #1F2937;
-        --text-label: #374151;
-        --text-secondary: #4B5563;
-        --text-description: #6B7280;
-        --text-minor: #9CA3AF;
-        --text-highlight: #2563EB;
-        --border-main: #BFDBFE;
-        --border-divider: #93C5FD;
-        --border-hover: #60A5FA;
-        --border-focus: #3B82F6;
-        --btn-modify: #2563EB;
-        --btn-modify-hover: #1D4ED8;
-        --btn-update: #16A34A;
-        --btn-update-hover: #15803D;
-        --btn-discard: #DC2626;
-        --btn-discard-hover: #B91C1C;
-        --divider-line: #93C5FD;
-        background-color: #EFF6FF;
-        min-height: 100vh;
-    }
+/* Dark Theme Styles */
 
-    /* Smooth transitions */
-    .dark-theme *,
-    .light-theme * {
-        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
+.dark-theme {
 
-    /* Custom select styling */
-    select {
-        cursor: pointer;
-    }
+--bg-main: #111827;
 
-    select:focus {
-        outline: none;
-    }
+--bg-card: #172554;
 
-    /* Remove default select arrow in IE */
-    select::-ms-expand {
-        display: none;
-    }
+--bg-input: #1F2937;
 
-    /* Custom scrollbar for textareas */
-    textarea::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    textarea::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    textarea::-webkit-scrollbar-thumb {
-        background: var(--border-main);
-        border-radius: 4px;
-    }
-    
-    textarea::-webkit-scrollbar-thumb:hover {
-        background: var(--border-hover);
-    }
+--bg-discard: #374151;
 
-    /* Input number arrows styling */
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        opacity: 1;
-        height: 30px;
-    }
+--text-heading: #FFFFFF;
 
-    /* Remove number input arrows for Firefox */
-    input[type="number"] {
-        -moz-appearance: textfield;
-    }
+--text-subtitle: #D1D5DB;
 
-    /* Date and Time input styling */
-    input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="time"]::-webkit-calendar-picker-indicator {
-        filter: {% if theme == 'dark' %}invert(1){% else %}invert(0){% endif %};
-        opacity: 0.6;
-        cursor: pointer;
-    }
+--text-label: #9CA3AF;
 
-    input[type="date"]::-webkit-calendar-picker-indicator:hover,
-    input[type="time"]::-webkit-calendar-picker-indicator:hover {
-        opacity: 1;
-    }
+--text-secondary: #6B7280;
 
-    /* Focus ring for all inputs */
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-    }
+--text-highlight: #22D3EE;
 
-    /* Icon spacing */
-    .fas, .far {
-        margin-right: 4px;
-    }
+--border-main: #155E75;
+
+--border-hover: #06B6D4;
+
+--accent-divider: #0E7490;
+
+--accent-focus: #22D3EE;
+
+background-color: #111827;
+
+min-height: 100vh;
+
+}
+
+/* Light Theme Styles */
+
+.light-theme {
+
+--bg-main: #EFF6FF;
+
+--bg-card: #FFFFFF;
+
+--bg-input: #F9FAFB;
+
+--text-heading: #111827;
+
+--text-subtitle: #1F2937;
+
+--text-label: #374151;
+
+--text-secondary: #4B5563;
+
+--text-description: #6B7280;
+
+--text-minor: #9CA3AF;
+
+--text-highlight: #2563EB;
+
+--border-main: #BFDBFE;
+
+--border-divider: #93C5FD;
+
+--border-hover: #60A5FA;
+
+--border-focus: #3B82F6;
+
+--btn-modify: #2563EB;
+
+--btn-modify-hover: #1D4ED8;
+
+--btn-update: #16A34A;
+
+--btn-update-hover: #15803D;
+
+--btn-discard: #DC2626;
+
+--btn-discard-hover: #B91C1C;
+
+--divider-line: #93C5FD;
+
+background-color: #EFF6FF;
+
+min-height: 100vh;
+
+}
+
+/* Smooth transitions */
+
+.dark-theme *,
+
+.light-theme * {
+
+transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+}
+
+/* Custom select styling */
+
+select {
+
+cursor: pointer;
+
+}
+
+select:focus {
+
+outline: none;
+
+}
+
+/* Remove default select arrow in IE */
+
+select::-ms-expand {
+
+display: none;
+
+}
+
+/* Custom scrollbar for textareas */
+
+textarea::-webkit-scrollbar {
+
+width: 8px;
+
+}
+
+textarea::-webkit-scrollbar-track {
+
+background: transparent;
+
+}
+
+textarea::-webkit-scrollbar-thumb {
+
+background: var(--border-main);
+
+border-radius: 4px;
+
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+
+background: var(--border-hover);
+
+}
+
+/* Input number arrows styling */
+
+input[type="number"]::-webkit-inner-spin-button,
+
+input[type="number"]::-webkit-outer-spin-button {
+
+opacity: 1;
+
+height: 30px;
+
+}
+
+/* Remove number input arrows for Firefox */
+
+input[type="number"] {
+
+-moz-appearance: textfield;
+
+}
+
+/* Date and Time input styling */
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+
+filter: {% if theme == 'dark' %}invert(1){% else %}invert(0){% endif %};
+
+opacity: 0.6;
+
+cursor: pointer;
+
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+
+opacity: 1;
+
+}
+
+/* Focus ring for all inputs */
+
+input:focus, select:focus, textarea:focus {
+
+outline: none;
+
+}
+
+/* Icon spacing */
+
+.fas, .far {
+
+margin-right: 4px;
+
+}
+
+/* Special project option styling */
+
+select option {
+
+padding: 8px 12px;
+
+}
+
+{% if theme == 'dark' %}
+
+select option {
+
+background-color: #1F2937;
+
+color: #FFFFFF;
+
+}
+
+select option:checked {
+
+background-color: #0E7490;
+
+color: #FFFFFF;
+
+}
+
+select option:hover {
+
+background-color: #155E75;
+
+}
+
+/* Scrollbar for dropdown */
+
+#supervisor-dropdown::-webkit-scrollbar {
+
+width: 6px;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-track {
+
+background: #1F2937;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-thumb {
+
+background: #155E75;
+
+border-radius: 3px;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-thumb:hover {
+
+background: #06B6D4;
+
+}
+
+.supervisor-option.active {
+
+background-color: #0E7490;
+
+color: #FFFFFF;
+
+}
+
+{% else %}
+
+select option {
+
+background-color: #FFFFFF;
+
+color: #1F2937;
+
+}
+
+select option:checked {
+
+background-color: #2563EB;
+
+color: #FFFFFF;
+
+}
+
+select option:hover {
+
+background-color: #BFDBFE;
+
+}
+
+/* Scrollbar for dropdown */
+
+#supervisor-dropdown::-webkit-scrollbar {
+
+width: 6px;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-track {
+
+background: #F9FAFB;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-thumb {
+
+background: #BFDBFE;
+
+border-radius: 3px;
+
+}
+
+#supervisor-dropdown::-webkit-scrollbar-thumb:hover {
+
+background: #93C5FD;
+
+}
+
+.supervisor-option.active {
+
+background-color: #2563EB;
+
+color: #FFFFFF;
+
+}
+
+{% endif %}
+
+/* Tags animation */
+
+#tags-list span {
+
+animation: tagFadeIn 0.2s ease-in-out;
+
+}
+
+@keyframes tagFadeIn {
+
+from {
+
+opacity: 0;
+
+transform: scale(0.9);
+
+}
+
+to {
+
+opacity: 1;
+
+transform: scale(1);
+
+}
+
+}
+
 </style>
 
 {% endblock %}

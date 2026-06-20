@@ -1,6 +1,6 @@
 from flask import render_template, url_for, request, redirect, send_from_directory,session,jsonify,flash
 from markupsafe import escape
-from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting,Message
+from models import Student,Task,Project,Supervisor,Notification,Supervisor_notification,Meeting,Message,Discussion
 from werkzeug.utils import secure_filename
 import os
 import requests
@@ -9,14 +9,13 @@ from graduation_similarity_system import EmbeddingModel, SimilaritySystem, build
 import pandas as pd
 
 domain = 'http://127.0.0.1:5001'
-oldest_compare = 10
-cutoff_year = datetime.now().year
-years_range = cutoff_year - oldest_compare
-maximum_team_size = 6
-minimum_team_size = 3
-turn_ideas_to_projects_data = 'x'
-final_date_for_doc = 'x'
-show_project_degrees_date = 'x'
+MIN_TEAM_SIZE = 2
+MAX_TEAM_SIZE = 5
+MAX_PROJECTS_PER_SUPERVISOR = 3
+COMPARISON_YEARS = 3 
+DOCUMENTATION_DEADLINE = '2024-06-15'  # Format: YYYY-MM-DD
+IDEAS_DEADLINE = '2024-05-01'
+RESULTS_ANNOUNCEMENT_DATE = '2024-07-01' 
 
 _embedding_model = None
 
@@ -172,13 +171,15 @@ def register_routes(app,db):
             year = request.form.get('year')
             skills = request.form.get('skills')
             department = request.form.get('department')
+            linkedin = request.form.get('linkedin')
+            github = request.form.get('github')
             skills = request.form.get('skills') if request.form.get('skills') else []
             password = request.form.get('password')
             if Student.query.filter_by(email=email).count()> 0 :
                     flash("email already exist!","error")
                     return render_template('sign_up.html')
             else :
-                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year,skills=skills, password=password)
+                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year,skills=skills, linkedin_url=linkedin,github_url=github,password=password)
                 student.set_skills(skills)
                 db.session.add(student)
                 db.session.commit()
@@ -210,7 +211,7 @@ def register_routes(app,db):
                     session['public_id'] = student.public_id
                     session['skills'] = student.get_skills()
                     session['linkedin'] = student.linkedin_url,
-                    session['github'] = student.github_url
+                    session['github'] = student.github_url 
                     return redirect('/home')
                 else :
                     flash("Wrong email or password!","error")
@@ -612,7 +613,7 @@ def register_routes(app,db):
         s = Supervisor.query
         doctor = s.get_or_404(project.doctor) if project.doctor else None
         assistant = s.get_or_404(project.assistent) if project.assistent else None 
-        messages = Message.query.filter_by(project_id=id)
+        messages = Message.query.filter_by(project_id=id,message_type='feedback')
         return render_template(
             'project_details.html',
             data=session if session else "", 
@@ -633,6 +634,8 @@ def register_routes(app,db):
             specialty = request.form.get('specialty')
             role = request.form.get('role')
             department = request.form.get('department')
+            linkedin = request.form.get('linkedin')
+            github = request.form.get('github')
 
             if not all([name, phone, email, password, role]):
                 flash('Name, Phone, Email, Password, and Role are required.', 'error')
@@ -648,7 +651,7 @@ def register_routes(app,db):
                 return redirect(url_for('supervisor_signup'))
 
             #hashed_pw = generate_password_hash(password)
-            new_supervisor = Supervisor(name=name,phone=phone,email=email,password=password,specialty=specialty,role=role,department=department)
+            new_supervisor = Supervisor(name=name,phone=phone,email=email,password=password,specialty=specialty,role=role,github_url=github,linkedin_url=linkedin,department=department)
             db.session.add(new_supervisor)
             db.session.commit()
 
@@ -750,6 +753,10 @@ def register_routes(app,db):
             project.status = "Rejected"
         n = Supervisor_notification.query.get_or_404(nid)
         db.session.delete(n)
+        feedback = request.form.get('feedback')
+        if feedback and feedback != "":
+            message = Message(content=feedback,direction=2,message_type='feedback',project_id=project_id,supervisor_id=session.get('sid')) 
+            db.session.add(message)
         db.session.commit()
         return redirect('/notifications')
 
@@ -897,9 +904,104 @@ def register_routes(app,db):
         flash("Saved successfully!","info")
         return redirect(f'/project/{project_id}')
 
-    @app.route('/admin-page',methods=['POST','GET'])
-    def admin_page():
-        return 'coming soon'
+    @app.route('/admin-panel', methods=['GET', 'POST'])
+    def admin_panel():
+        """Route for managing system settings"""
+        if request.method == 'GET':
+            return render_template('admin_panel.html',
+                                min_team_size=MIN_TEAM_SIZE,
+                                max_team_size=MAX_TEAM_SIZE,
+                                max_projects_per_supervisor=MAX_PROJECTS_PER_SUPERVISOR,
+                                comparison_years=COMPARISON_YEARS,
+                                documentation_deadline=DOCUMENTATION_DEADLINE,
+                                ideas_deadline=IDEAS_DEADLINE,
+                                results_announcement_date=RESULTS_ANNOUNCEMENT_DATE,
+                                theme=session.get('theme', 'light'))
+            min_team_size = request.form.get('min_team_size')
+            max_team_size = request.form.get('max_team_size')
+            max_projects_per_supervisor = request.form.get('max_projects_per_supervisor')
+            comparison_years = request.form.get('comparison_years')
+            documentation_deadline = request.form.get('documentation_deadline')
+            ideas_deadline = request.form.get('ideas_deadline')
+            results_announcement_date = request.form.get('results_announcement_date')
+            
+            # Validate inputs
+            if not all([min_team_size, max_team_size, max_projects_per_supervisor, 
+                    comparison_years, documentation_deadline, ideas_deadline, 
+                    results_announcement_date]):
+                flash('All fields are required', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Convert to appropriate types
+            min_team_size = int(min_team_size)
+            max_team_size = int(max_team_size)
+            max_projects_per_supervisor = int(max_projects_per_supervisor)
+            comparison_years = int(comparison_years)
+            
+            # Validate team size
+            if min_team_size < 1:
+                flash('Minimum team size must be at least 1', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            if max_team_size < min_team_size:
+                flash('Maximum team size cannot be less than minimum team size', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            if max_team_size > 10:
+                flash('Maximum team size cannot exceed 10', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Validate supervisor projects
+            if max_projects_per_supervisor < 1:
+                flash('Maximum projects per supervisor must be at least 1', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            if max_projects_per_supervisor > 20:
+                flash('Maximum projects per supervisor cannot exceed 20', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Validate comparison years
+            if comparison_years < 0:
+                flash('Comparison years cannot be negative', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            if comparison_years > 10:
+                flash('Comparison years cannot exceed 10', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Validate dates
+            from datetime import datetime
+            today = datetime.now().date()
+            
+            # Validate documentation deadline
+            doc_deadline = datetime.strptime(documentation_deadline, '%Y-%m-%d').date()
+            if doc_deadline < today:
+                flash('Documentation deadline cannot be in the past', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Validate ideas deadline
+            ideas_deadline_date = datetime.strptime(ideas_deadline, '%Y-%m-%d').date()
+            if ideas_deadline_date < today:
+                flash('Ideas deadline cannot be in the past', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Validate results announcement date
+            results_date = datetime.strptime(results_announcement_date, '%Y-%m-%d').date()
+            if results_date < today:
+                flash('Results announcement date cannot be in the past', 'error')
+                return redirect(url_for('admin_panel'))
+            
+            # Update global variables
+            MIN_TEAM_SIZE = min_team_size
+            MAX_TEAM_SIZE = max_team_size
+            MAX_PROJECTS_PER_SUPERVISOR = max_projects_per_supervisor
+            COMPARISON_YEARS = comparison_years
+            DOCUMENTATION_DEADLINE = documentation_deadline
+            IDEAS_DEADLINE = ideas_deadline
+            RESULTS_ANNOUNCEMENT_DATE = results_announcement_date
+            
+            flash('Settings updated successfully!', 'success')
+            return redirect(url_for('admin_panel'))
 
     @app.route('/new-discussion',methods=['POST','GET'])
     def new_discussion():
@@ -919,13 +1021,42 @@ def register_routes(app,db):
         discussion = Discussion(number=number,project_id=project_id,time=discussion_time,date=discussion_date,location=location)
         db.session.add(discussion)
         db.session.commit()
-        discussion = Discussion.query.filter_by(number=number,project_id=project_id,time=discussion_time,date=discussion_date,location=location)
-        discussion.set_supervisors(supervisors)
+        discussion = Discussion.query.filter_by(number=number,project_id=project_id,time=discussion_time,date=discussion_date,location=location).first()
+        supervisors_list = [int(s) for s in supervisors.split(',')]
+        discussion.set_supervisors(supervisors_list)
         content = f"The next discussion for this project will be in {discussion_date} {discussion_time} in {location}"
         message =  Message(direction=2,project_id=project_id,content=content,supervisor_id=session['sid'],message_type='feedback')
+        db.session.add(message)
         db.session.commit()
         flash("Created successfully!","info")
-        return "created"    
+        return redirect('/discussions')    
+    
+    @app.route('/discussions', methods=['GET'])
+    def view_discussions():
+        # Get all discussions ordered by date and time (newest first)
+        discussions = Discussion.query.order_by(
+            Discussion.date.asc(), 
+            Discussion.time.asc()
+        ).all()
+        
+        # For each discussion, get the supervisor names
+        for discussion in discussions:
+            supervisor_ids = discussion.get_supervisors()
+            supervisor_names = []
+            if supervisor_ids:
+                for sid in supervisor_ids:
+                    supervisor = Supervisor.query.get(sid)
+                    if supervisor:
+                        supervisor_names.append(supervisor.name)
+            discussion.supervisor_names = ', '.join(supervisor_names)
+            
+            # Get project name
+            project = Project.query.get(discussion.project_id)
+            discussion.project_name = project.name if project else "Unknown Project"
+        
+        return render_template('discussions.html', 
+                            discussions=discussions,
+                            theme=session.get('theme', 'light'))
 
     @app.route('/announecments',methods=['POST','GET'])
     def announecments():
@@ -1356,7 +1487,7 @@ def register_routes(app,db):
         student.in_team = True
         session['project_id'] = project.pid
         session['in_team'] = True
-        res = jsonify({"message": "Project created", "pid": project.pid,
+        res = jsonify({"message": "Project created", "project_id": project.pid,
             "name": project.name,
             "description": project.description,
             "year": project.year,
@@ -1364,7 +1495,7 @@ def register_routes(app,db):
             "leader": project.leader,
             "members_id":[m.pid for m in project.members],
             "members_name":[m.name for m in project.members],
-            "max_teams_size" : project.intended_team_size,
+            "max_team_size" : project.intended_team_size,
             "status":project.status,
             "special": project.special is not None,
             "doctor": project.doctor or "no doctor",
@@ -1948,6 +2079,8 @@ def register_routes(app,db):
 
         db.session.commit()
         return jsonify({"message": "Status updated"})
+
+        
 #============== AI Model =================
 
     @app.route('/api/check-similarity', methods=['POST'])

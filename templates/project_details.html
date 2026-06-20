@@ -1,394 +1,799 @@
-{% if data['role'] == 'Student' %}{% extends 'base.html' %}{% elif data['role'] in ['Doctor','Assistant'] %}{% extends 'supervisor_base.html' %}{%else%}{% extends 'new_user_base.html' %}{% endif %}
+{% if data['role'] == 'Student' %}{% extends 'base.html' %}{% elif data['role'] in ['Doctor','Assistant'] %}{% extends
+'supervisor_base.html' %}{%else%}{% extends 'new_user_base.html' %}{% endif %}
+
+
 
 {% block title %}{{ project.name|title }}{% endblock %}
 
+
+
 {% block body %}
+
+
 
 {# Theme switching logic #}
 {% set is_dark = theme is defined and theme == 'dark' %}
 
+
+
 {# Theme color variables #}
 {% if is_dark %}
-    {% set bg_main = 'bg-gray-900' %}
-    {% set bg_card = 'bg-blue-950' %}
-    {% set border_main = 'border-cyan-800' %}
-    {% set border_hover = 'hover:border-cyan-500' %}
-    {% set text_heading = 'text-white' %}
-    {% set text_subtitle = 'text-gray-300' %}
-    {% set text_label = 'text-gray-400' %}
-    {% set text_secondary = 'text-gray-500' %}
-    {% set text_accent = 'text-cyan-400' %}
-    {% set bg_hover = 'hover:bg-cyan-900/20' %}
-    {% set divider = 'divide-cyan-800/50' %}
-    {% set icon_color = 'text-cyan-400' %}
-    {% set button_bg = 'bg-cyan-700 hover:bg-cyan-600' %}
-    {% set button_text = 'text-white' %}
-    {% set badge_bg = 'bg-yellow-900/30 text-yellow-300 border-yellow-500/30' %}
-    {% set badge_doctor = 'bg-blue-900/30 text-blue-300 border-blue-500/30' %}
-    {% set badge_assistant = 'bg-purple-900/30 text-purple-300 border-purple-500/30' %}
-    {% set progress_bg = 'bg-gray-700' %}
-    {% set progress_fill = 'bg-cyan-500' %}
-    {% set progress_text = 'text-cyan-300' %}
+{% set bg_main = 'bg-gray-900' %}
+{% set bg_card = 'bg-blue-950' %}
+{% set border_main = 'border-cyan-800' %}
+{% set border_hover = 'hover:border-cyan-500' %}
+{% set text_heading = 'text-white' %}
+{% set text_subtitle = 'text-gray-300' %}
+{% set text_label = 'text-gray-400' %}
+{% set text_secondary = 'text-gray-500' %}
+{% set text_accent = 'text-cyan-400' %}
+{% set bg_hover = 'hover:bg-cyan-900/20' %}
+{% set divider = 'divide-cyan-800/50' %}
+{% set icon_color = 'text-cyan-400' %}
+{% set button_bg = 'bg-cyan-700 hover:bg-cyan-600' %}
+{% set button_text = 'text-white' %}
+{% set badge_bg = 'bg-yellow-900/30 text-yellow-300 border-yellow-500/30' %}
+{% set badge_doctor = 'bg-blue-900/30 text-blue-300 border-blue-500/30' %}
+{% set badge_assistant = 'bg-purple-900/30 text-purple-300 border-purple-500/30' %}
+{% set progress_bg = 'bg-gray-700' %}
+{% set progress_fill = 'bg-cyan-500' %}
+{% set progress_text = 'text-cyan-300' %}
+{% set feedback_bg = 'bg-gray-800' %}
+{% set feedback_border = 'border-cyan-800/30' %}
+{% set feedback_text = 'text-gray-300' %}
+{% set scrollbar_bg = 'scrollbar-thumb-cyan-700 scrollbar-track-gray-800' %}
 {% else %}
-    {% set bg_main = 'bg-blue-50' %}
-    {% set bg_card = 'bg-white' %}
-    {% set border_main = 'border-blue-200' %}
-    {% set border_hover = 'hover:border-blue-400' %}
-    {% set text_heading = 'text-gray-900' %}
-    {% set text_subtitle = 'text-gray-700' %}
-    {% set text_label = 'text-gray-700' %}
-    {% set text_secondary = 'text-gray-500' %}
-    {% set text_accent = 'text-blue-600' %}
-    {% set bg_hover = 'hover:bg-blue-50' %}
-    {% set divider = 'divide-gray-200' %}
-    {% set icon_color = 'text-blue-600' %}
-    {% set button_bg = 'bg-blue-600 hover:bg-blue-700' %}
-    {% set button_text = 'text-white' %}
-    {% set badge_bg = 'bg-yellow-100 text-yellow-700 border-yellow-300' %}
-    {% set badge_doctor = 'bg-blue-100 text-blue-700 border-blue-300' %}
-    {% set badge_assistant = 'bg-purple-100 text-purple-700 border-purple-300' %}
-    {% set progress_bg = 'bg-gray-200' %}
-    {% set progress_fill = 'bg-blue-500' %}
-    {% set progress_text = 'text-blue-600' %}
+{% set bg_main = 'bg-blue-50' %}
+{% set bg_card = 'bg-white' %}
+{% set border_main = 'border-blue-200' %}
+{% set border_hover = 'hover:border-blue-400' %}
+{% set text_heading = 'text-gray-900' %}
+{% set text_subtitle = 'text-gray-700' %}
+{% set text_label = 'text-gray-700' %}
+{% set text_secondary = 'text-gray-500' %}
+{% set text_accent = 'text-blue-600' %}
+{% set bg_hover = 'hover:bg-blue-50' %}
+{% set divider = 'divide-gray-200' %}
+{% set icon_color = 'text-blue-600' %}
+{% set button_bg = 'bg-blue-600 hover:bg-blue-700' %}
+{% set button_text = 'text-white' %}
+{% set badge_bg = 'bg-yellow-100 text-yellow-700 border-yellow-300' %}
+{% set badge_doctor = 'bg-blue-100 text-blue-700 border-blue-300' %}
+{% set badge_assistant = 'bg-purple-100 text-purple-700 border-purple-300' %}
+{% set progress_bg = 'bg-gray-200' %}
+{% set progress_fill = 'bg-blue-500' %}
+{% set progress_text = 'text-blue-600' %}
+{% set feedback_bg = 'bg-gray-50' %}
+{% set feedback_border = 'border-gray-200' %}
+{% set feedback_text = 'text-gray-700' %}
+{% set scrollbar_bg = 'scrollbar-thumb-blue-300 scrollbar-track-gray-100' %}
 {% endif %}
+
+
 
 <div class="max-w-5xl mx-auto px-4 py-8">
 
-    <!-- Project Header -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold {{ text_heading }}">{{ project.name|title }}</h1>
-        <div class="flex items-center space-x-4 mt-2 text-sm {{ text_label }}">
-            <span class="flex items-center">
-                <svg class="w-4 h-4 mr-1 {{ icon_color }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
-                </svg>
-                ID: {{ project.pid }}
-            </span>
-            <span class="flex items-center">
-                <svg class="w-4 h-4 mr-1 {{ icon_color }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Year: {{ project.year }}
-            </span>
-        </div>
+
+
+  <!-- Project Header -->
+
+  <div class="mb-6">
+
+    <h1 class="text-3xl font-bold {{ text_heading }}">{{ project.name|title }}</h1>
+
+    <div class="flex items-center space-x-4 mt-2 text-sm {{ text_label }}">
+
+      <span class="flex items-center">
+
+        <svg class="w-4 h-4 mr-1 {{ icon_color }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14">
+          </path>
+
+        </svg>
+
+        ID: {{ project.pid }}
+
+      </span>
+
+      <span class="flex items-center">
+
+        <svg class="w-4 h-4 mr-1 {{ icon_color }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+
+        </svg>
+
+        Year: {{ project.year }}
+
+      </span>
+
     </div>
 
-    <!-- Action Buttons (for team members) -->
-    {% if data['pid'] == project.leader or data['pid'] in project.members or data['sid'] and data['sid'] == project.doctor or data['sid'] == project.assistent %}
-    <div class="flex flex-wrap gap-3 mb-6">
-        <!-- Messages Button (icon) -->
-        <button id="openModalBtn"
-                class="p-2 rounded-lg transition shadow-sm {{ button_bg }} {{ button_text }} flex items-center justify-center"
-                title="Messages">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-            </svg>
-        </button>
+  </div>
 
-        <!-- messages popup -->
-        <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
-            <div class="w-full max-w-2xl p-6 rounded-lg shadow-xl relative {{ 'bg-gray-800' if is_dark else 'bg-white' }}">
-                <button id="closeModalBtn" class="absolute top-3 right-3 text-2xl leading-none {{ 'text-gray-400 hover:text-gray-200' if is_dark else 'text-gray-400 hover:text-gray-700' }}">&times;</button>
-                <h2 class="text-xl font-semibold mb-4 {{ text_accent }}">Messages</h2>
-                <!-- Scrollable message list -->
-                <div class="overflow-y-auto max-h-48 space-y-3 pr-1 mb-4">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div class="p-3 rounded-lg border {{ 'bg-gray-700 border-cyan-800/30' if is_dark else 'bg-gray-100 border-gray-200' }}">
-                            <p class="text-xs font-medium mb-1 {{ text_accent }}">
-                                From: {% if message.direction == 1 %}Team{% else %} {% if doctor and doctor.sid == message.supervisor_id %} Dr. {{doctor.name}} {%else%} TA. {{assistant.name}} {% endif %} {% endif %}
-                            </p>
-                            <p class="text-sm {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ message.content }}</p>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="italic text-sm {{ text_secondary }}">No messages found...</p>
-                    {% endif %}
-                </div>
 
-                <!-- New message field -->
-                <form action="{{url_for('messages')}}" method="post" class="space-y-3">
-                    <textarea name="content" placeholder="Write your message here" rows="3"
-                              class="w-full rounded-lg p-3 text-sm focus:outline-none focus:ring-1 resize-y {{ 
-                                'bg-gray-900 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark
-                                else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400'
-                              }}"></textarea>
-                    {% if data['role'] == 'Student' %}
-                    <select name="supervisor"
-                            class="w-full rounded-lg p-2 text-sm focus:outline-none focus:ring-1 {{ 
-                                'bg-gray-900 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark
-                                else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500'
-                              }}">
-                        {% if project.doctor %} <option value="{{project.doctor}}">{{doctor.name}}</option>{% endif %}
-                        {% if project.assistent %}<option value="{{project.assistant}}">{{assistant.name}}</option>{% endif %}
-                    </select>
-                    {% else %}
-                    <input type="number" name="project_id" value="{{project.pid}}" hidden>
-                    {% endif %}
-                    <button type="submit"
-                            class="w-full font-medium py-2 px-4 rounded-lg transition text-sm shadow-sm
-                                   {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-                        Send
-                    </button>
-                </form>
-            </div>
+
+  <!-- Action Buttons (for team members) -->
+
+  {% if data['pid'] == project.leader or data['pid'] in project.members or data['sid'] and data['sid'] == project.doctor
+  or data['sid'] == project.assistent %}
+
+  <div class="flex flex-wrap gap-3 mb-6">
+
+    <!-- Messages Button (icon) -->
+
+    <button id="openModalBtn"
+      class="p-2 rounded-lg transition shadow-sm {{ button_bg }} {{ button_text }} flex items-center justify-center"
+      title="Messages">
+
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+
+      </svg>
+
+    </button>
+
+
+
+    <!-- messages popup -->
+
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
+
+      <div class="w-full max-w-2xl p-6 rounded-lg shadow-xl relative {{ 'bg-gray-800' if is_dark else 'bg-white' }}">
+
+        <button id="closeModalBtn"
+          class="absolute top-3 right-3 text-2xl leading-none {{ 'text-gray-400 hover:text-gray-200' if is_dark else 'text-gray-400 hover:text-gray-700' }}">&times;</button>
+
+        <h2 class="text-xl font-semibold mb-4 {{ text_accent }}">Messages</h2>
+
+        <!-- Scrollable message list -->
+
+        <div class="overflow-y-auto max-h-48 space-y-3 pr-1 mb-4">
+
+          {% if messages %}
+
+          {% for message in messages %}
+
+          <div
+            class="p-3 rounded-lg border {{ 'bg-gray-700 border-cyan-800/30' if is_dark else 'bg-gray-100 border-gray-200' }}">
+
+            <p class="text-xs font-medium mb-1 {{ text_accent }}">
+
+              From: {% if doctor and doctor.sid == message.supervisor_id %} Dr. {{doctor.name}} {%else%} TA.
+              {{assistant.name}} {% endif %}
+
+            </p>
+
+            <p class="text-sm {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ message.content }}</p>
+
+          </div>
+
+          {% endfor %}
+
+          {% else %}
+
+          <p class="italic text-sm {{ text_secondary }}">No messages found...</p>
+
+          {% endif %}
+
         </div>
 
-        <script>
-            const modal = document.getElementById('loginModal');
-            if (document.getElementById('openModalBtn')) {
-                document.getElementById('openModalBtn').addEventListener('click', () => modal.classList.remove('hidden'));
-                document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.add('hidden'));
-                modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
-                document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) modal.classList.add('hidden'); });
-            }
-        </script>
 
-        {% if session.pid == project.leader %}
-        <a href="{{ url_for('supervisors') }}"
-           class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                  {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-            Register Supervisor
-        </a>
-        <a href="{{ url_for('friends') }}"
-           class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                  {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-            Add Friend to Team
-        </a>
-        {% endif %}
 
-        {% if data['role'] != 'Student' %}
-        <a href="/todo?project_id={{project.pid}}"
-           class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                  {{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
-            Go to Team Tasks →
-        </a>
-        <a href="/meeting?project_id={{project.pid}}"
-           class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                  {{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
-            Schedule A Meeting
-        </a>
-        {% endif %}
+        <!-- New message field -->
 
-        {% if data['project_id'] and data['project_id'] == project.pid %}
-        <!-- Exit Team (icon) -->
-        <form action="/exit_team" method="post" class="inline">
-            <button type="submit"
-                    class="p-2 rounded-lg transition shadow-sm bg-red-700 hover:bg-red-800 text-white flex items-center justify-center"
-                    title="Exit Team">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                </svg>
-            </button>
+        <form action="{{url_for('messages')}}" method="post" class="space-y-3">
+
+          <textarea name="content" placeholder="Write your message here" rows="3" class="w-full rounded-lg p-3 text-sm focus:outline-none focus:ring-1 resize-y {{
+
+'bg-gray-900 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark
+
+else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400'
+
+}}"></textarea>
+
+          {% if data['role'] == 'Student' %}
+
+          <select name="supervisor" class="w-full rounded-lg p-2 text-sm focus:outline-none focus:ring-1 {{
+
+'bg-gray-900 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark
+
+else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500'
+
+}}">
+
+            {% if project.doctor %} <option value="{{project.doctor}}">{{doctor.name}}</option>{% endif %}
+
+            {% if project.assistent %}<option value="{{project.assistant}}">{{assistant.name}}</option>{% endif %}
+
+          </select>
+
+          {% else %}
+
+          <input type="number" name="project_id" value="{{project.pid}}" hidden>
+
+          {% endif %}
+
+          <button type="submit" class="w-full font-medium py-2 px-4 rounded-lg transition text-sm shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+            Send
+
+          </button>
+
         </form>
-        {% endif %}
 
-        {% if data['role'] == 'Student' and data['project_id'] == project.pid and project.leader == data['pid'] %}
-        <!-- Edit Project (icon) -->
-        <a href="/new_project?action=edit"
-           class="p-2 rounded-lg transition shadow-sm {{ 'bg-gray-700 hover:bg-gray-600' if is_dark else 'bg-gray-500 hover:bg-gray-600' }} text-white flex items-center justify-center"
-           title="Edit Project">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-        </a>
-        {% endif %}
+      </div>
+
     </div>
+
+
+
+    <script>
+
+      const modal = document.getElementById('loginModal');
+
+      if (document.getElementById('openModalBtn')) {
+
+        document.getElementById('openModalBtn').addEventListener('click', () => modal.classList.remove('hidden'));
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.add('hidden'));
+
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) modal.classList.add('hidden'); });
+
+      }
+
+    </script>
+
+
+
+    {% if session.pid == project.leader %}
+
+    <a href="{{ url_for('supervisors') }}" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+      Register Supervisor
+
+    </a>
+
+    <a href="{{ url_for('friends') }}" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+      Add Friend to Team
+
+    </a>
+
     {% endif %}
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Left Column: Info Cards -->
-        <div class="lg:col-span-2 space-y-6">
 
-            <!-- Description Card -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Description</h2>
-                <p class="leading-relaxed {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ project.description }}</p>
-            </div>
+    {% if data['role'] != 'Student' %}
 
-            <!-- Specialties Card -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Specialties</h2>
-                <div class="flex flex-wrap gap-2">
-                    {% for field in fields %}
-                    <span class="px-4 py-1.5 rounded-full text-sm {{ 'bg-gray-800 text-cyan-300' if is_dark else 'bg-gray-200 text-blue-700' }}">
-                        {{ field }}
-                    </span>
-                    {% endfor %}
-                </div>
-            </div>
+    <a href="/todo?project_id={{project.pid}}" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
 
-            {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
-            <!-- Discussions -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Discussions</h2>
-                <div class="flex space-x-2">
-                    <a href="#"
-                       class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                              {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-                        Start the first discussion
-                    </a>
-                    <a href="#"
-                       class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                              {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-                        Start the second discussion
-                    </a>
-                </div>
-            </div>
-            {% endif %}
+{{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
 
-            {% if data['project_id'] and data['project_id'] == project.pid %}
-            <!-- Attachments Card -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Attachments</h2>
-                <div class="space-y-3">
-                    {% for attachment in attachments %}
-                    {% if attachment %}
-                    <div class="flex items-center justify-between p-3 rounded-lg {{ 'bg-gray-800' if is_dark else 'bg-gray-100' }}">
-                        <a href="{{ attachment }}" target="_blank"
-                           class="truncate max-w-[70%] {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
-                            {{ attachment.split('/')[-1] }}
-                        </a>
-                        <form action="/remove_attachment" method="post">
-                            <input type="hidden" name="file_path" value="{{ attachment }}">
-                            <button type="submit" class="text-sm {{ 'text-red-400 hover:text-red-300' if is_dark else 'text-red-600 hover:text-red-800' }}">
-                                Remove
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                    <!-- Upload Form -->
-                    <form method="post" action="/upload/attachment" enctype="multipart/form-data" class="mt-4 flex gap-2">
-                        <input type="file" name="file"
-                               class="text-sm rounded-lg p-2 w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-white transition
-                                      {{ 'bg-gray-800 text-white file:bg-cyan-700 hover:file:bg-cyan-600' if is_dark
-                                      else 'bg-gray-100 text-gray-900 file:bg-blue-600 hover:file:bg-blue-700 file:text-white' }}">
-                        <button type="submit"
-                                class="px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm
-                                       {{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-                            Upload
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
+      Go to Team Tasks →
+
+    </a>
+
+    <a href="/meeting?project_id={{project.pid}}" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
+
+      Schedule A Meeting
+
+    </a>
+
+    {% endif %}
+
+
+
+    {% if session.get('project_id') and session.get('project_id') == project.pid %}
+
+    <!-- Exit Team (icon) -->
+
+    <form action="/exit_team" method="post" class="inline">
+
+      <button type="submit"
+        class="p-2 rounded-lg transition shadow-sm bg-red-700 hover:bg-red-800 text-white flex items-center justify-center"
+        title="Exit Team">
+
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+
+        </svg>
+
+      </button>
+
+    </form>
+
+    {% endif %}
+
+
+
+    {% if data['role'] == 'Student' and data['project_id'] == project.pid and project.leader == data['pid'] %}
+
+    <!-- Edit Project (icon) -->
+
+    <a href="/new_project?action=edit"
+      class="p-2 rounded-lg transition shadow-sm {{ 'bg-gray-700 hover:bg-gray-600' if is_dark else 'bg-gray-500 hover:bg-gray-600' }} text-white flex items-center justify-center"
+      title="Edit Project">
+
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+
+      </svg>
+
+    </a>
+
+    {% endif %}
+
+  </div>
+
+  {% endif %}
+
+
+
+  <!-- Main Content Grid -->
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+
+    <!-- Left Column: Info Cards -->
+
+    <div class="lg:col-span-2 space-y-6">
+
+
+
+      <!-- Description Card -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Description</h2>
+
+        <p class="leading-relaxed {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ project.description }}</p>
+
+      </div>
+
+
+
+      <!-- Specialties Card -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Specialties</h2>
+
+        <div class="flex flex-wrap gap-2">
+
+          {% for field in fields %}
+
+          <span
+            class="px-4 py-1.5 rounded-full text-sm {{ 'bg-gray-800 text-cyan-300' if is_dark else 'bg-gray-200 text-blue-700' }}">
+
+            {{ field }}
+
+          </span>
+
+          {% endfor %}
+
         </div>
 
-        <!-- Right Column: Team & Supervisors -->
-        <div class="space-y-6">
+      </div>
 
-            <!-- Notifications Card -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-4 {{ text_accent }}">Notifications</h2>
-                {% for notification in project.notifications %}
-                    {{notification.nid}}
-                {% endfor %}
-            </div>
 
-            <!-- Team Members Card -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    Team Members
-                </h2>
-                <div class="divide-y {{ divider }}">
-                    {% for member in project.members %}
-                    <div class="py-3 flex items-center justify-between">
-                        <a href="/account/s{{ member.pid }}"
-                           class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
-                            {{ member.name|title }}
-                            {% if member.pid == project.leader %}
-                            <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_bg }}">Leader</span>
-                            {% endif %}
-                        </a>
-                        {% if session.pid == project.leader and member.pid != project.leader %}
-                        <form action="{{ url_for('kick_member', project_id=project.pid, student_id=member.pid) }}" method="post"
-                              onsubmit="return confirm('Are you sure you want to remove {{ name }} from the team?');">
-                            <button type="submit" class="text-sm flex items-center {{ 'text-red-400 hover:text-red-300' if is_dark else 'text-red-600 hover:text-red-800' }}">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h6m0 0v6m0-6l-8 8M4 19h16a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Kick
-                            </button>
-                        </form>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <!-- Supervisors Card (redesigned like members) -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                    Supervisors
-                </h2>
-                <div class="divide-y {{ divider }}">
-                    {% if project.doctor %}
-                    <div class="py-3 flex items-center justify-between">
-                        <a href='/account/{{doctor.public_id}}'
-                           class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
-                            {{ doctor.name|title }}
-                            <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_doctor }}">Doctor</span>
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="py-3">
-                        <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">- No doctor assigned yet.</p>
-                    </div>
-                    {% endif %}
-                    {% if project.assistent %}
-                    <div class="py-3 flex items-center justify-between">
-                        <a href='/account/{{assistant.public_id}}'
-                           class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
-                            {{ assistant.name|title }}
-                            <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_assistant }}">Assistant</span>
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="py-3">
-                        <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">- No assistant assigned yet.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+      {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
 
-            <!-- Similar Ideas Card (redesigned like members with progress) -->
-            <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-                <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                    </svg>
-                    Similar Ideas
-                </h2>
-                {% set ideas = project.get_similar_ideas() %}
-                {% if ideas %}
-                <div class="divide-y {{ divider }}">
-                    {% for idea in ideas %}
-                    <div class="py-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-medium {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ idea[0]|title }}</span>
-                            <span class="text-sm font-semibold {{ progress_text }}">{{ idea[1] }}%</span>
-                        </div>
-                        <div class="w-full {{ progress_bg }} rounded-full h-2">
-                            <div class="{{ progress_fill }} h-2 rounded-full" style="width: {{ idea[1] }}%; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">No Similar Ideas</p>
-                {% endif %}
-            </div>
+      <!-- Discussions -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Discussions</h2>
+
+        <div class="flex space-x-2">
+
+          <a href="#" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+            Start the first discussion
+
+          </a>
+
+          <a href="#" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+            Start the second discussion
+
+          </a>
+
         </div>
+
+      </div>
+
+      {% endif %}
+
+
+
+      {% if data['project_id'] and data['project_id'] == project.pid %}
+
+      <!-- Attachments Card -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Attachments</h2>
+
+        <div class="space-y-3">
+
+          {% for attachment in attachments %}
+
+          {% if attachment %}
+
+          <div
+            class="flex items-center justify-between p-3 rounded-lg {{ 'bg-gray-800' if is_dark else 'bg-gray-100' }}">
+
+            <a href="{{ attachment }}" target="_blank"
+              class="truncate max-w-[70%] {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
+
+              {{ attachment.split('/')[-1] }}
+
+            </a>
+
+            <form action="/remove_attachment" method="post">
+
+              <input type="hidden" name="file_path" value="{{ attachment }}">
+
+              <button type="submit"
+                class="text-sm {{ 'text-red-400 hover:text-red-300' if is_dark else 'text-red-600 hover:text-red-800' }}">
+
+                Remove
+
+              </button>
+
+            </form>
+
+          </div>
+
+          {% endif %}
+
+          {% endfor %}
+
+          <!-- Upload Form -->
+
+          <form method="post" action="/upload/attachment" enctype="multipart/form-data" class="mt-4 flex gap-2">
+
+            <input type="file" name="file" class="text-sm rounded-lg p-2 w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-white transition
+
+{{ 'bg-gray-800 text-white file:bg-cyan-700 hover:file:bg-cyan-600' if is_dark
+
+else 'bg-gray-100 text-gray-900 file:bg-blue-600 hover:file:bg-blue-700 file:text-white' }}">
+
+            <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm
+
+{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+
+              Upload
+
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+      {% endif %}
+
     </div>
+
+
+
+    <!-- Right Column: Team & Supervisors -->
+
+    <div class="space-y-6">
+
+
+
+      <!-- Feedback Card - Fixed to show only 3 with scroll -->
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-4 {{ text_accent }}">Feedbacks</h2>
+
+        {% set feedback_messages = [] %}
+
+        {% for message in messages %}
+
+        {% if message.message_type == 'feedback' %}
+
+        {% set feedback_messages = feedback_messages.append(message) %}
+
+        {% endif %}
+
+        {% endfor %}
+
+
+
+        {% if feedback_messages %}
+
+        <div class="space-y-3 max-h-72 overflow-y-auto pr-2 {{ scrollbar_bg }} scrollbar-thin">
+
+          {% for message in feedback_messages[:3] %}
+
+          <div class="p-3 rounded-lg border {{ feedback_bg }} {{ feedback_border }}">
+
+            <p class="text-xs font-medium mb-1 {{ text_accent }}">
+
+              From:
+
+              {% if doctor and doctor.sid == message.supervisor_id %}
+
+              Dr. {{ doctor.name }}
+
+              {% elif assistant and assistant.sid == message.supervisor_id %}
+
+              TA. {{ assistant.name }}
+
+              {% else %}
+
+              Supervisor
+
+              {% endif %}
+
+            </p>
+
+            <p class="text-sm {{ feedback_text }}">{{ message.content }}</p>
+
+          </div>
+
+          {% endfor %}
+
+
+
+          {% if feedback_messages|length > 3 %}
+
+          <div class="pt-2 text-center">
+
+            <span class="text-xs {{ text_secondary }}">+ {{ feedback_messages|length - 3 }} more feedbacks</span>
+
+          </div>
+
+          {% endif %}
+
+        </div>
+
+        {% else %}
+
+        <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">No feedback yet.</p>
+
+        {% endif %}
+
+      </div>
+
+
+
+      <!-- Team Members Card -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
+
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+            </path>
+
+          </svg>
+
+          Team Members
+
+        </h2>
+
+        <div class="divide-y {{ divider }}">
+
+          {% for member in project.members %}
+
+          <div class="py-3 flex items-center justify-between">
+
+            <a href="/account/s{{ member.pid }}"
+              class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
+
+              {{ member.name|title }}
+
+              {% if member.pid == project.leader %}
+
+              <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_bg }}">Leader</span>
+
+              {% endif %}
+
+            </a>
+
+            {% if session.pid == project.leader and member.pid != project.leader %}
+
+            <form action="{{ url_for('kick_member', project_id=project.pid, student_id=member.pid) }}" method="post"
+              onsubmit="return confirm('Are you sure you want to remove {{ name }} from the team?');">
+
+              <button type="submit"
+                class="text-sm flex items-center {{ 'text-red-400 hover:text-red-300' if is_dark else 'text-red-600 hover:text-red-800' }}">
+
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h6m0 0v6m0-6l-8 8M4 19h16a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+
+                </svg>
+
+                Kick
+
+              </button>
+
+            </form>
+
+            {% endif %}
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Supervisors Card (redesigned like members) -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
+
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+
+          </svg>
+
+          Supervisors
+
+        </h2>
+
+        <div class="divide-y {{ divider }}">
+
+          {% if project.doctor %}
+
+          <div class="py-3 flex items-center justify-between">
+
+            <a href='/account/{{doctor.public_id}}'
+              class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
+
+              {{ doctor.name|title }}
+
+              <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_doctor }}">Doctor</span>
+
+            </a>
+
+          </div>
+
+          {% else %}
+
+          <div class="py-3">
+
+            <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">- No doctor assigned yet.</p>
+
+          </div>
+
+          {% endif %}
+
+          {% if project.assistent %}
+
+          <div class="py-3 flex items-center justify-between">
+
+            <a href='/account/{{assistant.public_id}}'
+              class="font-medium transition {{ 'text-gray-300 hover:text-cyan-400' if is_dark else 'text-gray-700 hover:text-blue-600' }}">
+
+              {{ assistant.name|title }}
+
+              <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_assistant }}">Assistant</span>
+
+            </a>
+
+          </div>
+
+          {% else %}
+
+          <div class="py-3">
+
+            <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">- No assistant assigned yet.</p>
+
+          </div>
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Similar Ideas Card (redesigned like members with progress) -->
+
+      <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
+
+        <h2 class="text-xl font-semibold mb-4 flex items-center {{ text_accent }}">
+
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+
+          </svg>
+
+          Similar Ideas
+
+        </h2>
+
+        {% set ideas = project.get_similar_ideas() %}
+
+        {% if ideas %}
+
+        <div class="divide-y {{ divider }}">
+
+          {% for idea in ideas %}
+
+          <div class="py-3">
+
+            <div class="flex items-center justify-between mb-1">
+
+              <span class="font-medium {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ idea[0]|title }}</span>
+
+              <span class="text-sm font-semibold {{ progress_text }}">{{ idea[1] }}%</span>
+
+            </div>
+
+            <div class="w-full {{ progress_bg }} rounded-full h-2">
+
+              <div class="{{ progress_fill }} h-2 rounded-full" style="width: {{ idea[1] }}%; transition: width 0.3s;">
+              </div>
+
+            </div>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">No Similar Ideas</p>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
+
+
 
 {% endblock %}

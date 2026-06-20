@@ -102,6 +102,48 @@
             </select>
           </div>
 
+          <!-- GitHub Link (Optional) -->
+          <div>
+            <label for="github" class="block text-sm font-medium mb-1 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
+              <i class="fab fa-github mr-1"></i> GitHub Profile
+              <span class="text-xs font-normal {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">(Optional)</span>
+            </label>
+            <input
+              id="github"
+              name="github"
+              type="url"
+              class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 transition-all
+                {{ 'bg-gray-800 text-white border border-cyan-800 focus:ring-cyan-500 focus:border-transparent' if is_dark 
+                   else 'bg-gray-100 text-gray-900 border border-gray-300 focus:ring-blue-500 focus:border-transparent' }}"
+              placeholder="https://github.com/yourusername"
+              value="{{ github if github else '' }}"
+            >
+            <p class="mt-1 text-xs {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">
+              Enter your GitHub profile URL (optional)
+            </p>
+          </div>
+
+          <!-- LinkedIn Link (Optional) -->
+          <div>
+            <label for="linkedin" class="block text-sm font-medium mb-1 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
+              <i class="fab fa-linkedin mr-1"></i> LinkedIn Profile
+              <span class="text-xs font-normal {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">(Optional)</span>
+            </label>
+            <input
+              id="linkedin"
+              name="linkedin"
+              type="url"
+              class="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 transition-all
+                {{ 'bg-gray-800 text-white border border-cyan-800 focus:ring-cyan-500 focus:border-transparent' if is_dark 
+                   else 'bg-gray-100 text-gray-900 border border-gray-300 focus:ring-blue-500 focus:border-transparent' }}"
+              placeholder="https://linkedin.com/in/yourusername"
+              value="{{ linkedin if linkedin else '' }}"
+            >
+            <p class="mt-1 text-xs {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">
+              Enter your LinkedIn profile URL (optional)
+            </p>
+          </div>
+
           <!-- Submit Button -->
           <div class="pt-2">
             <button type="submit"

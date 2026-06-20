@@ -29,70 +29,85 @@
         </span>
 
         <!-- View Project link -->
-         {% if notification.action in ['add', 'supervise']%}
-        <a href="/project/{{notification.project_id}}" class="font-medium ml-4 flex-shrink-0 transition {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
-          View Project
-        </a>
+        {% if notification.action in ['add', 'supervise']%}
+          <a href="/project/{{notification.project_id}}" class="font-medium ml-4 flex-shrink-0 transition {{ 'text-cyan-400 hover:text-cyan-300' if is_dark else 'text-blue-600 hover:text-blue-800' }}">
+            View Project
+          </a>
         {% endif %}
 
-        <!-- Actions -->
-        <span class="flex gap-2 flex-shrink-0">
-          {% if notification.action == 'add' %}
-            <form action="/add_to_team/{{notification.nid}}/{{notification._from_id}}/accept" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
-                Accept
-              </button>
-            </form>
-            <form action="/add_to_team/{{notification.nid}}/{{notification._from_id}}/deny" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
-                Deny
-              </button>
-            </form>
-          {% elif notification.action == 'join' %}
-            <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/accept" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
-                Accept
-              </button>
-            </form>
-            <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/deny" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
-                Deny
-              </button>
-            </form>
-          {% elif notification.action == 'supervise' %}
-            <form action="/res_to_supervision/{{notification.nid}}/{{notification._from_id}}/accept" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
-                Accept
-              </button>
-            </form>
-            <form action="/res_to_supervision/{{notification.nid}}/{{notification._from_id}}/deny" method="POST">
-              <button type="submit"
-                class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
-                Deny
-              </button>
-            </form>
-          {% endif %}
-        </span>
+        <!-- Actions (without feedback for non-supervise notifications) -->
+        {% if notification.action != 'supervise' %}
+          <span class="flex gap-2 flex-shrink-0">
+            {% if notification.action == 'add' %}
+              <form action="/add_to_team/{{notification.nid}}/{{notification._from_id}}/accept" method="POST">
+                <button type="submit"
+                  class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
+                  Accept
+                </button>
+              </form>
+              <form action="/add_to_team/{{notification.nid}}/{{notification._from_id}}/deny" method="POST">
+                <button type="submit"
+                  class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
+                  Deny
+                </button>
+              </form>
+            {% elif notification.action == 'join' %}
+              <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/accept" method="POST">
+                <button type="submit"
+                  class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
+                  Accept
+                </button>
+              </form>
+              <form action="/resp_join_req/{{notification.nid}}/{{notification._from_id}}/deny" method="POST">
+                <button type="submit"
+                  class="font-semibold py-1.5 px-4 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
+                  Deny
+                </button>
+              </form>
+            {% endif %}
+          </span>
+        {% endif %}
       </div>
 
-      <!-- Feedback section (only for supervision requests) -->
+      <!-- Feedback section with form (only for supervision requests) -->
       {% if notification.action == 'supervise' %}
         <div class="w-full">
-          <label for="feedback-{{ notification.nid }}" class="block text-sm font-medium mb-1 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">Feedback</label>
-          <textarea name="feedback" id="feedback-{{ notification.nid }}"
-            placeholder="Ex. Great idea! ..."
-            rows="2"
-            class="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-1 transition resize-y {{ 
-              'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
-              else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
-            }}"></textarea>
+          <form id="supervision-form-{{ notification.nid }}" method="POST" class="space-y-3">
+            <!-- Feedback Textarea -->
+            <div>
+              <label for="feedback-{{ notification.nid }}" class="block text-sm font-medium mb-1 {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
+                Feedback (Optional)
+              </label>
+              <textarea name="feedback" id="feedback-{{ notification.nid }}"
+                placeholder="Provide your feedback here..."
+                rows="3"
+                class="w-full rounded-lg px-4 py-3 focus:outline-none focus:ring-2 transition resize-y {{ 
+                  'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400 placeholder:text-gray-500' if is_dark 
+                  else 'bg-white text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500 placeholder:text-gray-400' 
+                }}"></textarea>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex gap-2 justify-end">
+              <button type="submit" 
+                formaction="/res_to_supervision/{{notification.nid}}/{{notification._from_id}}/accept"
+                class="font-semibold py-2 px-6 rounded-xl transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-500 text-white">
+                Accept
+              </button>
+              <button type="submit"
+                formaction="/res_to_supervision/{{notification.nid}}/{{notification._from_id}}/deny"
+                class="font-semibold py-2 px-6 rounded-xl transition-colors shadow-sm bg-red-600 hover:bg-red-500 text-white">
+                Deny
+              </button>
+            </div>
+          </form>
         </div>
       {% endif %}
+    </div>
+  {% else %}
+    <!-- No notifications message -->
+    <div class="text-center py-10">
+      <p class="text-lg {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">No notifications to display.</p>
     </div>
   {% endfor %}
 

@@ -215,7 +215,7 @@ class Discussion(db.Model):
     location = db.Column(db.Text,nullable=False)
     number = db.Column(db.Integer,nullable=False)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True) # make relationship here
-    supervisors = db.Column(db.Text,nullable=False)
+    supervisors = db.Column(db.Text,nullable=True)
 
     def set_supervisors(self,supervisors_list):
         self.supervisors = json.dumps(supervisors_list)
