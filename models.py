@@ -55,6 +55,12 @@ class Task(db.Model):
     deadline = db.Column(db.Date)
     student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False) # Task.student_id
 
+    # for mobile 
+    title = db.Column(db.Text(200), nullable=True)
+    proof_note = db.Column(db.Text(200), nullable=True)
+    proof_link = db.Column(db.Text(200), nullable=True)
+
+
     def __repr__(self):
         return f" Task : {self.description}"
 
@@ -159,17 +165,13 @@ class Supervisor(db.Model):
 
 class Notification(db.Model):
     __tablename__ = 'notification'
-
-    nid = db.Column(db.Integer,primary_key=True)
-    action = db.Column(db.String,nullable=False) # actions : add - join - supervise - announce
-    _from_id = db.Column(db.Integer,nullable=True)
-    _from_name = db.Column(db.String,nullable=True)
-    student_id = db.Column(db.Integer,db.ForeignKey('person.pid'),nullable=False)
-    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
-    read = db.Column(db.Boolean,default=False,nullable=False)
-
-    def __repr__(self):
-        return f"notification action: {self.action}"
+    nid = db.Column(db.Integer, primary_key=True)
+    action = db.Column(db.String, nullable=False)
+    _from_id = db.Column(db.Integer, nullable=True)
+    _from_name = db.Column(db.String, nullable=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('person.pid'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.pid'), nullable=True)
+    read = db.Column(db.Boolean, default=False, nullable=False)
 
 class Supervisor_notification(db.Model):
     __tablename__ = 'supervisor_notification'

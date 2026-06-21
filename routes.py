@@ -7,15 +7,16 @@ import requests
 from datetime import datetime,time, date
 from graduation_similarity_system import EmbeddingModel, SimilaritySystem, build_project_text
 import pandas as pd
+import json
 
 domain = 'http://127.0.0.1:5001'
-MIN_TEAM_SIZE = 2
-MAX_TEAM_SIZE = 5
-MAX_PROJECTS_PER_SUPERVISOR = 3
-COMPARISON_YEARS = 3 
-DOCUMENTATION_DEADLINE = '2024-06-15'  # Format: YYYY-MM-DD
-IDEAS_DEADLINE = '2024-05-01'
-RESULTS_ANNOUNCEMENT_DATE = '2024-07-01' 
+MINTEAMSIZE = 2
+MAXTEAMSIZE = 5
+MAXPROJECTSPERSUPERVISOR = 3
+COMPARISONYEARS = 3 
+DOCUMENTATIONDEADLINE = '2024-06-15'  # Format: YYYY-MM-DD
+IDEASDEADLINE = '2024-05-01'
+RESULTSANNOUNCEMENTDATE = '2024-07-01' 
 
 _embedding_model = None
 
@@ -906,102 +907,104 @@ def register_routes(app,db):
 
     @app.route('/admin-panel', methods=['GET', 'POST'])
     def admin_panel():
-        """Route for managing system settings"""
+        # Declare all global variables at the top
+        global MINTEAMSIZE, MAXTEAMSIZE, MAXPROJECTSPERSUPERVISOR
+        global COMPARISONYEARS, DOCUMENTATIONDEADLINE, IDEASDEADLINE, RESULTSANNOUNCEMENTDATE
+
         if request.method == 'GET':
             return render_template('admin_panel.html',
-                                min_team_size=MIN_TEAM_SIZE,
-                                max_team_size=MAX_TEAM_SIZE,
-                                max_projects_per_supervisor=MAX_PROJECTS_PER_SUPERVISOR,
-                                comparison_years=COMPARISON_YEARS,
-                                documentation_deadline=DOCUMENTATION_DEADLINE,
-                                ideas_deadline=IDEAS_DEADLINE,
-                                results_announcement_date=RESULTS_ANNOUNCEMENT_DATE,
+                                min_team_size=MINTEAMSIZE,
+                                max_team_size=MAXTEAMSIZE,
+                                max_projects_per_supervisor=MAXPROJECTSPERSUPERVISOR,
+                                comparison_years=COMPARISONYEARS,
+                                documentation_deadline=DOCUMENTATIONDEADLINE,
+                                ideas_deadline=IDEASDEADLINE,
+                                results_announcement_date=RESULTSANNOUNCEMENTDATE,
                                 theme=session.get('theme', 'light'))
-            min_team_size = request.form.get('min_team_size')
-            max_team_size = request.form.get('max_team_size')
-            max_projects_per_supervisor = request.form.get('max_projects_per_supervisor')
-            comparison_years = request.form.get('comparison_years')
-            documentation_deadline = request.form.get('documentation_deadline')
-            ideas_deadline = request.form.get('ideas_deadline')
-            results_announcement_date = request.form.get('results_announcement_date')
-            
-            # Validate inputs
-            if not all([min_team_size, max_team_size, max_projects_per_supervisor, 
-                    comparison_years, documentation_deadline, ideas_deadline, 
+
+        # POST request
+        min_team_size = request.form.get('min_team_size')
+        max_team_size = request.form.get('max_team_size')
+        max_projects_per_supervisor = request.form.get('max_projects_per_supervisor')
+        comparison_years = request.form.get('comparison_years')
+        documentation_deadline = request.form.get('documentation_deadline')
+        ideas_deadline = request.form.get('ideas_deadline')
+        results_announcement_date = request.form.get('results_announcement_date')
+
+        # Validate inputs
+        if not all([min_team_size, max_team_size, max_projects_per_supervisor,
+                    comparison_years, documentation_deadline, ideas_deadline,
                     results_announcement_date]):
-                flash('All fields are required', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Convert to appropriate types
+            flash('All fields are required', 'error')
+            return redirect(url_for('admin_panel'))
+
+        # Convert to appropriate types
+        try:
             min_team_size = int(min_team_size)
             max_team_size = int(max_team_size)
             max_projects_per_supervisor = int(max_projects_per_supervisor)
             comparison_years = int(comparison_years)
-            
-            # Validate team size
-            if min_team_size < 1:
-                flash('Minimum team size must be at least 1', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            if max_team_size < min_team_size:
-                flash('Maximum team size cannot be less than minimum team size', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            if max_team_size > 10:
-                flash('Maximum team size cannot exceed 10', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Validate supervisor projects
-            if max_projects_per_supervisor < 1:
-                flash('Maximum projects per supervisor must be at least 1', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            if max_projects_per_supervisor > 20:
-                flash('Maximum projects per supervisor cannot exceed 20', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Validate comparison years
-            if comparison_years < 0:
-                flash('Comparison years cannot be negative', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            if comparison_years > 10:
-                flash('Comparison years cannot exceed 10', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Validate dates
-            from datetime import datetime
-            today = datetime.now().date()
-            
-            # Validate documentation deadline
-            doc_deadline = datetime.strptime(documentation_deadline, '%Y-%m-%d').date()
-            if doc_deadline < today:
-                flash('Documentation deadline cannot be in the past', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Validate ideas deadline
-            ideas_deadline_date = datetime.strptime(ideas_deadline, '%Y-%m-%d').date()
-            if ideas_deadline_date < today:
-                flash('Ideas deadline cannot be in the past', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Validate results announcement date
-            results_date = datetime.strptime(results_announcement_date, '%Y-%m-%d').date()
-            if results_date < today:
-                flash('Results announcement date cannot be in the past', 'error')
-                return redirect(url_for('admin_panel'))
-            
-            # Update global variables
-            MIN_TEAM_SIZE = min_team_size
-            MAX_TEAM_SIZE = max_team_size
-            MAX_PROJECTS_PER_SUPERVISOR = max_projects_per_supervisor
-            COMPARISON_YEARS = comparison_years
-            DOCUMENTATION_DEADLINE = documentation_deadline
-            IDEAS_DEADLINE = ideas_deadline
-            RESULTS_ANNOUNCEMENT_DATE = results_announcement_date
-            
-            flash('Settings updated successfully!', 'success')
+        except ValueError:
+            flash('Invalid numeric values', 'error')
             return redirect(url_for('admin_panel'))
+
+        # Validate team size
+        if min_team_size < 1:
+            flash('Minimum team size must be at least 1', 'error')
+            return redirect(url_for('admin_panel'))
+        if max_team_size < min_team_size:
+            flash('Maximum team size cannot be less than minimum team size', 'error')
+            return redirect(url_for('admin_panel'))
+        if max_team_size > 10:
+            flash('Maximum team size cannot exceed 10', 'error')
+            return redirect(url_for('admin_panel'))
+
+        # Validate supervisor projects
+        if max_projects_per_supervisor < 1:
+            flash('Maximum projects per supervisor must be at least 1', 'error')
+            return redirect(url_for('admin_panel'))
+        if max_projects_per_supervisor > 20:
+            flash('Maximum projects per supervisor cannot exceed 20', 'error')
+            return redirect(url_for('admin_panel'))
+
+        # Validate comparison years
+        if comparison_years < 0:
+            flash('Comparison years cannot be negative', 'error')
+            return redirect(url_for('admin_panel'))
+        if comparison_years > 10:
+            flash('Comparison years cannot exceed 10', 'error')
+            return redirect(url_for('admin_panel'))
+
+        # Validate dates
+        from datetime import datetime
+        today = datetime.now().date()
+
+        doc_deadline = datetime.strptime(documentation_deadline, '%Y-%m-%d').date()
+        if doc_deadline < today:
+            flash('Documentation deadline cannot be in the past', 'error')
+            return redirect(url_for('admin_panel'))
+
+        ideas_deadline_date = datetime.strptime(ideas_deadline, '%Y-%m-%d').date()
+        if ideas_deadline_date < today:
+            flash('Ideas deadline cannot be in the past', 'error')
+            return redirect(url_for('admin_panel'))
+
+        results_date = datetime.strptime(results_announcement_date, '%Y-%m-%d').date()
+        if results_date < today:
+            flash('Results announcement date cannot be in the past', 'error')
+            return redirect(url_for('admin_panel'))
+
+        # Update global variables
+        MINTEAMSIZE = min_team_size
+        MAXTEAMSIZE = max_team_size
+        MAXPROJECTSPERSUPERVISOR = max_projects_per_supervisor
+        COMPARISONYEARS = comparison_years
+        DOCUMENTATIONDEADLINE = documentation_deadline
+        IDEASDEADLINE = ideas_deadline
+        RESULTSANNOUNCEMENTDATE = results_announcement_date
+
+        flash('Settings updated successfully!', 'success')
+        return redirect(url_for('admin_panel'))
 
     @app.route('/new-discussion',methods=['POST','GET'])
     def new_discussion():
@@ -1053,9 +1056,9 @@ def register_routes(app,db):
             # Get project name
             project = Project.query.get(discussion.project_id)
             discussion.project_name = project.name if project else "Unknown Project"
-        
+        today = date.today()
         return render_template('discussions.html', 
-                            discussions=discussions,
+                            discussions=discussions,today=today,
                             theme=session.get('theme', 'light'))
 
     @app.route('/announecments',methods=['POST','GET'])
@@ -1177,7 +1180,10 @@ def register_routes(app,db):
         session['department'] = sup.department
         session['image'] = sup.image
         session['logged'] = True
-        session['role'] = sup.role
+        if email == "admin@system.com" : 
+            role = ['admin']
+        else :
+            session['role'] = sup.role
         session['projects'] = [p.pid for p in sup.projects]
         session['number_of_projects'] = sup.projects_limit or 10
         session['public_id'] = sup.public_id
@@ -1356,7 +1362,7 @@ def register_routes(app,db):
             "doctor_id": p.doctor or "no doctor",
             "assistant_id": p.assistent or "no assistant",
             "idea status":p.status or "",
-            "Maximum team size": maximum_team_size
+            "Maximum team size": MAXTEAMSIZE
         } for p in projects])
 
     @app.route('/api/v2/projects', methods=['GET'])
@@ -1677,7 +1683,7 @@ def register_routes(app,db):
             "pid": s.pid,
             "name": s.name,
             "specialties": s.specialties,
-            "skills":s.get_skills(),
+            "skills":s.get_skills() if s.get_skills() else [],
             "in_team": s.in_team,
             "year": s.year,
             "department": s.department,
@@ -1700,8 +1706,7 @@ def register_routes(app,db):
             return api_not_found("Student")
         if target.in_team:
             return jsonify({"error": "Student is already in a team"}), 400
-        existing = Notification.query.filter_by(action='add', _from_id=session['pid'],
-                                                student_id=student_id).first()
+        existing = Notification.query.filter_by(action='add', _from_id=session['pid'],student_id=student_id).first()
         if existing:
             return jsonify({"error": "Request already sent"}), 400
         notif = Notification(action='add', _from_id=session['pid'], _from_name=session['name'],
@@ -1797,7 +1802,7 @@ def register_routes(app,db):
             project.status = "Rejected"
         db.session.delete(notif)
         data = request.get_json()
-        if data.get('optional_comment') and data.get('optional_comment')!= "":
+        if 'optional_comment' in data and data.get('optional_comment')!= "":
             message = Message(content=data.get('optional_comment'),direction=2,message_type='feedback',project_id=notif.project_id,supervisor_id=session['sid']) 
             db.session.add(message)
         db.session.commit()
@@ -1841,7 +1846,8 @@ def register_routes(app,db):
         data = request.get_json()
         if not data:
             return api_bad_request("Missing JSON")
-        description = data.get('description')
+        title = data.get('description')    
+        description = data.get('title')
         deadline_str = data.get('deadline')
         assigned_to = data.get('assigned_to')
         project_id = data.get('project_id')
@@ -1863,12 +1869,12 @@ def register_routes(app,db):
             if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
                 return jsonify({"error": "Not authorized"}), 403
             student_id = assigned_to
-        task = Task(description=description, deadline=deadline, student_id=student_id, project_id=project_id)
+        task = Task(title=title,description=description, deadline=deadline, student_id=student_id, project_id=project_id)
         db.session.add(task)
         db.session.commit()
         return jsonify({"message": "Task created", "tid": task.tid}), 201
 
-    @app.route('/api/v2/tasks/<int:tid>/status', methods=['PUT'])
+    @app.route('/api/v2/tasks/<int:tid>', methods=['PUT'])
     def api_change_task_status(tid):
         """Mark task as done"""
         if 'logged' not in session:
@@ -1884,9 +1890,15 @@ def register_routes(app,db):
             project = Project.query.get(task.project_id)
             if not project or (project.doctor != session['sid'] and project.assistent != session['sid']):
                 return jsonify({"error": "Not authorized"}), 403
-        task.status = "Done"
+        data = request.get_json()
+        if proof_note == data['proof_note']:
+            task.proof_note = proof_note
+        if proof_link == data['proof_link']:
+            task.proof_link = proof_link
+        if data['status'] == "Done":
+            task.status = "Done"
         db.session.commit()
-        return jsonify({"message": "Task marked done"})
+        return jsonify({"message": "Task info successfully!"})
 
     @app.route('/api/v2/tasks/<int:tid>', methods=['DELETE'])
     def api_delete_task(tid):
@@ -1976,6 +1988,10 @@ def register_routes(app,db):
                 "from_id": n._from_id,
                 "from_name": n._from_name,
                 "project_id": n.project_id,
+                "max team size" : n.project.intended_team_size if n.project and n.project.intended_team_size else 6,
+                "number of members" : n.project.members.count(),
+                "project name": n.project.name,
+                "project leader": n.project.leader,
                 "read": n.read
             } for n in notifs])
         else:
@@ -1988,6 +2004,15 @@ def register_routes(app,db):
                 "read": n.read
             } for n in notifs])
 
+    @app.route('/api/v2/edit_projects_limit', methods=['POST'])
+    def edit_projects_limit():
+        data = request.get_json()
+        supervisor_id = data.get('supervisor_id')
+        new_limit = data.get('new_limit')
+
+        Supervisor.query.get_or_404(supervisor_id).projects_limit = new_limit
+        db.session.commit()    
+        return jsonify('Edited Successfully!')
     # ----------------------------------------------------------------------
     # Messages
     @app.route('/api/v2/messages', methods=['POST'])
@@ -2080,7 +2105,266 @@ def register_routes(app,db):
         db.session.commit()
         return jsonify({"message": "Status updated"})
 
+    @app.route('/api/v2/create-discussion', methods=['POST'])
+    def api_create_discussion():
+        """Create a new discussion from JSON payload."""
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing JSON body'}), 400
+
+        # Required fields
+        required = ['date', 'time', 'location', 'project_id', 'discussion_number', 'supervisors']
+        for field in required:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Parse date and time
+        try:
+            discussion_date = date.fromisoformat(data['date'])
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+
+        discussion_time = time.fromisoformat(data['time'])
+        location = data['location'].strip()
+        project_id = int(data['project_id'])
+        number = int(data['discussion_number'])
+        supervisors = data['supervisors']  # expected list of ints, e.g. [1,2,3]
+        if not isinstance(supervisors, list):
+            return jsonify({'error': 'supervisors must be a list of IDs'}), 400
+
+        # Create the discussion
+        discussion = Discussion(
+            number=number,
+            project_id=project_id,
+            time=discussion_time,
+            date=discussion_date,
+            location=location
+        )
+        db.session.add(discussion)
+        db.session.flush()  # to get the ID without committing
+
+        # Set supervisors (store as JSON)
+        discussion.set_supervisors(supervisors)
+
+        # Create notification message
+        content = f"The next discussion for this project will be on {data['date']} at {data['time']} in {location}"
+        message = Message(
+            direction=2,
+            project_id=project_id,
+            content=content,
+            supervisor_id=session.get('sid'),
+            message_type='feedback'
+        )
+        db.session.add(message)
+        db.session.commit()
+
+        # Return the created discussion data
+        return jsonify({
+            'message': 'Discussion created successfully',
+            'discussion': {
+                'id': discussion.did,
+                'number': discussion.number,
+                'date': discussion.date.isoformat(),
+                'time': discussion.time.isoformat(),
+                'location': discussion.location,
+                'project_id': discussion.project_id,
+                'supervisors': supervisors
+            }
+        }), 201
         
+    @app.route('/api/v2/discussions', methods=['GET'])
+    def api_list_discussions():
+        """Return all discussions with project and supervisor info."""
+        discussions = Discussion.query.order_by(Discussion.date.asc(), Discussion.time.asc()).all()
+        result = []
+        for d in discussions:
+            supervisor_ids = d.get_supervisors()  # returns list of ints
+            supervisor_names = []
+            for sid in supervisor_ids:
+                sup = Supervisor.query.get(sid)
+                if sup:
+                    supervisor_names.append(sup.name)
+            project = Project.query.get(d.project_id)
+            result.append({
+                'id': d.did,
+                'number': d.number,
+                'date': d.date.isoformat(),
+                'time': d.time.isoformat(),
+                'location': d.location,
+                'project_id': d.project_id,
+                'project_name': project.name if project else None,
+                'supervisors': supervisor_names
+            })
+        return jsonify(result), 200
+    @app.route('/api/v2/discussions/<int:project_id>', methods=['GET'])
+    def api_project_discussions(project_id):
+        discussions = Discussion.query.filter_by(project_id=project_id).order_by(Discussion.date.asc(), Discussion.time.asc()).all()
+        result = []
+        for d in discussions:
+            supervisor_ids = d.get_supervisors()  # returns list of ints
+            supervisor_names = []
+            for sid in supervisor_ids:
+                sup = Supervisor.query.get(sid)
+                if sup:
+                    supervisor_names.append(sup.name)
+            project = Project.query.get(d.project_id)
+            result.append({
+                'id': d.did,
+                'number': d.number,
+                'date': d.date.isoformat(),
+                'time': d.time.isoformat(),
+                'location': d.location,
+                'project_id': d.project_id,
+                'project_name': project.name if project else None,
+                'supervisors': supervisor_names
+            })
+        return jsonify(result), 200
+    @app.route('/api/v2/admin-panel', methods=['POST'])
+    def admin_panel_api():
+        data = request.get_json()
+        if data is None:
+            return jsonify({'error': 'Request must be JSON'}), 400
+
+        min_team_size = data.get('min_team_size')
+        max_team_size = data.get('max_team_size')
+        max_projects_per_supervisor = data.get('max_projects_per_supervisor')
+        comparison_years = data.get('comparison_years')
+        documentation_deadline = data.get('documentation_deadline')
+        ideas_deadline = data.get('ideas_deadline')
+        results_announcement_date = data.get('results_announcement_date')
+
+        required_fields = [
+            min_team_size, max_team_size, max_projects_per_supervisor,
+            comparison_years, documentation_deadline, ideas_deadline,
+            results_announcement_date
+        ]
+        if any(field is None for field in required_fields):
+            return jsonify({'error': 'All fields are required'}), 400
+
+        try:
+            min_team_size = int(min_team_size)
+            max_team_size = int(max_team_size)
+            max_projects_per_supervisor = int(max_projects_per_supervisor)
+            comparison_years = int(comparison_years)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid numeric values'}), 400
+
+        if min_team_size < 1:
+            return jsonify({'error': 'Minimum team size must be at least 1'}), 400
+        if max_team_size < min_team_size:
+            return jsonify({'error': 'Maximum team size cannot be less than minimum team size'}), 400
+        if max_team_size > 10:
+            return jsonify({'error': 'Maximum team size cannot exceed 10'}), 400
+
+        if max_projects_per_supervisor < 1:
+            return jsonify({'error': 'Maximum projects per supervisor must be at least 1'}), 400
+        if max_projects_per_supervisor > 20:
+            return jsonify({'error': 'Maximum projects per supervisor cannot exceed 20'}), 400
+
+
+        if comparison_years < 0:
+            return jsonify({'error': 'Comparison years cannot be negative'}), 400
+        if comparison_years > 10:
+            return jsonify({'error': 'Comparison years cannot exceed 10'}), 400
+
+        today = datetime.now().date()
+        try:
+            doc_deadline = datetime.strptime(documentation_deadline, '%Y-%m-%d').date()
+            ideas_deadline_date = datetime.strptime(ideas_deadline, '%Y-%m-%d').date()
+            results_date = datetime.strptime(results_announcement_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+
+        if doc_deadline < today:
+            return jsonify({'error': 'Documentation deadline cannot be in the past'}), 400
+        if ideas_deadline_date < today:
+            return jsonify({'error': 'Ideas deadline cannot be in the past'}), 400
+        if results_date < today:
+            return jsonify({'error': 'Results announcement date cannot be in the past'}), 400
+
+        global MINTEAMSIZE, MAXTEAMSIZE, MAXPROJECTSPERSUPERVISOR
+        global COMPARISONYEARS, DOCUMENTATIONDEADLINE, IDEASDEADLINE, RESULTSANNOUNCEMENTDATE
+
+        MINTEAMSIZE = min_team_size
+        MAXTEAMSIZE = max_team_size
+        MAXPROJECTSPERSUPERVISOR = max_projects_per_supervisor
+        COMPARISONYEARS = comparison_years
+        DOCUMENTATIONDEADLINE = documentation_deadline
+        IDEASDEADLINE = ideas_deadline
+        RESULTSANNOUNCEMENTDATE = results_announcement_date
+
+        return jsonify({
+            'message': 'Settings updated successfully!',
+            'updated': {
+                'min_team_size': MINTEAMSIZE,
+                'max_team_size': MAXTEAMSIZE,
+                'max_projects_per_supervisor': MAXPROJECTSPERSUPERVISOR,
+                'comparison_years': COMPARISONYEARS,
+                'documentation_deadline': DOCUMENTATIONDEADLINE,
+                'ideas_deadline': IDEASDEADLINE,
+                'results_announcement_date': RESULTSANNOUNCEMENTDATE
+            }
+        }), 200
+
+    @app.route('/api/v2/show_grades/<int:project_id>', methods=['GET'])
+    def show_grades(project_id):
+        project = Project.query.get_or_404(project_id) 
+        show = False
+        results = []
+        for member in project.members:
+            degree = getattr(member, 'finel_project_degree', None)  # adjust attribute name if different
+            
+            if degree is not None:
+                show = True
+                percentage = (degree / 180) * 100
+                
+                # Letter grade logic (exactly as in template)
+                if percentage >= 96:
+                    letter = 'A+'
+                elif percentage >= 92:
+                    letter = 'A'
+                elif percentage >= 88:
+                    letter = 'A-'
+                elif percentage >= 84:
+                    letter = 'B+'
+                elif percentage >= 80:
+                    letter = 'B'
+                elif percentage >= 76:
+                    letter = 'B-'
+                elif percentage >= 72:
+                    letter = 'C+'
+                elif percentage >= 68:
+                    letter = 'C'
+                elif percentage >= 64:
+                    letter = 'C-'
+                elif percentage >= 60:
+                    letter = 'D+'
+                elif percentage >= 55:
+                    letter = 'D'
+                elif percentage >= 50:
+                    letter = 'D-'
+                else:
+                    letter = 'F'
+                
+                results.append({
+                    'name': member.name,
+                    'degree': degree,
+                    'percentage': round(percentage, 1),
+                    'letter': letter,
+                    'total': 180
+                })
+            else:
+                results.append({
+                    'name': member.name,
+                    'degree': None,
+                    'percentage': None,
+                    'letter': None,
+                    'total': 180
+                })
+        if show :
+            return jsonify(results),200
+        else : 
+            return jsonify({"error":"Not set yet!"}),400
 #============== AI Model =================
 
     @app.route('/api/check-similarity', methods=['POST'])

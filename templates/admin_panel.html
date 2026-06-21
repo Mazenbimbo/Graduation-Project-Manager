@@ -37,7 +37,7 @@
       </div>
 
       <!-- Settings Form -->
-      <form action="{{ url_for('settings') }}" method="post" 
+      <form action="{{ url_for('admin_panel') }}" method="post" 
             class="rounded-xl p-8 shadow-lg border
             {% if theme == 'dark' %}
               bg-blue-950 border-cyan-800
@@ -230,7 +230,7 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t {% if theme == 'dark' %}border-cyan-700{% else %}border-blue-200{% endif %}">
-          <a href="{{ url_for('admin_page') }}" 
+          <a href="{{ url_for('admin_panel') }}" 
              class="px-6 py-3 rounded-lg font-medium transition
              {% if theme == 'dark' %}
                bg-gray-700 text-gray-300 hover:bg-gray-600

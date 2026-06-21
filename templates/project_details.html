@@ -396,37 +396,67 @@ else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-
       </div>
 
 
-
-      {% if data['role'] != 'Student' and data['sid'] == project.doctor %}
-
-      <!-- Discussions -->
-
+      {% if data['role'] == 'Student' and data['project_id'] == project.pid %}
       <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
-
-        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Discussions</h2>
-
-        <div class="flex space-x-2">
-
-          <a href="#" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-
-{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-
-            Start the first discussion
-
-          </a>
-
-          <a href="#" class="px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm
-
-{{ 'bg-cyan-700 hover:bg-cyan-600 text-white' if is_dark else 'bg-blue-600 hover:bg-blue-700 text-white' }}">
-
-            Start the second discussion
-
-          </a>
-
-        </div>
-
+        <h2 class="text-xl font-semibold mb-3 {{ text_accent }}">Degrees</h2>
+        {% if project.members %}
+          <div class="divide-y {{ divider }}">
+            {% for member in project.members %}
+              <div class="py-3 flex items-center justify-between">
+                <div>
+                  <span class="font-medium {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">
+                    {{ member.name|title }}
+                  </span>
+                  {% if member.pid == project.leader %}
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full border {{ badge_bg }}">Leader</span>
+                  {% endif %}
+                </div>
+                <div class="text-right">
+                  {% if member.finel_project_degree is not none %}
+                    {# Compute percentage #}
+                    {% set percentage = (member.finel_project_degree / 180 * 100) %}
+                    {# Determine letter grade #}
+                    {% if percentage >= 96 %}
+                      {% set letter = 'A+' %}
+                    {% elif percentage >= 92 %}
+                      {% set letter = 'A' %}
+                  {% elif percentage >= 88 %}
+                      {% set letter = 'A-' %}
+                      {% elif percentage >= 84 %}
+                      {% set letter = 'B+' %}
+                      {% elif percentage >= 80 %}
+                      {% set letter = 'B' %}
+                    {% elif percentage >= 76 %}
+                      {% set letter = 'B-' %}
+                    {% elif percentage >= 72 %}
+                      {% set letter = 'C+' %}
+                    {% elif percentage >= 68 %}
+                    {% set letter = 'C' %}
+                    {% elif percentage >= 64 %}
+                    {% set letter = 'C-' %}
+                    {% elif percentage >= 60 %}
+                      {% set letter = 'D+' %}
+                      {% elif percentage >= 55 %}
+                      {% set letter = 'D' %}
+                      {% elif percentage >= 50 %}
+                      {% set letter = 'D-' %}
+                    {% else %}
+                      {% set letter = 'F' %}
+                    {% endif %}
+                    <span class="text-sm {{ text_accent }}">{{ member.finel_project_degree }} / 180</span>
+                    <span class="text-sm {{ text_secondary }} ml-2">({{ '%.1f'|format(percentage) }}%)</span>
+                    <span class="ml-2 text-sm font-semibold {{ text_heading }}">{{ letter }}</span>
+                  {% else %}
+                    <span class="text-sm {{ text_secondary }}">Not set yet</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="{{ 'text-gray-400' if is_dark else 'text-gray-500' }}">No team members.</p>
+        {% endif %}
       </div>
-
       {% endif %}
 
 
