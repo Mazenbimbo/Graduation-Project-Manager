@@ -234,6 +234,8 @@
         { method: "GET", path: "/api/v2/discussions/{project_id}", desc: "Get all discussions for a project", pathParams: ["project_id"] },
         { method: "POST", path: "/api/v2/admin-panel", desc: "System settings", bodyExample: {max_projects_per_supervisor:10, max_team_size:6, min_team_size:2,comparison_years:3,documentation_deadline:"2026-12-31",ideas_deadline:"2026-12-31",results_announcement_date:"2026-12-31"} },
         { method: "POST", path: "/api/v2/create-discussion", desc: "Create new discussions", bodyExample: {project_id:1, time:"10:00", date:"2025-12-01",location:"Lec1",supervisors:[],discussion_number:2} },
+        { method: "POST", path: "/api/v2/first_discussion/{project_id}", pathParams: ["project_id"],desc: "First discussion", bodyExample: {1:80, 2:80, special:false,feedback1:"", feedback2:""} },
+        { method: "POST", path: "/api/v2/second_discussion/{project_id}", pathParams: ["project_id"],desc: "Second discussion", bodyExample: {1:100, 2:100, special:false,feedback1:"", feedback2:""} },
         { method: "POST", path: "/api/check-similarity", desc: "Check similarity", bodyExample: {project_name: "My New Project",description: "A system that does X, Y, Z..."} }
     ];
 

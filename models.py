@@ -82,6 +82,7 @@ class Project(db.Model):
     members = db.relationship('Student',backref='project',lazy='dynamic')
     messages = db.relationship('Message',backref='project',lazy='dynamic')
     notifications = db.relationship('Notification',backref='project',lazy='dynamic')
+    discussions = db.relationship('Discussion',backref='project',lazy='dynamic')
 
     # Mobile API data
     under_review = db.Column(db.Boolean,default=False)
@@ -199,7 +200,9 @@ class Meeting(db.Model):
     link = db.Column(db.Text(200),nullable=True)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=False)
     project = db.relationship('Project',backref='meeting')
-
+    supervisor_id = db.Column(db.Integer,db.ForeignKey('supervisor.sid'),nullable=False)
+    supervisor = db.relationship('Supervisor',backref='meeting',lazy='select')
+ 
 class Message(db.Model):
     __tablename__ = 'message'
     mid = db.Column(db.Integer,primary_key=True)
@@ -216,7 +219,7 @@ class Discussion(db.Model):
     time = db.Column(db.Time,nullable=False)
     location = db.Column(db.Text,nullable=False)
     number = db.Column(db.Integer,nullable=False)
-    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True) # make relationship here
+    project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)
     supervisors = db.Column(db.Text,nullable=True)
 
     def set_supervisors(self,supervisors_list):

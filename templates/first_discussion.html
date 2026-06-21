@@ -34,7 +34,7 @@
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Location</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.location #}
+                        {{project.discussions[0].location}}
                     </p>
                 </div>
                 <div class="space-y-1">

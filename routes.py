@@ -794,7 +794,7 @@ def register_routes(app,db):
                         supervisor = session['sid'] 
                         
                         project_id = request.args.get('project_id')
-                        meeting = Meeting(title=title,notes=notes,date=meeting_date,time=meeting_time,place=place,link=link,project_id=project_id,location=location,supervisor=supervisor)
+                        meeting = Meeting(title=title,notes=notes,date=meeting_date,time=meeting_time,place=place,link=link,project_id=project_id,location=location,supervisor_id=supervisor)
                         db.session.add(meeting)
                         db.session.commit()
                         flash("Meeting scheduled successfully!","info")
@@ -872,12 +872,16 @@ def register_routes(app,db):
            member.first_discussion_result = request.form.get(f'degree-for-{member.pid}')
         is_special = request.form.get('special') == 'True'
         project.special = is_special
-        if request.form.get('feedback1') != '' :
-            message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
-        if request.form.get('feedback2') != '' :
-            message2 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
-        db.session.add(message1)
-        db.session.add(message2)
+        if request.form.get('feedback1') and request.form.get('feedback1') != '' :
+                message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
+                db.session.add(message)
+        if request.form.get('feedback2') and request.form.get('feedback2') != '' :
+                message2= Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
+                db.session.add(message)
+
+        discussions = Discussion.query.filter_by(project_id=project_id).all()
+        for discussion in discussions :
+            db.session.delete(discussion)  
         db.session.commit()
         flash("Saved successfully!","info")
         return redirect(f'/project/{project_id}')
@@ -897,10 +901,13 @@ def register_routes(app,db):
         project.special = is_special
         if request.form.get('feedback1') != '' :
             message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
+            db.session.add(message1)
         if request.form.get('feedback2') != '' :
             message2 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
-        db.session.add(message1)
-        db.session.add(message2)
+            db.session.add(message2)
+        discussions = Discussion.query.filter_by(project_id=project_id).all()
+        for discussion in discussions :
+            db.session.delete(discussion)   
         db.session.commit()
         flash("Saved successfully!","info")
         return redirect(f'/project/{project_id}')
@@ -1181,7 +1188,7 @@ def register_routes(app,db):
         session['image'] = sup.image
         session['logged'] = True
         if email == "admin@system.com" : 
-            role = ['admin']
+            role = ['Admin']
         else :
             session['role'] = sup.role
         session['projects'] = [p.pid for p in sup.projects]
@@ -2365,6 +2372,58 @@ def register_routes(app,db):
             return jsonify(results),200
         else : 
             return jsonify({"error":"Not set yet!"}),400
+
+    @app.route('/api/v2/first_discussion/<int:project_id>', methods=['POST'])
+    def api_first_discussion(project_id):
+        project = Project.query.get_or_404(project_id)
+        if 'role' not in session:
+            api_unauthorized()
+        if session.get('role') not in ['Doctor','Assistant'] and project.doctor != session['sid']:
+            return jsonify({"error":"Not a supervisor in this project!"})
+        data = request.get_json()
+        for member in project.members : 
+            member.first_descussion_result = data[str(member.pid)] if data[str(member.pid)] else 1000
+        if 'special' in data : 
+            is_special = data.get('special') == 'True'
+            project.special = is_special
+        if data.get('feedback1') and data.get('feedback1') != '' :
+                message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=data.get('feedback1'),message_type='feedback')
+                db.session.add(message1)
+        if data.get('feedback2') and data.get('feedback2') != '' :
+                message2= Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=data.get('feedback2'),message_type='feedback')
+                db.session.add(message2)
+
+        discussions = Discussion.query.filter_by(project_id=project_id).all()
+        for discussion in discussions :
+            db.session.delete(discussion)  
+        db.session.commit()
+        return jsonify({"info":"Saved successfully!"})
+    
+    @app.route('/api/v2/second_discussion/<int:project_id>', methods=['POST'])
+    def api_second_discussion(project_id):
+        project = Project.query.get_or_404(project_id)
+        if 'role' not in session:
+            api_unauthorized()
+        if session.get('role') not in ['Doctor','Assistant'] and project.doctor != session['sid']:
+            return jsonify({"error":"Not a supervisor in this project!"})
+        data = request.get_json()
+        for member in project.members : 
+            member.finel_project_degree = data[str(member.pid)] if data[str(member.pid)] else 1000
+        if 'special' in data : 
+            is_special = data.get('special') == 'True'
+            project.special = is_special
+        if data.get('feedback1') and data.get('feedback1') != '' :
+                message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=data.get('feedback1'),message_type='feedback')
+                db.session.add(message1)
+        if data.get('feedback2') and data.get('feedback2') != '' :
+                message2= Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=data.get('feedback2'),message_type='feedback')
+                db.session.add(message2)
+
+        discussions = Discussion.query.filter_by(project_id=project_id).all()
+        for discussion in discussions :
+            db.session.delete(discussion)  
+        db.session.commit()
+        return jsonify({"info":"Saved successfully!"})
 #============== AI Model =================
 
     @app.route('/api/check-similarity', methods=['POST'])

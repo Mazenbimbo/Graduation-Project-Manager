@@ -539,7 +539,7 @@ else 'bg-gray-100 text-gray-900 file:bg-blue-600 hover:file:bg-blue-700 file:tex
     <div class="space-y-6">
 
 
-
+      {% if data['role'] == 'Student' and data['project_id'] == project.pid %}
       <!-- Feedback Card - Fixed to show only 3 with scroll -->
       <div class="rounded-xl p-5 shadow-sm {{ bg_card }} border {{ border_main }}">
 
@@ -556,7 +556,6 @@ else 'bg-gray-100 text-gray-900 file:bg-blue-600 hover:file:bg-blue-700 file:tex
         {% endif %}
 
         {% endfor %}
-
 
 
         {% if feedback_messages %}
@@ -614,7 +613,7 @@ else 'bg-gray-100 text-gray-900 file:bg-blue-600 hover:file:bg-blue-700 file:tex
         {% endif %}
 
       </div>
-
+      {% endif %}
 
 
       <!-- Team Members Card -->

@@ -1,80 +1,23 @@
-MINTEAMSIZE = 2
-MAXTEAMSIZE = 5
-MAXPROJECTSPERSUPERVISOR = 3
-COMPARISONYEARS = 3 
-DOCUMENTATIONDEADLINE = '2024-06-15'  # Format: YYYY-MM-DD
-IDEASDEADLINE = '2024-05-01'
-RESULTSANNOUNCEMENTDATE = '2024-07-01' 
 
 
-    from flask import request, jsonify, current_app
-from datetime import datetime
-import sys
+@app.route('/api/v2/first_discussion/<int:project_id>', methods=['POST'])
+def api_first_discussion(project_id):
+    project = Project.query.get_or_404(project_id)
+    data = request.get_json()
+    for member in project.members : 
+        member.first_descussion_result = data[str(member.pid)]
+    if 'special' in data : 
+        is_special = data.get('special') == 'True'
+            project.special = is_special
+    if data.get('feedback1') and data.get('feedback1') != '' :
+            message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
+            db.session.add(message)
+    if data.get('feedback2') and data.get('feedback2') != '' :
+            message2= Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
+            db.session.add(message)
 
-# These globals must be defined elsewhere in your application.
-# We assume they exist at module level.
-global MINTEAMSIZE, MAXTEAMSIZE, MAXPROJECTSPERSUPERVISOR
-global COMPARISONYEARS, DOCUMENTATIONDEADLINE, IDEASDEADLINE, RESULTSANNOUNCEMENTDATE
-
-@app.route('/api/v2/show_grades/<int:project_id>', methods=['GET'])
-    def show_grades(project_id):
-        data = request.get_json()
-        if data is None:
-            return jsonify({'error': 'Request must be JSON'}), 400
-        project = Project.query.get_or_404(project_id) 
-        show = False
-        results = []
-        for member in members:
-            degree = getattr(member, 'finel_project_degree', None)  # adjust attribute name if different
-            
-            if degree is not None:
-                show = True
-                percentage = (degree / max_score) * 100
-                
-                # Letter grade logic (exactly as in template)
-                if percentage >= 96:
-                    letter = 'A+'
-                elif percentage >= 92:
-                    letter = 'A'
-                elif percentage >= 88:
-                    letter = 'A-'
-                elif percentage >= 84:
-                    letter = 'B+'
-                elif percentage >= 80:
-                    letter = 'B'
-                elif percentage >= 76:
-                    letter = 'B-'
-                elif percentage >= 72:
-                    letter = 'C+'
-                elif percentage >= 68:
-                    letter = 'C'
-                elif percentage >= 64:
-                    letter = 'C-'
-                elif percentage >= 60:
-                    letter = 'D+'
-                elif percentage >= 55:
-                    letter = 'D'
-                elif percentage >= 50:
-                    letter = 'D-'
-                else:
-                    letter = 'F'
-                
-                results.append({
-                    'name': member.name,
-                    'degree': degree,
-                    'percentage': round(percentage, 1),
-                    'letter': letter,
-                    'total': max_score
-                })
-            else:
-                results.append({
-                    'name': member.name,
-                    'degree': None,
-                    'percentage': None,
-                    'letter': None,
-                    'total': max_score
-                })
-        if show :
-            return results
-        else : 
-            return jsonify({'Not set yet!})
+        discussions = Discussion.query.filter_by(project_id=project_id).all()
+        for discussion in discussions :
+            db.session.delete(discussion)  
+        db.session.commit()
+        return jsonify("info":"Saved successfully!")
