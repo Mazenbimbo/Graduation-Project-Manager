@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5aaffb2fc59d
+Revision ID: ac1b7fbcf0f8
 Revises: 
-Create Date: 2026-06-19 18:28:40.593497
+Create Date: 2026-06-22 05:06:04.692051
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5aaffb2fc59d'
+revision = 'ac1b7fbcf0f8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,7 +63,7 @@ def upgrade():
     sa.Column('location', sa.Text(), nullable=False),
     sa.Column('number', sa.Integer(), nullable=False),
     sa.Column('project_id', sa.Integer(), nullable=True),
-    sa.Column('supervisors', sa.Text(), nullable=False),
+    sa.Column('supervisors', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['project_id'], ['project.pid'], ),
     sa.PrimaryKeyConstraint('did')
     )
@@ -77,7 +77,9 @@ def upgrade():
     sa.Column('location', sa.Text(), nullable=True),
     sa.Column('link', sa.Text(length=200), nullable=True),
     sa.Column('project_id', sa.Integer(), nullable=False),
+    sa.Column('supervisor_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['project_id'], ['project.pid'], ),
+    sa.ForeignKeyConstraint(['supervisor_id'], ['supervisor.sid'], ),
     sa.PrimaryKeyConstraint('mid')
     )
     op.create_table('message',
@@ -107,7 +109,7 @@ def upgrade():
     sa.Column('linkedin_url', sa.Text(), nullable=True),
     sa.Column('github_url', sa.Text(), nullable=True),
     sa.Column('status', sa.Text(), nullable=True),
-    sa.Column('first_descussion_result', sa.Integer(), nullable=True),
+    sa.Column('first_discussion_result', sa.Integer(), nullable=True),
     sa.Column('finel_project_degree', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['project_id'], ['project.pid'], ),
     sa.PrimaryKeyConstraint('pid')
@@ -150,6 +152,9 @@ def upgrade():
     sa.Column('status', sa.Text(length=10), nullable=True),
     sa.Column('deadline', sa.Date(), nullable=True),
     sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.Text(length=200), nullable=True),
+    sa.Column('proof_note', sa.Text(length=200), nullable=True),
+    sa.Column('proof_link', sa.Text(length=200), nullable=True),
     sa.ForeignKeyConstraint(['student_id'], ['person.pid'], ),
     sa.PrimaryKeyConstraint('tid')
     )

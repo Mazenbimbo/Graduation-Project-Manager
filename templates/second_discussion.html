@@ -34,19 +34,19 @@
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Location</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.location #}
+                        {{project.discussions[0].location}}
                     </p>
                 </div>
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Date</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.date #}
+                        {{project.discussions[0].date}}
                     </p>
                 </div>
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Time</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.time #}
+                        {{project.discussions[0].time}}
                     </p>
                 </div>
             </div>
@@ -230,37 +230,31 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get all degree inputs
     const degreeInputs = document.querySelectorAll('.degree-input');
-    
-    // Function to calculate and update totals and grades
+
     function updateCalculations() {
-        // Group inputs by member
         const memberGroups = {};
+
+        // Group inputs by member ID
         degreeInputs.forEach(input => {
             const name = input.name;
             const memberId = name.split('-').pop();
-            if (!memberGroups[memberId]) {
-                memberGroups[memberId] = {};
-            }
+            if (!memberGroups[memberId]) memberGroups[memberId] = {};
             if (name.startsWith('doc-degree-')) {
                 memberGroups[memberId].doc = input;
             } else if (name.startsWith('second-degree-')) {
                 memberGroups[memberId].second = input;
             }
         });
-        
-        // Also get first discussion values (read-only)
+
+        // Also collect first discussion (read‑only)
         document.querySelectorAll('.first-input').forEach(input => {
-            const name = input.name;
-            const memberId = name.split('-').pop();
-            if (!memberGroups[memberId]) {
-                memberGroups[memberId] = {};
-            }
+            const memberId = input.name.split('-').pop();
+            if (!memberGroups[memberId]) memberGroups[memberId] = {};
             memberGroups[memberId].first = input;
         });
-        
-        // Update each member's calculations
+
+        // Update each member
         Object.keys(memberGroups).forEach(memberId => {
             const group = memberGroups[memberId];
             if (group.first && group.doc && group.second) {
@@ -269,47 +263,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 const secondVal = parseFloat(group.second.value) || 0;
                 const total = firstVal + docVal + secondVal;
                 const percentage = total > 0 ? (total / 180 * 100) : 0;
-                
-                // Find the parent container
+
+                // Find the container
                 const container = group.first.closest('[data-member]') || group.first.closest('.grid');
                 if (container) {
-                    // Update total
+                    // Update visible total
                     const totalSpan = container.querySelector('.total-score');
-                    if (totalSpan) {
-                        totalSpan.textContent = total;
-                    }
-                    
+                    if (totalSpan) totalSpan.textContent = total;
+
+                    // ✅ CRITICAL FIX: Update the hidden field that holds the final total
+                    const hiddenTotal = container.querySelector('[name^="finel-project-degree-for-"]');
+                    if (hiddenTotal) hiddenTotal.value = total;
+
                     // Update percentage
                     const percentageDisplay = container.querySelector('.percentage-display');
                     if (percentageDisplay) {
                         percentageDisplay.textContent = percentage.toFixed(1) + '%';
                     }
-                    
-                    // Update grade
+
+                    // Update grade (with consistent thresholds)
                     const gradeDisplay = container.querySelector('.grade-display');
                     if (gradeDisplay) {
                         let grade, colorClass;
-                        
-                        if (percentage >= 90) {
-                            grade = 'A+';
-                            colorClass = 'bg-green-500 text-white';
-                        } else if (percentage >= 80) {
-                            grade = 'A';
-                            colorClass = 'bg-blue-500 text-white';
-                        } else if (percentage >= 70) {
-                            grade = 'B';
-                            colorClass = 'bg-cyan-500 text-white';
-                        } else if (percentage >= 60) {
-                            grade = 'C';
-                            colorClass = 'bg-yellow-500 text-white';
-                        } else if (percentage >= 50) {
-                            grade = 'D';
-                            colorClass = 'bg-orange-500 text-white';
-                        } else {
-                            grade = 'F';
-                            colorClass = 'bg-red-500 text-white';
-                        }
-                        
+                        if (percentage >= 96) { grade = 'A+'; colorClass = 'bg-green-500 text-white'; }
+                        else if (percentage >= 92) { grade = 'A'; colorClass = 'bg-blue-500 text-white'; }
+                        else if (percentage >= 88) { grade = 'A-'; colorClass = 'bg-blue-400 text-white'; }
+                        else if (percentage >= 84) { grade = 'B+'; colorClass = 'bg-cyan-500 text-white'; }
+                        else if (percentage >= 80) { grade = 'B'; colorClass = 'bg-cyan-400 text-white'; }
+                        else if (percentage >= 76) { grade = 'B-'; colorClass = 'bg-yellow-500 text-white'; }
+                        else if (percentage >= 72) { grade = 'C+'; colorClass = 'bg-yellow-400 text-white'; }
+                        else if (percentage >= 68) { grade = 'C'; colorClass = 'bg-orange-500 text-white'; }
+                        else if (percentage >= 64) { grade = 'C-'; colorClass = 'bg-orange-400 text-white'; }
+                        else if (percentage >= 60) { grade = 'D+'; colorClass = 'bg-red-400 text-white'; }
+                        else if (percentage >= 55) { grade = 'D'; colorClass = 'bg-red-500 text-white'; }
+                        else if (percentage >= 50) { grade = 'D-'; colorClass = 'bg-red-600 text-white'; }
+                        else { grade = 'F'; colorClass = 'bg-red-700 text-white'; }
+
                         gradeDisplay.textContent = grade;
                         gradeDisplay.className = 'grade-display text-2xl font-bold text-center p-2 rounded-lg ' + colorClass;
                     }
@@ -317,55 +306,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Add event listeners to all degree inputs with multiple events
+
+    // Attach events to degree inputs
     degreeInputs.forEach(input => {
-        // Trigger on input (as user types)
-        input.addEventListener('input', function() {
-            // Validate min/max
-            const min = parseInt(this.getAttribute('min'));
-            const max = parseInt(this.getAttribute('max'));
-            let value = parseFloat(this.value);
-            
-            if (!isNaN(value)) {
-                if (min !== undefined && value < min) {
-                    this.value = min;
-                } else if (max !== undefined && value > max) {
-                    this.value = max;
+        const events = ['input', 'change', 'keyup'];
+        events.forEach(evt => {
+            input.addEventListener(evt, function() {
+                // Enforce min/max
+                const min = parseInt(this.getAttribute('min'));
+                const max = parseInt(this.getAttribute('max'));
+                let val = parseFloat(this.value);
+                if (!isNaN(val)) {
+                    if (min !== undefined && val < min) this.value = min;
+                    if (max !== undefined && val > max) this.value = max;
+                } else {
+                    this.value = 0;
                 }
-            }
-            
-            updateCalculations();
-        });
-        
-        // Also trigger on change (for when user leaves the field)
-        input.addEventListener('change', function() {
-            // Ensure value is within bounds
-            const min = parseInt(this.getAttribute('min'));
-            const max = parseInt(this.getAttribute('max'));
-            let value = parseFloat(this.value);
-            
-            if (!isNaN(value)) {
-                if (min !== undefined && value < min) {
-                    this.value = min;
-                } else if (max !== undefined && value > max) {
-                    this.value = max;
-                }
-            } else {
-                // If empty or invalid, set to 0
-                this.value = 0;
-            }
-            
-            updateCalculations();
-        });
-        
-        // Trigger on keyup for immediate feedback
-        input.addEventListener('keyup', function() {
-            updateCalculations();
+                updateCalculations();
+            });
         });
     });
-    
-    // Initial calculation
+
+    // Initial calculation on page load
     updateCalculations();
 });
 </script>

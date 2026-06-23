@@ -9,7 +9,7 @@
             First Discussion
         </h1>
         
-        <form action="/first-discussion/project.pid" method="post" 
+        <form action="/first-discussion/{{project.pid}}" method="post" 
               class="{% if theme == 'dark' %}bg-blue-950{% else %}bg-white{% endif %} 
                      rounded-xl shadow-lg p-8 space-y-6">
             
@@ -40,13 +40,13 @@
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Date</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.date #}
+                        {{project.discussions[0].date}}
                     </p>
                 </div>
                 <div class="space-y-1">
                     <label class="text-sm {% if theme == 'dark' %}text-gray-400{% else %}text-gray-600{% endif %}">Time</label>
                     <p class="text-base {% if theme == 'dark' %}text-gray-300{% else %}text-gray-700{% endif %}">
-                        {# discussion.time #}
+                        {{project.discussions[0].time}}
                     </p>
                 </div>
             </div>

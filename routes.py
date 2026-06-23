@@ -16,7 +16,7 @@ MAXPROJECTSPERSUPERVISOR = 3
 COMPARISONYEARS = 3 
 DOCUMENTATIONDEADLINE = '2024-06-15'  # Format: YYYY-MM-DD
 IDEASDEADLINE = '2024-05-01'
-RESULTSANNOUNCEMENTDATE = '2024-07-01' 
+RESULTSANNOUNCEMENTDATE = '2026-06-22' 
 
 _embedding_model = None
 
@@ -371,7 +371,7 @@ def register_routes(app,db):
         specialties = db.session.query(Student.specialties).distinct().all()
         specialties = sorted([s[0] for s in specialties if s[0]])
         
-        return render_template('friends.html',users=friends_list,in_team=session['in_team'],my_id=session['pid'],specialties=specialties,current_specialty=specialty_filter,not_in_team_checked=not_in_team_only)
+        return render_template('friends.html',users=friends_list,in_team=session['in_team'],my_id=session['pid'],specialties=specialties,current_specialty=specialty_filter,not_in_team_checked=not_in_team_only,this_year=datetime.now().year)
 
     @app.route('/req_to_add/<int:id>',methods=['POST'])
     def req_to_add(id):
@@ -471,7 +471,7 @@ def register_routes(app,db):
                 res = data.json() 
                 if res['is_similar'] and res['is_similar']==True : 
                     flash(f"Your idea is to similar with this idea(s) :\n {[[p['project'],p['score']] for p in res["similar_projects"]]}","error")
-                    return redirect(url_for('new_project',action='edit'))
+                    return redirect(request.referrer)
 
                 similar_ideas = []
                 for project in res["similar_projects"]:
@@ -614,7 +614,11 @@ def register_routes(app,db):
         s = Supervisor.query
         doctor = s.get_or_404(project.doctor) if project.doctor else None
         assistant = s.get_or_404(project.assistent) if project.assistent else None 
-        messages = Message.query.filter_by(project_id=id,message_type='feedback')
+        messages = Message.query.filter_by(project_id=id)
+        show = False
+        announcement = datetime.strptime(RESULTSANNOUNCEMENTDATE, '%Y-%m-%d').date()
+        if announcement >= date.today() :
+            show = True
         return render_template(
             'project_details.html',
             data=session if session else "", 
@@ -623,7 +627,7 @@ def register_routes(app,db):
             attachments = project.get_attachment(),
             doctor=doctor,
             assistant=assistant,
-            messages=messages)
+            messages=messages,show=show)
 
     @app.route('/supervisor_register_0x1F', methods=['GET', 'POST'])
     def supervisor_signup():
@@ -749,6 +753,9 @@ def register_routes(app,db):
                 db.session.delete(n)
                 db.session.commit()
                 return redirect('/notifications')
+
+            other_request =  Supervisor_notification.query.filter_by(project_id=project_id,supervisor_id=session['sid']).filter_by(nid!=nid).all()
+            db.session.delete(other_request)
             Supervisor.query.get_or_404(session['sid']).projects.append(project)
         else :
             project.status = "Rejected"
@@ -874,10 +881,10 @@ def register_routes(app,db):
         project.special = is_special
         if request.form.get('feedback1') and request.form.get('feedback1') != '' :
                 message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
-                db.session.add(message)
+                db.session.add(message1)
         if request.form.get('feedback2') and request.form.get('feedback2') != '' :
                 message2= Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
-                db.session.add(message)
+                db.session.add(message2)
 
         discussions = Discussion.query.filter_by(project_id=project_id).all()
         for discussion in discussions :
@@ -887,29 +894,45 @@ def register_routes(app,db):
         return redirect(f'/project/{project_id}')
         
 
-    @app.route('/second-discussion/<int:project_id>',methods=['POST','GET'])
+    @app.route('/second-discussion/<int:project_id>', methods=['POST', 'GET'])
     def second_discussion(project_id):
         project = Project.query.get_or_404(project_id)
-        if not 'sid' in session or not project.doctor or session['sid'] != project.doctor :
-          flash("You are not a supervisor in this project","error")
-          return redirect(f'/project/{project_id}')
-        if request.method == 'GET' : 
-            return render_template('second_discussion.html',project=project)
-        for member in project.members : 
-           member.finel_project_degree = request.form.get(f'finel-project-degree-for-{member.pid}')
-        is_special = request.form.get('special') == 'True'
-        project.special = is_special
-        if request.form.get('feedback1') != '' :
-            message1 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback1'),message_type='feedback')
-            db.session.add(message1)
-        if request.form.get('feedback2') != '' :
-            message2 = Message(direction=2,supervisor_id=session['sid'],project_id=project_id,content=request.form.get('feedback2'),message_type='feedback')
-            db.session.add(message2)
-        discussions = Discussion.query.filter_by(project_id=project_id).all()
-        for discussion in discussions :
-            db.session.delete(discussion)   
+
+        if 'sid' not in session or not project.doctor or session['sid'] != project.doctor:
+            flash("You are not a supervisor in this project", "error")
+            return redirect(f'/project/{project_id}')
+        if request.method == 'GET':
+            return render_template('second_discussion.html', project=project)
+        for member in project.members:
+            val = request.form.get(f'finel-project-degree-for-{member.pid}')
+            member.finel_project_degree = int(val) if val and val.strip() else None
+
+        project.special = (request.form.get('special') == 'True')
+
+        feedback1 = request.form.get('feedback1')
+        if feedback1 and feedback1.strip():
+            msg1 = Message(
+                direction=2,
+                supervisor_id=session['sid'],
+                project_id=project_id,
+                content=feedback1.strip(),
+                message_type='feedback'
+            )
+            db.session.add(msg1)
+
+        feedback2 = request.form.get('feedback2')
+        if feedback2 and feedback2.strip():
+            msg2 = Message(
+                direction=2,
+                supervisor_id=session['sid'],
+                project_id=project_id,
+                content=feedback2.strip(),
+                message_type='feedback'
+            )
+            db.session.add(msg2)
+        Discussion.query.filter_by(project_id=project_id).delete()
         db.session.commit()
-        flash("Saved successfully!","info")
+        flash("Saved successfully!", "info")
         return redirect(f'/project/{project_id}')
 
     @app.route('/admin-panel', methods=['GET', 'POST'])

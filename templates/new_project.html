@@ -21,7 +21,7 @@
 
   <!-- Form Card -->
   <div class="rounded-xl border p-6 md:p-8 shadow-sm {{ 'bg-blue-950 border-cyan-800' if is_dark else 'bg-white border-blue-200' }}">
-    <form action="{% if project%} /new_project?action='edit' {%else%} /new_project {% endif %}" method="POST" class="space-y-6">
+    <form action="{% if project %} /new_project?action='edit' {%else%} /new_project {% endif %}" method="POST" class="space-y-6">
       
       <!-- Project Name -->
       <div>
@@ -82,7 +82,7 @@
           </svg>
           Create/Edit Project
         </button>
-        <a href="{{ url_for('projects') }}"
+        <a href="{{ url_for('ideas') }}"
           class="flex-1 font-medium py-3 px-6 rounded-lg transition duration-200 text-center shadow-sm
             {{ 'bg-gray-700 hover:bg-gray-600 text-white' if is_dark else 'bg-gray-500 hover:bg-gray-600 text-white' }}">
           Cancel
