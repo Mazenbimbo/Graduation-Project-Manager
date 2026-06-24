@@ -488,6 +488,9 @@ def register_routes(app,db):
                 # edit ptoject (only student can edit)
                 if 'action' in request.args:
                     p = Project.query.get_or_404(session['project_id'])
+                    if p.doctor and p.assistent : 
+                        flash("You can't edit this project anymore!","error")
+                        return redirect(request.refarrer)
                     p.name =  request.form.get('name')
                     p.description = request.form.get('description')
                     p.set_similar_ideas(similar_ideas)
