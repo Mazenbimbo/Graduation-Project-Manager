@@ -282,7 +282,11 @@ def register_routes(app,db):
         if 'logged' in session.keys() : 
             if request.method == 'GET':
                 if 'project_id' in request.args: # add check after this if it is a supervisor and this project is his
-                    project_members = Project.query.get_or_404(request.args['project_id']).members
+                    p = Project.query.get_or_404(request.args['project_id'])
+                    if 'sid' not in session or (session['sid'] != p.doctor and session['sid'] != p.assistent):
+                        flash("You're not a supervisor in this project!","error")
+                        return redirect('/my_projects')
+                    project_members = p.members
                     return render_template('tasks.html',members = project_members,data=session)
                 else:
                     if session['role'] == 'Student':
@@ -321,15 +325,9 @@ def register_routes(app,db):
         else:
                 return redirect('/sign-in')
 
-    @app.route('/team_tasks/<int:pid>')
-    def team_tasks(pid):
-        p = Project.query.get_or_404(pid)
-        if 'sid' not in session or (session['sid'] != p.doctor and session['sid'] != p.assistent):
-            flash("You're not a supervisor in this project!","error")
-            return redirect(request.referrer)
-        project_members = p.members
-        # for member in project_members:
-        return render_template('tasks.html',members=project_members)
+    @app.route('/not-found')
+    def not_found(pid):
+        return '<h1>Page not found</h1>',404
 
     @app.route('/change_status/<tid>',methods=['POST'])
     def change_status(tid):
