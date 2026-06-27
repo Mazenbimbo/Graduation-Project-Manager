@@ -94,8 +94,8 @@
           </div>
           <div>
             <span class="font-medium {{ 'text-cyan-400' if is_dark else 'text-blue-600' }}">Assistant:</span>
-            {% if project.assistent_supervisor %}
-              <span>{{ project.assistent_supervisor.name }}</span>
+            {% if project.assistant_supervisor %}
+              <span>{{ project.assistant_supervisor.name }}</span>
             {% else %}
               <span class="{{ 'text-gray-500' if is_dark else 'text-gray-400' }}">Not assigned</span>
             {% endif %}

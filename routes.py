@@ -2231,6 +2231,13 @@ def register_routes(app,db):
                 'supervisors': supervisor_names
             })
         return jsonify(result), 200
+
+    @app.route('/api/v2/delete_discussion/<int:did>',methods=['POST'])
+    def delete_discussion(did):
+        d = Discussion.query.get_or_404(did)
+        db.session.delete(d)
+        db.session.commit()
+        return redirect('/discussions')
     @app.route('/api/v2/discussions/<int:project_id>', methods=['GET'])
     def api_project_discussions(project_id):
         discussions = Discussion.query.filter_by(project_id=project_id).order_by(Discussion.date.asc(), Discussion.time.asc()).all()
