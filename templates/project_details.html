@@ -163,18 +163,46 @@
           <div
             class="p-3 rounded-lg border {{ 'bg-gray-700 border-cyan-800/30' if is_dark else 'bg-gray-100 border-gray-200' }}">
 
-            <p class="text-xs font-medium mb-1 {{ text_accent }}">
+            <div class="flex items-start justify-between">
 
-              From: {% if message.direction == 2 and message.supervisor_id == doctor.sid%} Dr. {{doctor.name}} 
-              {%elif message.direction == 2 and message.supervisor_id == assistant.sid %} TA.
-              {{assistant.name}} {%else%}Team{% endif %}
+              <div class="flex-1">
 
-            </p>
+                <p class="text-xs font-medium mb-1 {{ text_accent }}">
 
-            <p class="text-sm {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ message.content }}</p>
+                  From: {% if message.direction == 2 and message.supervisor_id == doctor.sid%} Dr. {{doctor.name}} 
+                  {%elif message.direction == 2 and message.supervisor_id == assistant.sid %} TA.
+                  {{assistant.name}} {%else%}Team{% endif %}
+
+                </p>
+
+                <p class="text-sm {{ 'text-gray-300' if is_dark else 'text-gray-700' }}">{{ message.content }}</p>
+
+              </div>
+              {% if message.direction == 2 and message.supervisor_id == session.sid or message.direction == 1 and 'pid' in session %} 
+              <form action="/api/v2/delete_message/{{message.mid}}" method="POST" class="ml-3 flex-shrink-0">
+
+                <button type="submit"
+                        class="p-1.5 rounded-lg transition-colors
+                        {{ 'text-red-400 hover:text-red-300 hover:bg-red-900/20' if is_dark else 'text-red-600 hover:text-red-700 hover:bg-red-50' }}"
+                        title="Delete message">
+
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+
+                  </svg>
+
+                </button>
+
+              </form>
+              {%endif%}
+            </div>
 
           </div>
-            {%endif%}
+
+          {%endif%}
+
           {% endfor %}
 
           {% else %}

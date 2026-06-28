@@ -2238,6 +2238,14 @@ def register_routes(app,db):
         db.session.delete(d)
         db.session.commit()
         return redirect('/discussions')
+
+    @app.route('/api/v2/delete_message/<int:mid>',methods=['POST'])
+    def delete_message(mid):
+        m = Message.query.get_or_404(mid)
+        db.session.delete(m)
+        db.session.commit()
+        return redirect(request.referrer)
+
     @app.route('/api/v2/discussions/<int:project_id>', methods=['GET'])
     def api_project_discussions(project_id):
         discussions = Discussion.query.filter_by(project_id=project_id).order_by(Discussion.date.asc(), Discussion.time.asc()).all()
