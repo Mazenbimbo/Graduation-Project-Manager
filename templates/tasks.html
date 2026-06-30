@@ -93,22 +93,7 @@
                       </span>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2 self-end sm:self-center">
-                    <form action="/change_status/{{ task.tid }}" method="POST">
-                      <input type="text" name="source" value="{% if 'project_id' in request.args %}/todo?project_id={{ request.args['project_id'] }}{% else %}/todo{% endif %}" hidden>
-                      <button type="submit"
-                        class="text-sm py-1.5 px-3 rounded-lg font-medium transition-colors bg-green-100 text-green-700 hover:bg-green-200">
-                        ✓ Done
-                      </button>
-                    </form>
-                    <form action="/delete/task/{{ task.tid }}" method="POST">
-                      <input type="text" name="source" value="{% if 'project_id' in request.args %}/todo?project_id={{ request.args['project_id'] }}{% else %}/todo{% endif %}" hidden>
-                      <button type="submit" name="delete"
-                        class="text-sm py-1.5 px-3 rounded-lg font-medium transition-colors bg-red-100 text-red-700 hover:bg-red-200">
-                        ✕ Delete
-                      </button>
-                    </form>
-                  </div>
+
                 </div>
               {% endfor %}
             </div>
