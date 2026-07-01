@@ -940,6 +940,10 @@ def register_routes(app,db):
         flash("Saved successfully!", "info")
         return redirect(f'/project/{project_id}')
 
+    @app.route('/guide',methods=['GET'])
+    def guide():
+        return render_template('guide.html')
+
     @app.route('/admin-panel', methods=['GET', 'POST'])
     def admin_panel():
         # Declare all global variables at the top

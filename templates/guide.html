@@ -1,0 +1,181 @@
+This repository contains a Flask-based web application designed for managing academic projects, likely focusing on student graduation projects. It supports two primary user roles: Students and Supervisors (Doctors and Assistants). The application provides comprehensive functionalities for project lifecycle management, team collaboration, and administrative oversight. The project also exposes a RESTful API (v2) for mobile or other client applications.
+
+Here's a breakdown of the repository's key components and functionalities:
+
+1. Core Technologies:
+
+Backend: Python with Flask framework.
+Database: SQLAlchemy ORM with SQLite (sqlite:///./data.db), managed by Flask-Migrate and Alembic for migrations.
+Frontend: HTML templates (Jinja2) with CSS for styling.
+Similarity System: Integrates a custom graduation_similarity_system.py for checking project idea similarities.
+2. Key Entities (Database Models - defined in models.py):
+
+Student: Manages student profiles, skills, team status, and project assignments.
+Supervisor: Manages supervisor (Doctor/Assistant) profiles, specialties, and assigned projects.
+Project: Manages project details, team members, supervisors, status, attachments, and similar ideas.
+Task: Tracks tasks assigned to students within projects.
+Meeting: Schedules and manages meetings for projects.
+Discussion: Manages project-related discussions.
+Notification / Supervisor_notification: Handles in-app notifications for students and supervisors.
+Message: Facilitates communication between students and supervisors.
+**3. Application Features (routes defined in routes.py):
+
+A. User & Authentication:
+
+User Accounts: Separate registration and login for students and supervisors.
+Profile Management: Users can view and edit their profiles, including personal details, skills, and profile pictures.
+Session Management: Maintains user sessions after login.
+B. Project Management:
+
+Project Creation: Students can propose new project ideas, which undergo a similarity check against existing projects.
+Project Listing: Displays current year project ideas and a library of past projects with filtering options (e.g., by field, year, featured status).
+Project Details: Provides a detailed view of individual projects, including team members, assigned supervisors, attachments, and messages.
+Project Editing: Project leaders can edit their project details.
+C. Team Collaboration:
+
+Team Formation: Students can form teams by sending/accepting requests to join or add members.
+Team Management: Project leaders can kick members from their team, and students can exit teams.
+D. Task Management:
+
+Task Assignment: Supervisors can assign tasks to project members; students can view and mark their tasks as complete.
+E. Supervision & Communication:
+
+Supervisor Assignment: Students can request supervision from available supervisors.
+Supervisor Response: Supervisors can accept or reject supervision requests, providing feedback if needed.
+Meetings: Supervisors can schedule meetings for their supervised projects.
+Discussions: Supervisors can initiate discussions related to projects, with details on date, time, and location.
+Messaging: Enables direct communication and feedback exchange between students and supervisors within projects.
+F. Administrative Features:
+
+Admin Panel: Allows administrators to configure global settings such as minimum/maximum team sizes, supervisor project limits, and important deadlines (documentation, ideas, results announcement).
+Grading: Supervisors (Doctors) can record results for first and second discussions, and assign final project grades to students.
+G. File Management:
+
+File Uploads: Supports uploading profile images and project attachments (e.g., documents, images).
+4. API Endpoints:
+
+Comprehensive RESTful API (v2): Most web functionalities are mirrored as API endpoints, providing programmatic access for potential mobile applications or integrations.
+5. Frontend Structure:
+
+Templates (templates/): A rich set of HTML templates for various pages, including home, account, project details, task management, supervisor dashboards, and authentication.
+Static Files (static/css/): Contains CSS files for styling, with main.css for global styles and specific CSS files for certain pages like friends.css and project_details.css.This repository contains a Flask-based web application designed for managing academic projects, likely focusing on student graduation projects. It supports two primary user roles: Students and Supervisors (Doctors and Assistants). The application provides comprehensive functionalities for project lifecycle management, team collaboration, and administrative oversight. The project also exposes a RESTful API (v2) for mobile or other client applications.
+
+Here's a breakdown of the repository's key components and functionalities:
+
+1. Core Technologies:
+
+Backend: Python with Flask framework.
+Database: SQLAlchemy ORM with SQLite (sqlite:///./data.db), managed by Flask-Migrate and Alembic for migrations.
+Frontend: HTML templates (Jinja2) with CSS for styling.
+Similarity System: Integrates a custom graduation_similarity_system.py for checking project idea similarities.
+2. Key Entities (Database Models - defined in models.py):
+
+Student: Manages student profiles, skills, team status, and project assignments.
+Supervisor: Manages supervisor (Doctor/Assistant) profiles, specialties, and assigned projects.
+Project: Manages project details, team members, supervisors, status, attachments, and similar ideas.
+Task: Tracks tasks assigned to students within projects.
+Meeting: Schedules and manages meetings for projects.
+Discussion: Manages project-related discussions.
+Notification / Supervisor_notification: Handles in-app notifications for students and supervisors.
+Message: Facilitates communication between students and supervisors.
+**3. Application Features (routes defined in routes.py):
+
+A. User & Authentication:
+
+User Accounts: Separate registration and login for students and supervisors.
+Profile Management: Users can view and edit their profiles, including personal details, skills, and profile pictures.
+Session Management: Maintains user sessions after login.
+B. Project Management:
+
+Project Creation: Students can propose new project ideas, which undergo a similarity check against existing projects.
+Project Listing: Displays current year project ideas and a library of past projects with filtering options (e.g., by field, year, featured status).
+Project Details: Provides a detailed view of individual projects, including team members, assigned supervisors, attachments, and messages.
+Project Editing: Project leaders can edit their project details.
+C. Team Collaboration:
+
+Team Formation: Students can form teams by sending/accepting requests to join or add members.
+Team Management: Project leaders can kick members from their team, and students can exit teams.
+D. Task Management:
+
+Task Assignment: Supervisors can assign tasks to project members; students can view and mark their tasks as complete.
+E. Supervision & Communication:
+
+Supervisor Assignment: Students can request supervision from available supervisors.
+Supervisor Response: Supervisors can accept or reject supervision requests, providing feedback if needed.
+Meetings: Supervisors can schedule meetings for their supervised projects.
+Discussions: Supervisors can initiate discussions related to projects, with details on date, time, and location.
+Messaging: Enables direct communication and feedback exchange between students and supervisors within projects.
+F. Administrative Features:
+
+Admin Panel: Allows administrators to configure global settings such as minimum/maximum team sizes, supervisor project limits, and important deadlines (documentation, ideas, results announcement).
+Grading: Supervisors (Doctors) can record results for first and second discussions, and assign final project grades to students.
+G. File Management:
+
+File Uploads: Supports uploading profile images and project attachments (e.g., documents, images).
+4. API Endpoints:
+
+Comprehensive RESTful API (v2): Most web functionalities are mirrored as API endpoints, providing programmatic access for potential mobile applications or integrations.
+5. Frontend Structure:
+
+Templates (templates/): A rich set of HTML templates for various pages, including home, account, project details, task management, supervisor dashboards, and authentication.
+Static Files (static/css/): Contains CSS files for styling, with main.css for global styles and specific CSS files for certain pages like friends.css and project_details.css.This repository contains a Flask-based web application designed for managing academic projects, likely focusing on student graduation projects. It supports two primary user roles: Students and Supervisors (Doctors and Assistants). The application provides comprehensive functionalities for project lifecycle management, team collaboration, and administrative oversight. The project also exposes a RESTful API (v2) for mobile or other client applications.
+
+Here's a breakdown of the repository's key components and functionalities:
+
+1. Core Technologies:
+
+Backend: Python with Flask framework.
+Database: SQLAlchemy ORM with SQLite (sqlite:///./data.db), managed by Flask-Migrate and Alembic for migrations.
+Frontend: HTML templates (Jinja2) with CSS for styling.
+Similarity System: Integrates a custom graduation_similarity_system.py for checking project idea similarities.
+2. Key Entities (Database Models - defined in models.py):
+
+Student: Manages student profiles, skills, team status, and project assignments.
+Supervisor: Manages supervisor (Doctor/Assistant) profiles, specialties, and assigned projects.
+Project: Manages project details, team members, supervisors, status, attachments, and similar ideas.
+Task: Tracks tasks assigned to students within projects.
+Meeting: Schedules and manages meetings for projects.
+Discussion: Manages project-related discussions.
+Notification / Supervisor_notification: Handles in-app notifications for students and supervisors.
+Message: Facilitates communication between students and supervisors.
+**3. Application Features (routes defined in routes.py):
+
+A. User & Authentication:
+
+User Accounts: Separate registration and login for students and supervisors.
+Profile Management: Users can view and edit their profiles, including personal details, skills, and profile pictures.
+Session Management: Maintains user sessions after login.
+B. Project Management:
+
+Project Creation: Students can propose new project ideas, which undergo a similarity check against existing projects.
+Project Listing: Displays current year project ideas and a library of past projects with filtering options (e.g., by field, year, featured status).
+Project Details: Provides a detailed view of individual projects, including team members, assigned supervisors, attachments, and messages.
+Project Editing: Project leaders can edit their project details.
+C. Team Collaboration:
+
+Team Formation: Students can form teams by sending/accepting requests to join or add members.
+Team Management: Project leaders can kick members from their team, and students can exit teams.
+D. Task Management:
+
+Task Assignment: Supervisors can assign tasks to project members; students can view and mark their tasks as complete.
+E. Supervision & Communication:
+
+Supervisor Assignment: Students can request supervision from available supervisors.
+Supervisor Response: Supervisors can accept or reject supervision requests, providing feedback if needed.
+Meetings: Supervisors can schedule meetings for their supervised projects.
+Discussions: Supervisors can initiate discussions related to projects, with details on date, time, and location.
+Messaging: Enables direct communication and feedback exchange between students and supervisors within projects.
+F. Administrative Features:
+
+Admin Panel: Allows administrators to configure global settings such as minimum/maximum team sizes, supervisor project limits, and important deadlines (documentation, ideas, results announcement).
+Grading: Supervisors (Doctors) can record results for first and second discussions, and assign final project grades to students.
+G. File Management:
+
+File Uploads: Supports uploading profile images and project attachments (e.g., documents, images).
+4. API Endpoints:
+
+Comprehensive RESTful API (v2): Most web functionalities are mirrored as API endpoints, providing programmatic access for potential mobile applications or integrations.
+5. Frontend Structure:
+
+Templates (templates/): A rich set of HTML templates for various pages, including home, account, project details, task management, supervisor dashboards, and authentication.
+Static Files (static/css/): Contains CSS files for styling, with main.css for global styles and specific CSS files for certain pages like friends.css and project_details.css.
