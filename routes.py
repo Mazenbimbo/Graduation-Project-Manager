@@ -1103,10 +1103,6 @@ def register_routes(app,db):
     @app.route('/announecments',methods=['POST','GET'])
     def announecments():
         return 'coming soon'
-
-    @app.route('/guide',methods=['POST','GET'])
-    def guide():
-        return 'coming soon'
                     
     # ========== API V2 ROUTES ==========
 
