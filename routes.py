@@ -827,9 +827,12 @@ def register_routes(app,db):
 
     @app.route('/my_meetings',methods=['GET'])
     def my_meetings():
-        delete_old_meetings()
-        meetings = Meeting.query.all()
-        return render_template('my_meetings.html', meetings=meetings,data=session)
+        if 'logged' in session.keys():
+            delete_old_meetings()
+            meetings = Meeting.query.all()
+            return render_template('my_meetings.html', meetings=meetings,data=session)
+        else:
+            return redirect('/sign-in')
 
 
     @app.route('/edit_projects_number',methods=['POST'])
