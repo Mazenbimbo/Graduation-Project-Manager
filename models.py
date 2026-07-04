@@ -14,7 +14,7 @@ class Student(db.Model):
     name = db.Column(db.Text, nullable = False)
     email = db.Column(db.Text)
     phone = db.Column(db.Text)
-    specialties = db.Column(db.Text)
+    specialty = db.Column(db.Text)
     skills = db.Column(db.Text,nullable=True)
     password = db.Column(db.Text, nullable = False)
     project_id = db.Column(db.Integer,db.ForeignKey('project.pid'),nullable=True)

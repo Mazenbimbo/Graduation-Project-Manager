@@ -93,23 +93,32 @@ def register_routes(app,db):
         if 'logged' not in session:
             return redirect('/sign-in')
 
-        student = Student.query.get_or_404(session['pid'])
+        if 'pid' in session :
+            user = Student.query.get_or_404(session['pid'])
+        elif 'sid' in session :
+            user = Supervisor.query.get_or_404(session['sid'])
 
         if request.method == 'GET':
-            name = student.name
-            phone = student.phone or ''
-            specialties = student.specialties or ''
-            year = student.year or ''
+            name = user.name
+            phone = user.phone or ''
+            specialty = user.specialty or ''
+            if 'pid' in session :
+                year = user.year or ''
+            else : 
+                year = 'No Year'
             password = '' 
-            # skills stored as list -> convert to comma string for JS
-            skills = ','.join(student.get_skills()) if student.get_skills() else ''
-            linkedin = student.linkedin_url or ''
-            github = student.github_url or ''
-            profile_image = student.image or '' 
+            if 'pid' in session : 
+                # skills stored as list -> convert to comma string for JS
+                skills = ','.join(user.get_skills()) if user.get_skills() else ''
+            else :
+                skills = ['No skills']
+            linkedin = user.linkedin_url or ''
+            github = user.github_url or ''
+            profile_image = user.image or '' 
 
             return render_template('edit_info.html',
                                 name=name, phone=phone, year=year,
-                                password=password, specialties=specialties,
+                                password=password, specialty=specialty,
                                 skills=skills, linkedin=linkedin, github=github,
                                 profile_image=profile_image)
 
@@ -117,24 +126,25 @@ def register_routes(app,db):
         name = request.form.get('name')
         phone = request.form.get('phone')
         year = request.form.get('year')
-        specialties = request.form.get('specialties')
+        specialty = request.form.get('specialty')
         linkedin = request.form.get('linkedin')
         github = request.form.get('github')
         password = request.form.get('password')
         
+        if 'pid' in session :
+            skills_str = request.form.get('skills', '') 
+            skills_list = [s.strip() for s in skills_str.split(',') if s.strip()]  
 
-        skills_str = request.form.get('skills', '')
-        skills_list = [s.strip() for s in skills_str.split(',') if s.strip()]
-
-        student.name = name
-        student.phone = phone
-        student.specialties = specialties
-        student.year = year
-        student.linkedin_url = linkedin
-        student.github_url = github
+        user.name = name
+        user.phone = phone
+        user.specialty = specialty
+        user.linkedin_url = linkedin
+        user.github_url = github
         if password: 
-            student.password = password
-        student.set_skills(skills_list) 
+            user.password = password
+        if 'pid' in session :
+            user.set_skills(skills_list)
+            user.year = year
 
         # 2. Profile picture upload
         file = request.files.get('profile_picture')
@@ -144,8 +154,8 @@ def register_routes(app,db):
                 unique_name = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{original}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
                 file.save(file_path)
-                student.image = f"/static/uploads/{unique_name}"
-                session['image'] = student.image
+                user.image = f"/static/uploads/{unique_name}"
+                session['image'] = user.image
             else:
                 flash('Image format not allowed (use PNG, JPG, JPEG, GIF)', 'error')
                 return redirect(request.url)
@@ -153,15 +163,16 @@ def register_routes(app,db):
         db.session.commit()
 
         # Update session values to keep them consistent
-        session['name'] = student.name
-        session['specialty'] = student.specialties
-        session['phone'] = student.phone
-        session['year'] = student.year
-        session['password'] = student.password  # be careful with plain text
-        session['skills'] = skills_list
-        session['linkedin'] = student.linkedin_url
-        session['github'] = student.github_url
-        session['image'] = student.image
+        session['name'] = user.name
+        session['specialty'] = user.specialty
+        session['phone'] = user.phone
+        session['password'] = user.password  # be careful with plain text
+        if 'pid' in session :
+            session['skills'] = skills_list
+            session['year'] = user.year
+        session['linkedin'] = user.linkedin_url
+        session['github'] = user.github_url
+        session['image'] = user.image
 
         return redirect('/account/me')
 
@@ -173,7 +184,7 @@ def register_routes(app,db):
             name = request.form.get('name')
             phone = request.form.get('phone')
             email = request.form.get('email')
-            specialties = request.form.get('specialty')
+            specialty = request.form.get('specialty')
             year = request.form.get('year')
             skills = request.form.get('skills')
             department = request.form.get('department')
@@ -185,7 +196,7 @@ def register_routes(app,db):
                     flash("email already exist!","error")
                     return render_template('sign_up.html')
             else :
-                student = Student(name=name,specialties=specialties, phone=phone, email=email, department=department, year=year,skills=skills, linkedin_url=linkedin,github_url=github,password=password)
+                student = Student(name=name,specialty=specialty, phone=phone, email=email, department=department, year=year,skills=skills, linkedin_url=linkedin,github_url=github,password=password)
                 student.set_skills(skills)
                 db.session.add(student)
                 db.session.commit()
@@ -203,7 +214,7 @@ def register_routes(app,db):
                 if student and student.password == password :
                     session['pid'] = student.pid
                     session['name'] = student.name
-                    session['specialty'] = student.specialties
+                    session['specialty'] = student.specialty
                     session['phone'] = student.phone
                     session['email'] = student.email
                     session['year'] = student.year
@@ -367,18 +378,18 @@ def register_routes(app,db):
         query = Student.query
         
         if specialty_filter:
-            query = query.filter(Student.specialties == specialty_filter)
+            query = query.filter(Student.specialty == specialty_filter)
         
         if not_in_team_only:
             query = query.filter(Student.in_team == False)
         
         friends_list = query.all()
         
-        # Get all distinct specialties for the dropdown ((( NEED TO UNDERSTAND THIS ONE BETTER)))
-        specialties = db.session.query(Student.specialties).distinct().all()
-        specialties = sorted([s[0] for s in specialties if s[0]])
+        # Get all distinct specialty for the dropdown ((( NEED TO UNDERSTAND THIS ONE BETTER)))
+        specialty = db.session.query(Student.specialty).distinct().all()
+        specialty = sorted([s[0] for s in specialty if s[0]])
         
-        return render_template('friends.html',users=friends_list,in_team=session['in_team'],my_id=session['pid'],specialties=specialties,current_specialty=specialty_filter,not_in_team_checked=not_in_team_only,this_year=datetime.now().year)
+        return render_template('friends.html',users=friends_list,in_team=session['in_team'],my_id=session['pid'],specialty=specialty,current_specialty=specialty_filter,not_in_team_checked=not_in_team_only,this_year=datetime.now().year)
 
     @app.route('/req_to_add/<int:id>',methods=['POST'])
     def req_to_add(id):
@@ -1149,7 +1160,7 @@ def register_routes(app,db):
         name = data.get('name')
         phone = data.get('phone')
         email = data.get('email')
-        specialties = data.get('specialties')
+        specialty = data.get('specialty')
         skills = data.get('skills')
         year = data.get('year')
         department = data.get('department')
@@ -1158,7 +1169,7 @@ def register_routes(app,db):
             return api_bad_request("Missing required fields: name, phone, email, year, department, password")
         if Student.query.filter_by(email=email).count() > 0:
             return jsonify({"error": "Email already exists"}), 400
-        student = Student(name=name, specialties=specialties, phone=phone, email=email,
+        student = Student(name=name, specialty=specialty, phone=phone, email=email,
                         department=department, year=year,status="No Idea", password=password)
         student.set_skills(skills)
         db.session.add(student)
@@ -1179,7 +1190,7 @@ def register_routes(app,db):
         # Set session (same as web)
         session['pid'] = student.pid
         session['name'] = student.name
-        session['specialty'] = student.specialties
+        session['specialty'] = student.specialty
         session['skills'] = student.get_skills()
         session['phone'] = student.phone
         session['email'] = student.email
@@ -1258,7 +1269,7 @@ def register_routes(app,db):
                 "name": student.name,
                 "email": student.email,
                 "phone": student.phone,
-                "specialties": student.specialties,
+                "specialty": student.specialty,
                 "skills": student.get_skills(),
                 "year": student.year,
                 "department": student.department,
@@ -1300,7 +1311,7 @@ def register_routes(app,db):
                 "name": student.name,
                 "email": student.email,
                 "phone": student.phone,
-                "specialties": student.specialties,
+                "specialty": student.specialty,
                 "skills":student.get_skills(),
                 "year": student.year,
                 "department": student.department,
@@ -1344,7 +1355,7 @@ def register_routes(app,db):
             student.phone = data['phone']
             session['phone'] = data['phone']
         if 'specialty' in data:
-            student.specialties = data['specialty']
+            student.specialty = data['specialty']
             session['specialty'] = data['specialty']
         if 'skills' in data:
             student.set_skills(data['skills']) 
@@ -1364,7 +1375,7 @@ def register_routes(app,db):
             "name": student.name,
             "email": student.email,
             "phone": student.phone,
-            "specialty": student.specialties,
+            "specialty": student.specialty,
             "year": student.year,
             "department": student.department,
             "image": student.image,
@@ -1718,14 +1729,14 @@ def register_routes(app,db):
         not_in_team = request.args.get('not_in_team') == 'true'
         query = Student.query
         if specialty:
-            query = query.filter(Student.specialties == specialty)
+            query = query.filter(Student.specialty == specialty)
         if not_in_team:
             query = query.filter(Student.in_team == False)
         students = query.all()
         return jsonify([{
             "pid": s.pid,
             "name": s.name,
-            "specialties": s.specialties,
+            "specialty": s.specialty,
             "skills":s.get_skills() if s.get_skills() else [],
             "in_team": s.in_team,
             "year": s.year,

@@ -26,7 +26,7 @@
         <select name="specialty" 
           class="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-1 {{ 'bg-gray-800 text-white border-cyan-800 focus:border-cyan-400 focus:ring-cyan-400' if is_dark else 'bg-gray-50 text-gray-900 border-blue-300 focus:border-blue-500 focus:ring-blue-500' }}">
           <option value="">All Specialties</option>
-          {% for spec in specialties %}
+          {% for spec in specialty %}
             <option value="{{ spec }}" {% if current_specialty == spec %}selected{% endif %}>{{ spec }}</option>
           {% endfor %}
         </select>
@@ -72,7 +72,7 @@
               {{ user.name|title }}
             </a>
             <span class="inline-block text-xs px-3 py-1 rounded-full mt-1 {{ 'bg-gray-800 text-cyan-300' if is_dark else 'bg-blue-100 text-blue-700' }}">
-              {{ user.specialties }}
+              {{ user.specialty }}
             </span>
             {% if user.in_team %}
               <p class="text-xs mt-1 {{ 'text-gray-400' if is_dark else 'text-gray-500' }}">Project ID: {{ user.project_id }}</p>

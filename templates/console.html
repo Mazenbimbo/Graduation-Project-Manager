@@ -196,7 +196,7 @@
     //  API Endpoints Definition (matches /api/v2)
     // ------------------------------
     const endpoints = [
-        { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"student@gmail.com", specialties:"AI", year:2025, department:"CS", password:"aaaaaaaa"} },
+        { method: "POST", path: "/api/v2/sign-up", desc: "Student sign-up", bodyExample: {name:"John", phone:"123", email:"student@gmail.com", specialty:"AI", year:2025, department:"CS", password:"aaaaaaaa"} },
         { method: "POST", path: "/api/v2/sign-in", desc: "Student sign-in", bodyExample: {email:"student@gmail.com", password:"aaaaaaaa"} },
         { method: "POST", path: "/api/v2/supervisor/sign-in", desc: "Supervisor sign-in", bodyExample: {email:"doctor@gmail.com", password:"aaaaaaaa"} },
         { method: "POST", path: "/api/v2/edit_projects_limit", desc: "Edit supervisor's projects limit", bodyExample: {supervisor_id:1, new_limit:10} },
