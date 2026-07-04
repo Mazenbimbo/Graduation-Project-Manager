@@ -30,6 +30,10 @@ def register_routes(app,db):
 
     @app.route('/')
     def homepage():
+        if 'pid' in session : 
+            return redirect('/home')
+        elif 'sid' in session : 
+            return redirect('/supervisor_dashboard')
         students = Student.query.all()
         supervisors = Supervisor.query.all()
         projects = Project.query.all() 
@@ -38,16 +42,17 @@ def register_routes(app,db):
     @app.route("/home")
     def home():
         if 'logged' in session.keys(): 
+            if 'sid' in session : 
+                return redirect('/supervisor_dashboard')
             name = session["name"]
             if session['project_id'] : 
                 project = Project.query.get_or_404(session['project_id'])
             return render_template("home.html",data=session,project=project if session['project_id'] else "")
-        return render_template("homepage.html")
+        return redirect('/')
 
     @app.route('/logout')
     def logout():
         session.clear()
-        # session['logged'] = False
         return redirect('/')
         
     @app.route("/account/<string:id>")
